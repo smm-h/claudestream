@@ -1,0 +1,6 @@
+{
+    "language": "python",
+    "source": ["claudestream"],
+    "docs": "docs",
+    "base_url": "https://claudestream.pages.dev"
+}
