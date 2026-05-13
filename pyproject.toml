@@ -9,6 +9,7 @@ dependencies = [
     "strictcli",
     "selfdoc",
 ]
+keywords = ["rlsbl"]
 
 [project.scripts]
 claudestream = "claudestream._cli:main"
