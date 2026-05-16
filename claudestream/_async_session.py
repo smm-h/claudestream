@@ -141,26 +141,15 @@ class AsyncSession:
         await self.close()
 
     async def _start(self) -> None:
-        """Start the subprocess and read the SystemInit event."""
+        """Start the subprocess. SystemInit is captured during first send()."""
         self._claude_version = await check_version(self._binary)
 
         await self._process_mgr.start()
 
-        # Read events until we get SystemInit
-        async for event in read_events(self._process_mgr.stdout):
-            if isinstance(event, SystemInit):
-                self._session_id = event.session_id
-                self._model_name = event.model
-                self._tools = list(event.tools)
-                log.debug(
-                    "session started: id=%s model=%s tools=%d",
-                    self._session_id,
-                    self._model_name,
-                    len(self._tools),
-                )
-                break
-            elif isinstance(event, UnknownEvent):
-                log.debug("unknown event during init: %s", event.type)
+        # With --input-format stream-json, the Claude CLI does NOT send
+        # SystemInit until the first user message. We skip the blocking
+        # read and capture SystemInit during the first send() instead.
+        log.debug("process started, skipping SystemInit wait (captured on first send)")
 
     async def close(self) -> None:
         """Shut down the session and kill the subprocess."""
@@ -211,6 +200,19 @@ class AsyncSession:
             )
 
         async for event in read_events(self._process_mgr.stdout):
+            # Capture SystemInit (sent after first user message)
+            if isinstance(event, SystemInit):
+                self._session_id = event.session_id
+                self._model_name = event.model
+                self._tools = list(event.tools)
+                log.debug(
+                    "session started: id=%s model=%s tools=%d",
+                    self._session_id,
+                    self._model_name,
+                    len(self._tools),
+                )
+                continue  # don't yield SystemInit to consumer
+
             # Handle permission requests via policy
             if isinstance(event, PermissionRequest):
                 handled = await self._handle_permission(event)
