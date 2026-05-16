@@ -169,6 +169,7 @@ class ProcessManager:
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
+            limit=16 * 1024 * 1024,  # 16MB — extended thinking produces huge NDJSON lines
             cwd=self.config.cwd,
             env=env,
         )
