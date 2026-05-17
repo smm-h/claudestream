@@ -1,6 +1,11 @@
 """Tests for event parsing and protocol handling."""
 
+import asyncio
+import json
+from unittest.mock import AsyncMock, MagicMock, patch
+
 from claudestream._protocol import parse_event, flatten_event, parse_content_block, parse_usage
+from claudestream._async_session import AsyncSession
 from claudestream.events import (
     SystemInit, ApiRetry, CompactBoundary,
     AssistantMessage, AssistantText, ToolUse, Thinking,
@@ -329,3 +334,221 @@ class TestStreamDeltaProperties:
         assert event.text is None
         assert event.delta_type is None
         assert event.event_type == "message_start"
+
+
+class TestSystemInitLazyCapture:
+    """Test that _read_turn() intercepts SystemInit and populates session metadata.
+
+    Bug fix: SystemInit is NOT emitted by Claude CLI until the first user
+    message when using --input-format stream-json. The session captures it
+    lazily during _read_turn() and never yields it to consumers.
+    """
+
+    def _build_ndjson(self, events: list[dict]) -> bytes:
+        """Encode a list of raw event dicts as NDJSON bytes."""
+        return "".join(json.dumps(e) + "\n" for e in events).encode("utf-8")
+
+    def _make_session(self) -> AsyncSession:
+        """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
+        with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
+             patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"):
+            session = AsyncSession(binary="/fake/claude")
+        return session
+
+    def test_system_init_not_yielded(self):
+        """SystemInit events should be captured internally, never yielded to the consumer."""
+        raw_events = [
+            {
+                "type": "system",
+                "subtype": "init",
+                "cwd": "/home/test",
+                "tools": ["Bash", "Read"],
+                "mcp_servers": [],
+                "model": "claude-sonnet-4-5",
+                "permission_mode": "default",
+                "claude_code_version": "2.1.128",
+                "session_id": "test-session-123",
+                "uuid": "uuid-1",
+            },
+            {
+                "type": "assistant",
+                "session_id": "test-session-123",
+                "uuid": "u2",
+                "parent_tool_use_id": None,
+                "error": None,
+                "message": {
+                    "id": "msg_1",
+                    "type": "message",
+                    "role": "assistant",
+                    "model": "claude-sonnet-4-5",
+                    "stop_reason": "end_turn",
+                    "content": [{"type": "text", "text": "Hello!"}],
+                    "usage": {"input_tokens": 10, "output_tokens": 5},
+                },
+            },
+            {
+                "type": "result",
+                "subtype": "success",
+                "is_error": False,
+                "duration_ms": 1000.0,
+                "duration_api_ms": 900.0,
+                "num_turns": 1,
+                "result": "Hello!",
+                "stop_reason": "end_turn",
+                "total_cost_usd": 0.01,
+                "session_id": "test-session-123",
+                "uuid": "u3",
+            },
+        ]
+        data = self._build_ndjson(raw_events)
+
+        async def run():
+            session = self._make_session()
+            # Mock the process manager so _read_turn thinks the process is alive
+            session._process_mgr._process = MagicMock()
+            session._process_mgr._process.returncode = None
+
+            # Feed NDJSON data to a StreamReader for stdout
+            reader = asyncio.StreamReader()
+            reader.feed_data(data)
+            reader.feed_eof()
+            session._process_mgr._process.stdout = reader
+
+            # Mock stdin so write_message doesn't fail
+            session._process_mgr._process.stdin = MagicMock()
+
+            yielded_events = []
+            async for event in session._read_turn(raw=False):
+                yielded_events.append(event)
+
+            return session, yielded_events
+
+        session, yielded_events = asyncio.run(run())
+
+        # SystemInit should NOT appear in yielded events
+        assert not any(isinstance(e, SystemInit) for e in yielded_events)
+
+        # But the session metadata should be populated from SystemInit
+        assert session.session_id == "test-session-123"
+        assert session.model_name == "claude-sonnet-4-5"
+        assert session.tools == ["Bash", "Read"]
+
+    def test_metadata_populated_after_first_send(self):
+        """Session metadata (model_name, tools, session_id) should be None/empty
+        before the first send, and populated after SystemInit is captured."""
+        raw_events = [
+            {
+                "type": "system",
+                "subtype": "init",
+                "cwd": "/work",
+                "tools": ["Bash", "Read", "Write"],
+                "mcp_servers": [],
+                "model": "claude-opus-4",
+                "permission_mode": "default",
+                "claude_code_version": "2.2.0",
+                "session_id": "session-xyz",
+                "uuid": "uuid-init",
+            },
+            {
+                "type": "result",
+                "subtype": "success",
+                "is_error": False,
+                "result": "Done",
+                "session_id": "session-xyz",
+            },
+        ]
+        data = self._build_ndjson(raw_events)
+
+        async def run():
+            session = self._make_session()
+
+            # Before any turn, metadata should be unset
+            assert session.session_id is None
+            assert session.model_name is None
+            assert session.tools == []
+
+            # Mock process manager
+            session._process_mgr._process = MagicMock()
+            session._process_mgr._process.returncode = None
+
+            reader = asyncio.StreamReader()
+            reader.feed_data(data)
+            reader.feed_eof()
+            session._process_mgr._process.stdout = reader
+            session._process_mgr._process.stdin = MagicMock()
+
+            async for _ in session._read_turn(raw=False):
+                pass
+
+            return session
+
+        session = asyncio.run(run())
+
+        # After the turn, metadata should be populated
+        assert session.session_id == "session-xyz"
+        assert session.model_name == "claude-opus-4"
+        assert session.tools == ["Bash", "Read", "Write"]
+
+    def test_only_non_system_init_events_yielded(self):
+        """When a stream has SystemInit among other events, only non-SystemInit
+        events should be yielded. Verify no event leaks through."""
+        raw_events = [
+            {
+                "type": "system",
+                "subtype": "init",
+                "cwd": "/test",
+                "tools": [],
+                "model": "test-model",
+                "session_id": "s1",
+            },
+            {
+                "type": "assistant",
+                "session_id": "s1",
+                "message": {
+                    "content": [{"type": "text", "text": "First"}],
+                    "model": "test-model",
+                    "stop_reason": "end_turn",
+                },
+            },
+            {
+                "type": "assistant",
+                "session_id": "s1",
+                "message": {
+                    "content": [{"type": "text", "text": "Second"}],
+                    "model": "test-model",
+                    "stop_reason": "end_turn",
+                },
+            },
+            {
+                "type": "result",
+                "subtype": "success",
+                "is_error": False,
+                "result": "done",
+                "session_id": "s1",
+            },
+        ]
+        data = self._build_ndjson(raw_events)
+
+        async def run():
+            session = self._make_session()
+            session._process_mgr._process = MagicMock()
+            session._process_mgr._process.returncode = None
+
+            reader = asyncio.StreamReader()
+            reader.feed_data(data)
+            reader.feed_eof()
+            session._process_mgr._process.stdout = reader
+            session._process_mgr._process.stdin = MagicMock()
+
+            yielded = []
+            async for event in session._read_turn(raw=False):
+                yielded.append(event)
+            return yielded
+
+        yielded = asyncio.run(run())
+
+        # Should yield 2 AssistantText (flattened from 2 AssistantMessages) + 1 Result
+        types = [type(e).__name__ for e in yielded]
+        assert "SystemInit" not in types
+        assert types.count("AssistantText") == 2
+        assert types.count("Result") == 1

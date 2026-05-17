@@ -1,6 +1,9 @@
 """Tests for subprocess management."""
 
-from claudestream._process import ProcessConfig, find_binary, _version_lt
+import asyncio
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from claudestream._process import ProcessConfig, ProcessManager, find_binary, _version_lt
 
 
 class TestProcessConfig:
@@ -76,3 +79,62 @@ class TestFindBinary:
             assert isinstance(result, str)
         except FileNotFoundError:
             pass  # Expected if claude is not on PATH
+
+
+class TestProcessManagerBufferLimit:
+    """Test that ProcessManager.start() passes a 16MB buffer limit.
+
+    Bug fix: extended thinking produces huge NDJSON lines that exceed asyncio's
+    default 64KB buffer. The fix passes limit=16*1024*1024 to
+    create_subprocess_exec.
+    """
+
+    def test_start_passes_16mb_limit(self):
+        """Verify create_subprocess_exec receives limit=16*1024*1024."""
+        config = ProcessConfig(binary="/fake/claude")
+        manager = ProcessManager(config)
+
+        mock_process = MagicMock()
+        mock_process.pid = 12345
+
+        captured_kwargs = {}
+
+        async def fake_create_subprocess_exec(*args, **kwargs):
+            captured_kwargs.update(kwargs)
+            return mock_process
+
+        async def run():
+            with patch("asyncio.create_subprocess_exec", side_effect=fake_create_subprocess_exec):
+                await manager.start()
+
+        asyncio.run(run())
+
+        expected_limit = 16 * 1024 * 1024  # 16MB
+        assert "limit" in captured_kwargs, "limit kwarg not passed to create_subprocess_exec"
+        assert captured_kwargs["limit"] == expected_limit, (
+            f"Expected limit={expected_limit}, got limit={captured_kwargs['limit']}"
+        )
+
+    def test_start_uses_pipe_for_stdio(self):
+        """Verify create_subprocess_exec uses PIPE for stdin, stdout, and stderr."""
+        config = ProcessConfig(binary="/fake/claude")
+        manager = ProcessManager(config)
+
+        mock_process = MagicMock()
+        mock_process.pid = 99999
+
+        captured_kwargs = {}
+
+        async def fake_create_subprocess_exec(*args, **kwargs):
+            captured_kwargs.update(kwargs)
+            return mock_process
+
+        async def run():
+            with patch("asyncio.create_subprocess_exec", side_effect=fake_create_subprocess_exec):
+                await manager.start()
+
+        asyncio.run(run())
+
+        assert captured_kwargs["stdin"] == asyncio.subprocess.PIPE
+        assert captured_kwargs["stdout"] == asyncio.subprocess.PIPE
+        assert captured_kwargs["stderr"] == asyncio.subprocess.PIPE
