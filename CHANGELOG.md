@@ -2,6 +2,13 @@
 
 # Changelog
 
+## Unreleased
+
+### Fixes
+
+- **Fix.** Session no longer hangs during initialization -- SystemInit is now captured lazily on first send().
+- **Fix.** Extended thinking responses no longer crash -- increased subprocess readline buffer to 16MB.
+
 ## 0.1.0
 
 ### Features
