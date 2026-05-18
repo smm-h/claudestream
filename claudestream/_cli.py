@@ -187,8 +187,8 @@ def cmd_repl(
 def _print_event(event: Event) -> None:
     """Pretty-print an event to stdout."""
     if isinstance(event, AssistantText):
-        sys.stdout.write(event.text)
-        sys.stdout.flush()
+        # StreamDelta already printed this text incrementally; skip to avoid duplication
+        pass
     elif isinstance(event, ToolUse):
         print(f"\n--- Tool: {event.name} ---")
         print(json.dumps(event.input, indent=2))
