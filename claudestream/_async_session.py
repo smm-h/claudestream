@@ -92,10 +92,11 @@ class AsyncSession:
             all_extra.append("--dangerously-skip-permissions")
         all_extra.extend(remaining_flags)
 
-        merged_env = dict(env or {})
+        merged_env = {}
         if profile:
             from claudewheel.profile import resolve_profile
             merged_env.update(resolve_profile(profile))
+        merged_env.update(env or {})
 
         self._process_mgr = ProcessManager(ProcessConfig(
             binary=self._binary,

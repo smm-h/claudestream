@@ -28,9 +28,11 @@ from claudestream import (
     allow_all,
 )
 
+from importlib.metadata import version as _pkg_version
+
 app = strictcli.App(
     name="claudestream",
-    version="0.1.0",
+    version=_pkg_version("claudestream"),
     help="Stream Claude Code's JSON protocol",
 )
 
