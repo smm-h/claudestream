@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.2.1
+
+### Fixes
+
+- **Fix.** `send` command no longer prints response text twice.
+
 ## 0.2.0
 
 ### Features
