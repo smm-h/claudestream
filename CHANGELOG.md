@@ -2,6 +2,12 @@
 
 # Changelog
 
+## Unreleased
+
+### Features
+
+- **New feature.** `--profile` flag for claudewheel profile selection — sets `CLAUDE_CONFIG_DIR` and OAuth token for the Claude subprocess.
+
 ## 0.1.1
 
 ### Fixes
