@@ -98,6 +98,7 @@ def print_prompt(
     system_prompt: str | None = None,
     extra_args: list[str] | None = None,
     env: dict[str, str] | None = None,
+    profile: str | None = None,
 ) -> str:
     """One-shot convenience: send a prompt and return the full response text.
 
@@ -113,6 +114,7 @@ def print_prompt(
         system_prompt=system_prompt,
         extra_args=extra_args,
         env=env,
+        profile=profile,
     ) as session:
         for event in session.send(prompt):
             if isinstance(event, AssistantText):

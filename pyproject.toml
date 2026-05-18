@@ -8,6 +8,7 @@ authors = [{name = "SMM-H", email = "lisa.codi@veliu.com"}]
 dependencies = [
     "strictcli",
     "selfdoc",
+    "claudewheel",
 ]
 keywords = ["rlsbl"]
 
@@ -17,6 +18,9 @@ claudestream = "claudestream._cli:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv.sources]
+claudewheel = { path = "../claudewheel", editable = true }
 
 [dependency-groups]
 dev = ["pytest"]

@@ -7,6 +7,7 @@ name = "claudestream"
 version = "0.1.1"
 source = { editable = "." }
 dependencies = [
+    { name = "claudewheel" },
     { name = "selfdoc" },
     { name = "strictcli" },
 ]
@@ -18,12 +19,24 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "claudewheel", editable = "../claudewheel" },
     { name = "selfdoc" },
     { name = "strictcli" },
 ]
 
 [package.metadata.requires-dev]
 dev = [{ name = "pytest" }]
+
+[[package]]
+name = "claudewheel"
+version = "0.4.4"
+source = { editable = "../claudewheel" }
+dependencies = [
+    { name = "strictcli" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "strictcli" }]
 
 [[package]]
 name = "colorama"

@@ -51,6 +51,7 @@ class AsyncSession:
         system_prompt: str | None = None,
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
+        profile: str | None = None,
     ):
         self._binary = find_binary(binary)
         self._policy = policy
@@ -91,6 +92,11 @@ class AsyncSession:
             all_extra.append("--dangerously-skip-permissions")
         all_extra.extend(remaining_flags)
 
+        merged_env = dict(env or {})
+        if profile:
+            from claudewheel.profile import resolve_profile
+            merged_env.update(resolve_profile(profile))
+
         self._process_mgr = ProcessManager(ProcessConfig(
             binary=self._binary,
             cwd=cwd,
@@ -100,7 +106,7 @@ class AsyncSession:
             allowed_tools=allowed_tools,
             permission_prompt_tool=permission_prompt_tool,
             extra_args=all_extra,
-            env=env,
+            env=merged_env or None,
         ))
 
         # Session metadata (populated from SystemInit)
