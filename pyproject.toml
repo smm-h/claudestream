@@ -19,8 +19,5 @@ claudestream = "claudestream._cli:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.uv.sources]
-claudewheel = { path = "../claudewheel", editable = true }
-
 [dependency-groups]
 dev = ["pytest"]

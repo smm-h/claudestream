@@ -4,7 +4,7 @@ requires-python = ">=3.11"
 
 [[package]]
 name = "claudestream"
-version = "0.1.1"
+version = "0.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "claudewheel" },
@@ -19,7 +19,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "claudewheel", editable = "../claudewheel" },
+    { name = "claudewheel" },
     { name = "selfdoc" },
     { name = "strictcli" },
 ]
@@ -30,13 +30,14 @@ dev = [{ name = "pytest" }]
 [[package]]
 name = "claudewheel"
 version = "0.4.5"
-source = { editable = "../claudewheel" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "strictcli" },
 ]
-
-[package.metadata]
-requires-dist = [{ name = "strictcli" }]
+sdist = { url = "https://files.pythonhosted.org/packages/01/54/4660524f2b7c316bc805e182e2352db20f50aca068021811144a0115d476/claudewheel-0.4.5.tar.gz", hash = "sha256:9e3977932ec37e86da5bce2a6a4bcfbe6910b7f1a16d71061ae94815c064eb96", size = 2556935, upload-time = "2026-05-18T19:58:39.937Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/5b/663b8dd3e23361ccdd17d229eb0861b67ba749d41dcf06b6a5f2acafc377/claudewheel-0.4.5-py3-none-any.whl", hash = "sha256:1ba78cde760a01495726b0c88ce7c2760a7ea0dd5f3146a7a70343a8956e7101", size = 59427, upload-time = "2026-05-18T19:58:38.585Z" },
+]
 
 [[package]]
 name = "colorama"
