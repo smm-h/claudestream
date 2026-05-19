@@ -174,7 +174,12 @@ class ProcessManager:
     async def start(self) -> None:
         """Spawn the claude subprocess."""
         argv = self.config.build_argv()
-        log.debug("spawning: %s", " ".join(argv))
+        log.info(
+            "spawning: binary=%s cwd=%s extra_args=%s",
+            self.config.binary,
+            self.config.cwd,
+            self.config.extra_args,
+        )
 
         env = None
         if self.config.env:
@@ -192,7 +197,7 @@ class ProcessManager:
             env=env,
         )
         _ACTIVE_CHILDREN.add(self._process)
-        log.debug("claude process started: pid=%d", self._process.pid)
+        log.info("claude process started: pid=%d", self._process.pid)
         self._stderr_task = asyncio.create_task(self._drain_stderr())
 
     async def close(self) -> None:
@@ -250,7 +255,7 @@ class ProcessManager:
             except (ProcessLookupError, OSError):
                 pass
 
-        log.debug("claude process terminated: returncode=%s", proc.returncode)
+        log.info("claude process terminated: returncode=%s", proc.returncode)
 
     async def kill(self) -> None:
         """Immediate kill."""

@@ -160,7 +160,7 @@ class AsyncSession:
         # With --input-format stream-json, the Claude CLI does NOT send
         # SystemInit until the first user message. We skip the blocking
         # read and capture SystemInit during the first send() instead.
-        log.debug("process started, skipping SystemInit wait (captured on first send)")
+        log.info("process started, skipping SystemInit wait (captured on first send)")
 
     async def close(self) -> None:
         """Shut down the session and kill the subprocess."""
@@ -216,7 +216,7 @@ class AsyncSession:
                 self._session_id = event.session_id
                 self._model_name = event.model
                 self._tools = list(event.tools)
-                log.debug(
+                log.info(
                     "session started: id=%s model=%s tools=%d",
                     self._session_id,
                     self._model_name,

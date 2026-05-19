@@ -316,7 +316,7 @@ async def read_events(stream: asyncio.StreamReader) -> AsyncIterator[Event]:
         try:
             raw = json.loads(text)
         except json.JSONDecodeError:
-            log.debug("skipping non-JSON line: %s", text[:200])
+            log.warning("skipping non-JSON line: %s", text[:200])
             continue
         yield parse_event(raw)
 
