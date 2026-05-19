@@ -552,3 +552,51 @@ class TestSystemInitLazyCapture:
         assert "SystemInit" not in types
         assert types.count("AssistantText") == 2
         assert types.count("Result") == 1
+
+
+class TestHealthProbe:
+    """Test that the startup health probe fires a warning when no events arrive."""
+
+    def _make_session(self) -> AsyncSession:
+        """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
+        with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
+             patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"):
+            session = AsyncSession(binary="/fake/claude")
+        return session
+
+    def test_health_probe_fires_on_no_events(self, caplog):
+        """Health probe should log a warning when no events arrive within the timeout."""
+        import logging
+
+        async def run():
+            session = self._make_session()
+            session._process_mgr._process = MagicMock()
+            session._process_mgr._process.returncode = None
+
+            # Create a reader that never sends data, then feeds EOF after a delay
+            reader = asyncio.StreamReader()
+
+            async def feed_eof_later():
+                await asyncio.sleep(0.3)
+                reader.feed_eof()
+
+            asyncio.ensure_future(feed_eof_later())
+
+            session._process_mgr._process.stdout = reader
+            session._process_mgr._process.stdin = MagicMock()
+
+            with caplog.at_level(logging.WARNING, logger="claudestream"):
+                try:
+                    async for _ in session._read_turn(raw=False, _health_timeout=0.1):
+                        pass
+                except Exception:
+                    pass  # ClaudeStreamError expected (no Result event)
+
+        asyncio.run(run())
+
+        assert any(
+            "No events received after" in record.message
+            and "subprocess may be stuck" in record.message
+            and record.levelno == logging.WARNING
+            for record in caplog.records
+        )

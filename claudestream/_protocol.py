@@ -323,6 +323,7 @@ async def read_events(stream: asyncio.StreamReader) -> AsyncIterator[Event]:
 
 async def write_message(stream: asyncio.StreamWriter, msg: Writable) -> None:
     """Serialize a message to NDJSON and write it to the stream."""
+    log.info("protocol: Sending %s", type(msg).__name__)
     data = json.dumps(msg.to_dict()) + "\n"
     stream.write(data.encode("utf-8"))
     await stream.drain()

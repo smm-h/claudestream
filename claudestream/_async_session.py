@@ -8,11 +8,16 @@ from collections.abc import AsyncIterator
 from typing import Any, Callable
 
 from claudestream.events import (
+    ApiRetry,
     Event,
     McpRequest,
     PermissionRequest,
+    RateLimit,
     Result,
     SystemInit,
+    Thinking,
+    ToolResult,
+    ToolUse,
     UnknownEvent,
 )
 from claudestream.messages import AllowPermission, DenyPermission, UserMessage
@@ -202,7 +207,9 @@ class AsyncSession:
         finally:
             self._active_turn = False
 
-    async def _read_turn(self, *, raw: bool) -> AsyncIterator[Event]:
+    async def _read_turn(
+        self, *, raw: bool, _health_timeout: float = 30.0,
+    ) -> AsyncIterator[Event]:
         """Read events for a single turn until Result is received."""
         if not self._process_mgr.is_alive:
             raise ClaudeStreamError(
@@ -210,49 +217,109 @@ class AsyncSession:
                 exit_code=None,
             )
 
-        async for event in read_events(self._process_mgr.stdout):
-            # Capture SystemInit (sent after first user message)
-            if isinstance(event, SystemInit):
-                self._session_id = event.session_id
-                self._model_name = event.model
-                self._tools = list(event.tools)
-                log.info(
-                    "session started: id=%s model=%s tools=%d",
-                    self._session_id,
-                    self._model_name,
-                    len(self._tools),
-                )
-                continue  # don't yield SystemInit to consumer
+        # Check if process already exited before we start reading
+        if self._process_mgr._process is not None and self._process_mgr._process.returncode is not None:
+            raise ClaudeStreamError(
+                "Claude subprocess already exited",
+                exit_code=self._process_mgr._process.returncode,
+            )
 
-            # Handle permission requests via policy
-            if isinstance(event, PermissionRequest):
-                handled = await self._handle_permission(event)
-                if handled:
-                    continue
+        # Health probe: warn if no events arrive within timeout
+        _first_event_received = False
 
-            # Flatten or pass through
-            if raw:
-                events_to_yield = [event]
-            else:
-                events_to_yield = flatten_event(event)
+        async def _health_check() -> None:
+            await asyncio.sleep(_health_timeout)
+            if not _first_event_received:
+                log.warning("No events received after %.0fs — subprocess may be stuck", _health_timeout)
 
-            for evt in events_to_yield:
-                # Fire callbacks before yielding
-                for cb in self._callbacks.get(type(evt), []):
-                    cb(evt)
-                yield evt
+        health_task = asyncio.ensure_future(_health_check())
 
-            # Turn completes on Result
-            if isinstance(event, Result):
-                self._last_result = event
-                return
+        try:
+            async for event in read_events(self._process_mgr.stdout):
+                if not _first_event_received:
+                    _first_event_received = True
+                    health_task.cancel()
 
-        # stdout closed without a Result event
-        rc = self._process_mgr._process.returncode if self._process_mgr._process else None
-        raise ClaudeStreamError(
-            "Claude subprocess closed stdout without sending a Result event",
-            exit_code=rc,
-        )
+                # Capture SystemInit (sent after first user message)
+                if isinstance(event, SystemInit):
+                    self._session_id = event.session_id
+                    self._model_name = event.model
+                    self._tools = list(event.tools)
+                    log.info(
+                        "session started: id=%s model=%s tools=%d",
+                        self._session_id,
+                        self._model_name,
+                        len(self._tools),
+                    )
+                    continue  # don't yield SystemInit to consumer
+
+                # Handle permission requests via policy
+                if isinstance(event, PermissionRequest):
+                    handled = await self._handle_permission(event)
+                    if handled:
+                        continue
+
+                # Per-type event logging (before flatten)
+                if isinstance(event, Thinking):
+                    log.info("event: Thinking (%d chars)", len(event.text))
+                elif isinstance(event, Result):
+                    log.info(
+                        "event: Result (%.0fms, $%.4f, stop=%s)",
+                        event.duration_ms,
+                        event.total_cost_usd or 0,
+                        event.stop_reason,
+                    )
+                elif isinstance(event, ApiRetry):
+                    log.info(
+                        "event: ApiRetry (attempt %d/%d, error=%s)",
+                        event.attempt,
+                        event.max_retries,
+                        event.error,
+                    )
+                elif isinstance(event, RateLimit):
+                    log.info(
+                        "event: RateLimit (status=%s, resets_at=%s)",
+                        event.status,
+                        event.resets_at,
+                    )
+                elif isinstance(event, UnknownEvent):
+                    log.warning("event: Unknown (%s)", list(event.raw.keys()))
+
+                # Flatten or pass through
+                if raw:
+                    events_to_yield = [event]
+                else:
+                    events_to_yield = flatten_event(event)
+
+                for evt in events_to_yield:
+                    # Log flattened events
+                    if isinstance(evt, ToolUse):
+                        log.info("event: ToolUse (%s)", evt.name)
+                    elif isinstance(evt, ToolResult):
+                        log.info("event: ToolResult (%d chars)", len(str(evt.content)))
+
+                    # Fire callbacks before yielding
+                    for cb in self._callbacks.get(type(evt), []):
+                        cb(evt)
+                    yield evt
+
+                # Turn completes on Result
+                if isinstance(event, Result):
+                    self._last_result = event
+                    return
+
+            # stdout closed without a Result event
+            rc = self._process_mgr._process.returncode if self._process_mgr._process else None
+            raise ClaudeStreamError(
+                "Claude subprocess closed stdout without sending a Result event",
+                exit_code=rc,
+            )
+        finally:
+            health_task.cancel()
+            try:
+                await health_task
+            except asyncio.CancelledError:
+                pass
 
     async def _handle_permission(self, request: PermissionRequest) -> bool:
         """Apply policy to a permission request. Returns True if handled."""

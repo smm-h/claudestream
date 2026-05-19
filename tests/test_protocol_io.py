@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import logging
 
 from claudestream._protocol import read_events, write_message
 from claudestream.events import SystemInit, UnknownEvent
@@ -102,5 +103,38 @@ class TestWriteMessage:
             parsed = json.loads(line)
             assert parsed["type"] == "user"
             assert parsed["message"]["content"] == "hello"
+
+        asyncio.run(run())
+
+    def test_write_message_logs_at_info(self, caplog):
+        """write_message should log the message type at INFO level."""
+        async def run():
+            reader = asyncio.StreamReader()
+
+            output = bytearray()
+
+            class FakeTransport:
+                def get_extra_info(self, *a, **kw):
+                    return None
+                def is_closing(self):
+                    return False
+                def write(self, data):
+                    output.extend(data)
+                def close(self):
+                    pass
+
+            protocol = asyncio.StreamReaderProtocol(reader)
+            fake_transport = FakeTransport()
+            writer = asyncio.StreamWriter(fake_transport, protocol, reader, asyncio.get_event_loop())
+
+            msg = UserMessage(content="test", session_id="s1")
+            with caplog.at_level(logging.INFO, logger="claudestream"):
+                await write_message(writer, msg)
+
+            assert any(
+                "protocol: Sending UserMessage" in record.message
+                and record.levelno == logging.INFO
+                for record in caplog.records
+            )
 
         asyncio.run(run())
