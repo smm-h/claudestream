@@ -138,6 +138,8 @@ class ProcessManager:
     def __init__(self, config: ProcessConfig):
         self.config = config
         self._process: asyncio.subprocess.Process | None = None
+        self._stderr_lines: list[str] = []
+        self._stderr_task: asyncio.Task | None = None
 
     @property
     def stdin(self) -> asyncio.StreamWriter:
@@ -152,6 +154,22 @@ class ProcessManager:
     @property
     def is_alive(self) -> bool:
         return self._process is not None and self._process.returncode is None
+
+    @property
+    def stderr_lines(self) -> list[str]:
+        return list(self._stderr_lines)
+
+    async def _drain_stderr(self) -> None:
+        """Read stderr line-by-line to prevent pipe buffer deadlock."""
+        assert self._process and self._process.stderr
+        while True:
+            line = await self._process.stderr.readline()
+            if not line:
+                break
+            text = line.decode("utf-8", errors="replace").strip()
+            if text:
+                log.warning("claude stderr: %s", text)
+                self._stderr_lines.append(text)
 
     async def start(self) -> None:
         """Spawn the claude subprocess."""
@@ -175,6 +193,7 @@ class ProcessManager:
         )
         _ACTIVE_CHILDREN.add(self._process)
         log.debug("claude process started: pid=%d", self._process.pid)
+        self._stderr_task = asyncio.create_task(self._drain_stderr())
 
     async def close(self) -> None:
         """Graceful shutdown: close stdin -> 5s wait -> SIGTERM -> 5s wait -> SIGKILL."""
@@ -184,6 +203,15 @@ class ProcessManager:
         proc = self._process
         self._process = None
         _ACTIVE_CHILDREN.discard(proc)
+
+        # Cancel stderr drain task
+        if self._stderr_task is not None and not self._stderr_task.done():
+            self._stderr_task.cancel()
+            try:
+                await self._stderr_task
+            except asyncio.CancelledError:
+                pass
+        self._stderr_task = None
 
         # Close stdin
         if proc.stdin:

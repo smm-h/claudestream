@@ -94,16 +94,20 @@ class TestProcessManagerBufferLimit:
         config = ProcessConfig(binary="/fake/claude")
         manager = ProcessManager(config)
 
-        mock_process = MagicMock()
-        mock_process.pid = 12345
-
         captured_kwargs = {}
 
-        async def fake_create_subprocess_exec(*args, **kwargs):
-            captured_kwargs.update(kwargs)
-            return mock_process
-
         async def run():
+            stderr_reader = asyncio.StreamReader()
+            stderr_reader.feed_eof()
+
+            mock_process = MagicMock()
+            mock_process.pid = 12345
+            mock_process.stderr = stderr_reader
+
+            async def fake_create_subprocess_exec(*args, **kwargs):
+                captured_kwargs.update(kwargs)
+                return mock_process
+
             with patch("asyncio.create_subprocess_exec", side_effect=fake_create_subprocess_exec):
                 await manager.start()
 
@@ -120,16 +124,20 @@ class TestProcessManagerBufferLimit:
         config = ProcessConfig(binary="/fake/claude")
         manager = ProcessManager(config)
 
-        mock_process = MagicMock()
-        mock_process.pid = 99999
-
         captured_kwargs = {}
 
-        async def fake_create_subprocess_exec(*args, **kwargs):
-            captured_kwargs.update(kwargs)
-            return mock_process
-
         async def run():
+            stderr_reader = asyncio.StreamReader()
+            stderr_reader.feed_eof()
+
+            mock_process = MagicMock()
+            mock_process.pid = 99999
+            mock_process.stderr = stderr_reader
+
+            async def fake_create_subprocess_exec(*args, **kwargs):
+                captured_kwargs.update(kwargs)
+                return mock_process
+
             with patch("asyncio.create_subprocess_exec", side_effect=fake_create_subprocess_exec):
                 await manager.start()
 
@@ -138,3 +146,76 @@ class TestProcessManagerBufferLimit:
         assert captured_kwargs["stdin"] == asyncio.subprocess.PIPE
         assert captured_kwargs["stdout"] == asyncio.subprocess.PIPE
         assert captured_kwargs["stderr"] == asyncio.subprocess.PIPE
+
+
+class TestStderrDrain:
+    """Tests for stderr drain coroutine that prevents pipe buffer deadlock."""
+
+    def test_stderr_drain_accumulates_lines(self):
+        """Feed data into a real StreamReader as stderr; verify lines are captured."""
+        config = ProcessConfig(binary="/fake/claude")
+        manager = ProcessManager(config)
+
+        async def run():
+            # Create a real StreamReader to act as stderr
+            stderr_reader = asyncio.StreamReader()
+            stderr_reader.feed_data(b"warning: something happened\n")
+            stderr_reader.feed_data(b"error: bad thing\n")
+            stderr_reader.feed_data(b"\n")  # empty line, should be skipped
+            stderr_reader.feed_data(b"info: another line\n")
+            stderr_reader.feed_eof()
+
+            mock_process = MagicMock()
+            mock_process.pid = 11111
+            mock_process.stderr = stderr_reader
+
+            with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+                await manager.start()
+
+            # Wait for the drain task to finish (EOF fed above)
+            assert manager._stderr_task is not None
+            await manager._stderr_task
+
+            lines = manager.stderr_lines
+            assert len(lines) == 3
+            assert lines[0] == "warning: something happened"
+            assert lines[1] == "error: bad thing"
+            assert lines[2] == "info: another line"
+
+        asyncio.run(run())
+
+    def test_stderr_task_cancelled_on_close(self):
+        """Start manager with hanging stderr, close it, verify task is cancelled."""
+        config = ProcessConfig(binary="/fake/claude")
+        manager = ProcessManager(config)
+
+        async def run():
+            # StreamReader that never gets EOF — simulates hanging stderr
+            stderr_reader = asyncio.StreamReader()
+
+            mock_process = MagicMock()
+            mock_process.pid = 22222
+            mock_process.stderr = stderr_reader
+            mock_process.returncode = None
+            mock_process.stdin = None
+
+            # Make wait() return immediately so close() doesn't hang
+            async def fake_wait():
+                mock_process.returncode = 0
+                return 0
+
+            mock_process.wait = fake_wait
+            mock_process.send_signal = MagicMock()
+            mock_process.kill = MagicMock()
+
+            with patch("asyncio.create_subprocess_exec", return_value=mock_process):
+                await manager.start()
+
+            assert manager._stderr_task is not None
+            assert not manager._stderr_task.done()
+
+            await manager.close()
+
+            assert manager._stderr_task is None
+
+        asyncio.run(run())

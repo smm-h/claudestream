@@ -138,6 +138,10 @@ class AsyncSession:
     def last_result(self) -> Result | None:
         return self._last_result
 
+    @property
+    def stderr_lines(self) -> list[str]:
+        return self._process_mgr.stderr_lines
+
     # --- Context manager ---
 
     async def __aenter__(self) -> AsyncSession:
