@@ -2,6 +2,17 @@
 
 # Changelog
 
+## 0.3.0
+
+### Features
+
+- **New feature.** Per-event INFO logging for all event types (Thinking, ToolUse, ToolResult, Result, ApiRetry, RateLimit) and a startup health probe that warns after 30s with no events.
+
+### Fixes
+
+- **Fix.** Drain subprocess stderr to prevent pipe buffer deadlock that caused sessions to hang indefinitely.
+- **Fix.** Parse `rate_limit_event` type and system `rate_limit` subtype correctly — rate limit events were silently dropped as UnknownEvent.
+
 ## 0.2.1
 
 ### Fixes
