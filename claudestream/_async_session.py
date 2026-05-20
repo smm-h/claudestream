@@ -283,7 +283,10 @@ class AsyncSession:
                         event.resets_at,
                     )
                 elif isinstance(event, UnknownEvent):
-                    log.warning("event: Unknown (%s)", list(event.raw.keys()))
+                    if event.type == "system":
+                        log.debug("event: Unknown system subtype (%s)", list(event.raw.keys()))
+                    else:
+                        log.warning("event: Unknown (%s)", list(event.raw.keys()))
 
                 # Flatten or pass through
                 if raw:

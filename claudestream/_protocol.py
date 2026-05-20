@@ -138,6 +138,9 @@ def parse_event(raw: dict) -> Event:
                 rate_limit_type=raw.get("rate_limit_type") or raw.get("rateLimitType", ""),
                 utilization=raw.get("utilization", 0.0),
             )
+        # Unhandled system subtype -- log at DEBUG (not WARNING) since
+        # new subtypes are expected as the CLI evolves.
+        log.debug("system event with unhandled subtype %r", subtype)
         return UnknownEvent(type=event_type, session_id=session_id, uuid=uuid, raw=raw)
 
     # -- assistant message ---------------------------------------------------
