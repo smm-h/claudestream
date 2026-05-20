@@ -4,7 +4,7 @@ requires-python = ">=3.11"
 
 [[package]]
 name = "claudestream"
-version = "0.2.0"
+version = "0.2.1"
 source = { editable = "." }
 dependencies = [
     { name = "claudewheel" },
@@ -21,7 +21,7 @@ dev = [
 requires-dist = [
     { name = "claudewheel" },
     { name = "selfdoc" },
-    { name = "strictcli" },
+    { name = "strictcli", editable = "../strictcli/python" },
 ]
 
 [package.metadata.requires-dev]
@@ -111,9 +111,14 @@ wheels = [
 
 [[package]]
 name = "strictcli"
-version = "0.1.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/43/cc/bb6c374af5fa2ca96958ae4610448a288bec54b94927a8f5ffd7f17bb085/strictcli-0.1.1.tar.gz", hash = "sha256:c53caab21352bc19bba2204b7222a472dbffe64105b34d54e8977f17416866fc", size = 22384, upload-time = "2026-05-13T13:03:24.53Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/c8/bb8d0a2cbcb4981196b1cff933cd86971e3347bcf264d8d4761398a8e0e2/strictcli-0.1.1-py3-none-any.whl", hash = "sha256:facb73b2615acf5e9de2b520aa13f06be0aa97a30da665d8edf0ba7b6576c01c", size = 10663, upload-time = "2026-05-13T13:03:22.897Z" },
+version = "0.7.1"
+source = { editable = "../strictcli/python" }
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "allpairspy" },
+    { name = "jsonschema" },
+    { name = "pytest" },
 ]

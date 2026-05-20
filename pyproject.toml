@@ -15,6 +15,9 @@ keywords = ["rlsbl"]
 [project.scripts]
 claudestream = "claudestream._cli:main"
 
+[tool.uv.sources]
+strictcli = { path = "../strictcli/python", editable = true }
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
