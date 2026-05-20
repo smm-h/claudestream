@@ -3,3 +3,4 @@
 {"commits":["758618f16c391d1e07d13c729aff35f788de72a4"],"user_facing":true,"description":"**Fix.** Parse `rate_limit_event` type and system `rate_limit` subtype correctly \u2014 rate limit events were silently dropped as UnknownEvent.","type":"fix"}
 {"commits":["4687e6b9a08b9ff06782b6f2d759648ee1a47771"],"user_facing":false}
 {"commits":["a08f6d3026a2c16edc20946b9f5a7f4a3acb0e28","38e856fd98d29b29576cdd2a9b7ba71ec65a0d9e"],"user_facing":false}
+{"commits":["51795a3b2d660c8fef0435a238f516b1085a8f3d"],"user_facing":false}
