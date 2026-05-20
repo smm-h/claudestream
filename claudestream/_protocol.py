@@ -128,6 +128,16 @@ def parse_event(raw: dict) -> Event:
                 session_id=session_id,
                 uuid=uuid,
             )
+        if subtype == "rate_limit":
+            return RateLimit(
+                type="rate_limit",
+                session_id=session_id,
+                uuid=uuid,
+                status=raw.get("status", ""),
+                resets_at=raw.get("resets_at") or raw.get("resetsAt"),
+                rate_limit_type=raw.get("rate_limit_type") or raw.get("rateLimitType", ""),
+                utilization=raw.get("utilization", 0.0),
+            )
         return UnknownEvent(type=event_type, session_id=session_id, uuid=uuid, raw=raw)
 
     # -- assistant message ---------------------------------------------------
@@ -221,7 +231,7 @@ def parse_event(raw: dict) -> Event:
         return UnknownEvent(type=event_type, session_id=session_id, uuid=uuid, raw=raw)
 
     # -- rate limit ----------------------------------------------------------
-    if event_type == "rate_limit":
+    if event_type in ("rate_limit", "rate_limit_event"):
         info = raw.get("rate_limit_info", {})
         return RateLimit(
             type="rate_limit",
