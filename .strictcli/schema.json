@@ -1,0 +1,281 @@
+{
+  "name": "claudestream",
+  "version": "0.2.1",
+  "help": "Stream Claude Code's JSON protocol",
+  "env_prefix": null,
+  "config": false,
+  "global_flags": [],
+  "commands": {
+    "send": {
+      "name": "send",
+      "help": "Send a prompt and display the response",
+      "flags": [
+        {
+          "name": "model",
+          "type": "str",
+          "help": "Model to use (e.g. sonnet, opus)",
+          "short": "m",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "cwd",
+          "type": "str",
+          "help": "Working directory for Claude",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "raw",
+          "type": "bool",
+          "help": "Show raw protocol events instead of flattened",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "json-output",
+          "type": "bool",
+          "help": "Output events as JSON lines",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "skip-permissions",
+          "type": "bool",
+          "help": "Skip all permission prompts",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "profile",
+          "type": "str",
+          "help": "claudewheel profile to use",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        }
+      ],
+      "args": [
+        {
+          "name": "prompt",
+          "help": "The prompt to send",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "passthrough": false
+    },
+    "stream": {
+      "name": "stream",
+      "help": "Stream a prompt with real-time token output",
+      "flags": [
+        {
+          "name": "model",
+          "type": "str",
+          "help": "Model to use",
+          "short": "m",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "cwd",
+          "type": "str",
+          "help": "Working directory for Claude",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "skip-permissions",
+          "type": "bool",
+          "help": "Skip all permission prompts",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "profile",
+          "type": "str",
+          "help": "claudewheel profile to use",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        }
+      ],
+      "args": [
+        {
+          "name": "prompt",
+          "help": "The prompt to send",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "passthrough": false
+    },
+    "events": {
+      "name": "events",
+      "help": "Debug: show all raw protocol events",
+      "flags": [
+        {
+          "name": "model",
+          "type": "str",
+          "help": "Model to use",
+          "short": "m",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "cwd",
+          "type": "str",
+          "help": "Working directory for Claude",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "skip-permissions",
+          "type": "bool",
+          "help": "Skip all permission prompts",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "profile",
+          "type": "str",
+          "help": "claudewheel profile to use",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        }
+      ],
+      "args": [
+        {
+          "name": "prompt",
+          "help": "The prompt to send",
+          "required": true,
+          "variadic": false
+        }
+      ],
+      "passthrough": false
+    },
+    "repl": {
+      "name": "repl",
+      "help": "Interactive multi-turn REPL",
+      "flags": [
+        {
+          "name": "model",
+          "type": "str",
+          "help": "Model to use",
+          "short": "m",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "cwd",
+          "type": "str",
+          "help": "Working directory for Claude",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "skip-permissions",
+          "type": "bool",
+          "help": "Skip all permission prompts",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "profile",
+          "type": "str",
+          "help": "claudewheel profile to use",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        }
+      ],
+      "args": [],
+      "passthrough": false
+    }
+  },
+  "groups": {},
+  "deprecated": {}
+}
