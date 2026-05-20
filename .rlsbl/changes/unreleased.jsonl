@@ -1,1 +1,2 @@
 {"commits":["d3a3de665809b6ec18e02fbdc79fcfcbc27082bb"],"user_facing":true,"description":"**Fix.** Drain subprocess stderr to prevent pipe buffer deadlock that caused sessions to hang indefinitely.","type":"fix"}
+{"commits":["7b7c76a9601f06f55f3eec2dd0f6f7d0aadb4c39","4687e6b9a08b9ff06782b6f2d759648ee1a47771"],"user_facing":true,"description":"**New feature.** Per-event INFO logging for all event types (Thinking, ToolUse, ToolResult, Result, ApiRetry, RateLimit) and a startup health probe that warns after 30s with no events.","type":"feature"}
