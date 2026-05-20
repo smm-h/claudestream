@@ -1,0 +1,1 @@
+{"commits":["d3a3de665809b6ec18e02fbdc79fcfcbc27082bb"],"user_facing":true,"description":"**Fix.** Drain subprocess stderr to prevent pipe buffer deadlock that caused sessions to hang indefinitely.","type":"fix"}
