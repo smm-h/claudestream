@@ -6,7 +6,7 @@ requires-python = ">=3.11"
 license = "MIT"
 authors = [{name = "SMM-H", email = "lisa.codi@veliu.com"}]
 dependencies = [
-    "strictcli",
+    "strictcli>=0.8.0",
     "selfdoc",
     "claudewheel",
 ]
@@ -14,9 +14,6 @@ keywords = ["rlsbl"]
 
 [project.scripts]
 claudestream = "claudestream._cli:main"
-
-[tool.uv.sources]
-strictcli = { path = "../strictcli/python", editable = true }
 
 [build-system]
 requires = ["hatchling"]
