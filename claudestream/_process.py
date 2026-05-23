@@ -120,6 +120,7 @@ class ProcessConfig:
             argv.extend(["--model", self.model])
         if self.system_prompt is not None:
             argv.extend(["--system-prompt", self.system_prompt])
+            argv.append("--bare")
         if self.permission_mode:
             argv.extend(["--permission-mode", self.permission_mode])
         if self.allowed_tools:

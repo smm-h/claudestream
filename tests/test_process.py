@@ -47,6 +47,20 @@ class TestProcessConfig:
         assert argv[-2] == "--max-turns"
         assert argv[-1] == "5"
 
+    def test_bare_flag_when_system_prompt_set(self):
+        config = ProcessConfig(binary="claude", system_prompt="You are a game agent.")
+        argv = config.build_argv()
+        assert "--bare" in argv
+        # --bare should appear after --system-prompt
+        sp_idx = argv.index("--system-prompt")
+        bare_idx = argv.index("--bare")
+        assert bare_idx > sp_idx
+
+    def test_no_bare_flag_when_system_prompt_unset(self):
+        config = ProcessConfig(binary="claude")
+        argv = config.build_argv()
+        assert "--bare" not in argv
+
     def test_no_optional_flags_when_unset(self):
         config = ProcessConfig(binary="claude")
         argv = config.build_argv()
