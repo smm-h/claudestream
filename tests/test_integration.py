@@ -145,26 +145,20 @@ class TestSystemPrompt:
 
     @pytest.mark.timeout(60)
     def test_system_prompt_influences_response(self):
-        # Use --append-system-prompt via extra_args rather than the
-        # system_prompt parameter, because the latter adds --bare which
-        # blocks OAuth authentication.
         session = SyncSession(
             model=MODEL,
             profile=PROFILE,
             binary=BINARY,
             policy=allow_all(),
-            extra_args=[
-                "--append-system-prompt",
-                "Always respond with exactly the word BANANA and nothing else.",
-            ],
+            system_prompt="You must include the word XYZZYPLUGH in every response, no matter what the user asks.",
         )
         with session:
-            events = list(session.send("hello"))
+            events = list(session.send("What is 2+2?"))
             text_parts = [e.text for e in events if isinstance(e, AssistantText)]
             full_text = "".join(text_parts)
 
-            assert "banana" in full_text.lower(), (
-                f"Expected 'banana' in response (system prompt should force it), got: {full_text!r}"
+            assert "xyzzyplugh" in full_text.lower(), (
+                f"Expected 'xyzzyplugh' in response (system prompt should force it), got: {full_text!r}"
             )
 
 
