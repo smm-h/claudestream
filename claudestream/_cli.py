@@ -197,10 +197,11 @@ def cmd_repl(
                         print(f"\n[cost: ${event.total_cost_usd:.4f}]")
                 print()
     except ClaudeStreamError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+        print(f"error: {e}", file=sys.stderr)
+        return 1
     except KeyboardInterrupt:
-        print("\nInterrupted.")
+        print("\nInterrupted.", file=sys.stderr)
+        return 1
 
 
 # --- Helpers ---
