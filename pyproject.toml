@@ -6,7 +6,7 @@ requires-python = ">=3.11"
 license = "MIT"
 authors = [{name = "SMM-H", email = "lisa.codi@veliu.com"}]
 dependencies = [
-    "strictcli>=0.8.0",
+    "strictcli>=0.8.6",
     "selfdoc",
     "claudewheel",
 ]
