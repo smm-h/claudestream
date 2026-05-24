@@ -47,6 +47,7 @@ app = strictcli.App(
 @strictcli.flag("json-output", type=bool, default=False, help="Output events as JSON lines")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, default="", help="claudewheel profile to use")
+@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 def cmd_send(
     prompt: str,
     model: str = "",
@@ -55,10 +56,11 @@ def cmd_send(
     json_output: bool = False,
     skip_permissions: bool = False,
     profile: str = "",
+    footer: bool = True,
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
-        printer = EventPrinter()
+        printer = EventPrinter(footer=footer)
         with SyncSession(
             model=model or None,
             cwd=cwd or None,
@@ -86,12 +88,14 @@ def cmd_send(
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, default="", help="claudewheel profile to use")
+@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 def cmd_stream(
     prompt: str,
     model: str = "",
     cwd: str = "",
     skip_permissions: bool = False,
     profile: str = "",
+    footer: bool = True,
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
@@ -114,6 +118,8 @@ def cmd_stream(
                 elif isinstance(event, Result):
                     sys.stdout.write("\n")
                     sys.stdout.flush()
+                    if footer:
+                        print(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---", file=sys.stderr)
                     streamed_text = ""
     except ClaudeStreamError as e:
         print(f"error: {e}", file=sys.stderr)
@@ -131,12 +137,14 @@ def cmd_stream(
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, default="", help="claudewheel profile to use")
+@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 def cmd_events(
     prompt: str,
     model: str = "",
     cwd: str = "",
     skip_permissions: bool = False,
     profile: str = "",
+    footer: bool = True,
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
@@ -148,6 +156,8 @@ def cmd_events(
         ) as session:
             for event in session.send(prompt, raw=True):
                 _print_json(event)
+                if footer and isinstance(event, Result):
+                    print(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---", file=sys.stderr)
     except ClaudeStreamError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -163,11 +173,13 @@ def cmd_events(
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, default="", help="claudewheel profile to use")
+@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 def cmd_repl(
     model: str = "",
     cwd: str = "",
     skip_permissions: bool = False,
     profile: str = "",
+    footer: bool = True,
 ) -> None:
     policy = allow_all() if skip_permissions else None
     try:
@@ -199,7 +211,8 @@ def cmd_repl(
                             content = content[:200] + "..."
                         print(f"[result: {content}]")
                     elif isinstance(event, Result):
-                        print(f"\n[cost: ${event.total_cost_usd:.4f}]")
+                        if footer:
+                            print(f"\n[cost: ${event.total_cost_usd:.4f}]", file=sys.stderr)
                 print()
     except ClaudeStreamError as e:
         print(f"error: {e}", file=sys.stderr)
@@ -214,8 +227,9 @@ def cmd_repl(
 class EventPrinter:
     """Stateful event printer that deduplicates AssistantText against StreamDelta."""
 
-    def __init__(self) -> None:
+    def __init__(self, footer: bool = True) -> None:
         self._streamed_text: str = ""
+        self._footer = footer
 
     def print_event(self, event: Event) -> None:
         """Pretty-print an event to stdout, deduplicating AssistantText."""
@@ -240,7 +254,8 @@ class EventPrinter:
         elif isinstance(event, Thinking):
             print(f"[thinking: {event.text[:100]}...]")
         elif isinstance(event, Result):
-            print(f"\n--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---")
+            if self._footer:
+                print(f"\n--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---", file=sys.stderr)
             self._streamed_text = ""
         elif isinstance(event, ApiRetry):
             print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
