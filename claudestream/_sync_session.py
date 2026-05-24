@@ -54,13 +54,14 @@ class SyncSession:
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None
         self._async_session: AsyncSession | None = None
-        self._lock = threading.Lock()
+        self._loop_ready = threading.Event()
         self._started = False
 
     def _run_loop(self) -> None:
         """Target for the event loop thread."""
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
+        self._loop_ready.set()
         self._loop.run_forever()
 
     def _ensure_loop(self) -> asyncio.AbstractEventLoop:
@@ -68,9 +69,7 @@ class SyncSession:
         if self._loop is None:
             self._thread = threading.Thread(target=self._run_loop, daemon=True)
             self._thread.start()
-            # Wait for loop to be available
-            while self._loop is None:
-                pass
+            self._loop_ready.wait()
         return self._loop
 
     def _run_coro(self, coro):
@@ -141,31 +140,39 @@ class SyncSession:
         Yields:
             Event objects until a Result event is received.
         """
-        with self._lock:
-            if not self._async_session:
-                raise RuntimeError("Session not started. Use 'with SyncSession() as session:'")
+        if not self._async_session:
+            raise RuntimeError("Session not started. Use 'with SyncSession() as session:'")
 
-            q: queue.Queue = queue.Queue()
+        q: queue.Queue = queue.Queue()
 
-            async def _drain():
-                try:
-                    async for event in self._async_session.send(prompt, raw=raw):
-                        q.put(event)
-                except Exception as e:
-                    q.put(e)
-                finally:
-                    q.put(_SENTINEL)
+        async def _drain():
+            try:
+                async for event in self._async_session.send(prompt, raw=raw):
+                    q.put(event)
+            except Exception as e:
+                q.put(e)
+            finally:
+                q.put(_SENTINEL)
 
-            loop = self._ensure_loop()
-            asyncio.run_coroutine_threadsafe(_drain(), loop)
+        loop = self._ensure_loop()
+        future = asyncio.run_coroutine_threadsafe(_drain(), loop)
 
-            while True:
-                item = q.get()
-                if item is _SENTINEL:
+        while True:
+            try:
+                item = q.get(timeout=1.0)
+            except queue.Empty:
+                if future.done():
+                    # Async task finished without sending sentinel -- check for error
+                    exc = future.exception()
+                    if exc is not None:
+                        raise exc
                     break
-                if isinstance(item, Exception):
-                    raise item
-                yield item
+                continue
+            if item is _SENTINEL:
+                break
+            if isinstance(item, Exception):
+                raise item
+            yield item
 
     # --- Callbacks ---
 
