@@ -70,6 +70,7 @@ def parse_content_block(raw: dict) -> ContentBlock:
             content=raw.get("content", ""),
         )
     # Unknown block type -- treat as text with empty content
+    log.warning("Unknown content block type: %s", raw.get("type"))
     return TextBlock(text=raw.get("text", ""))
 
 

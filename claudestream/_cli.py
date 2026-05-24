@@ -8,9 +8,7 @@ import sys
 import strictcli
 
 from claudestream import (
-    AssistantMessage,
     AssistantText,
-    AsyncSession,
     ClaudeStreamError,
     CompactBoundary,
     Event,
@@ -23,7 +21,6 @@ from claudestream import (
     Thinking,
     ToolResult,
     ToolUse,
-    ToolResultMessage,
     ApiRetry,
     SystemInit,
     UnknownEvent,
@@ -288,8 +285,8 @@ def cmd_repl(
                         print(f"\n[tool: {color.bold(event.name)}]")
                     elif isinstance(event, ToolResult):
                         content = event.content if isinstance(event.content, str) else str(event.content)
-                        if len(content) > 200:
-                            content = content[:200] + "..."
+                        if len(content) > 500:
+                            content = content[:500] + "..."
                         print(f"[result: {content}]")
                     elif isinstance(event, Result):
                         if footer:
@@ -348,7 +345,8 @@ class EventPrinter:
                 content = content[:500] + "..."
             print(f"--- Result ---\n{content}")
         elif isinstance(event, Thinking):
-            print(c.dim(f"[thinking: {event.text[:100]}...]"))
+            preview = event.text[:100] + "..." if len(event.text) > 100 else event.text
+            print(c.dim(f"[thinking: {preview}]"))
         elif isinstance(event, Result):
             if self._footer:
                 print(c.cyan(f"\n--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
