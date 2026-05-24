@@ -42,7 +42,7 @@ app = strictcli.App(
 # --- send command ---
 
 @app.command("send", help="Send a prompt and display the response")
-@strictcli.arg("prompt", help="The prompt to send")
+@strictcli.arg("prompt", help="The prompt to send", required=False, default="")
 @strictcli.flag("model", type=str, help="Model to use (e.g. sonnet, opus)", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("raw", type=bool, default=False, help="Show raw protocol events instead of flattened")
@@ -51,17 +51,30 @@ app = strictcli.App(
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
+@strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 def cmd_send(
-    prompt: str,
-    model: str,
-    profile: str,
+    prompt: str = "",
+    model: str = "",
+    profile: str = "",
     cwd: str = "",
     raw: bool = False,
     json_output: bool = False,
     skip_permissions: bool = False,
     footer: bool = True,
     system_prompt: str = "",
+    stdin: bool = False,
 ) -> int | None:
+    if stdin:
+        if prompt:
+            print("error: cannot use both prompt argument and --stdin", file=sys.stderr)
+            return 1
+        prompt = sys.stdin.read().strip()
+        if not prompt:
+            print("error: --stdin provided but stdin is empty", file=sys.stderr)
+            return 1
+    elif not prompt:
+        print("error: prompt argument required (or use --stdin)", file=sys.stderr)
+        return 1
     policy = allow_all() if skip_permissions else None
     try:
         printer = EventPrinter(footer=footer)
@@ -88,22 +101,35 @@ def cmd_send(
 # --- stream command ---
 
 @app.command("stream", help="Stream a prompt with real-time token output")
-@strictcli.arg("prompt", help="The prompt to send")
+@strictcli.arg("prompt", help="The prompt to send", required=False, default="")
 @strictcli.flag("model", type=str, help="Model to use", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
+@strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 def cmd_stream(
-    prompt: str,
-    model: str,
-    profile: str,
+    prompt: str = "",
+    model: str = "",
+    profile: str = "",
     cwd: str = "",
     skip_permissions: bool = False,
     footer: bool = True,
     system_prompt: str = "",
+    stdin: bool = False,
 ) -> int | None:
+    if stdin:
+        if prompt:
+            print("error: cannot use both prompt argument and --stdin", file=sys.stderr)
+            return 1
+        prompt = sys.stdin.read().strip()
+        if not prompt:
+            print("error: --stdin provided but stdin is empty", file=sys.stderr)
+            return 1
+    elif not prompt:
+        print("error: prompt argument required (or use --stdin)", file=sys.stderr)
+        return 1
     policy = allow_all() if skip_permissions else None
     try:
         streamed_text = ""
@@ -154,22 +180,35 @@ def cmd_stream(
 # --- events command ---
 
 @app.command("events", help="Debug: show all raw protocol events")
-@strictcli.arg("prompt", help="The prompt to send")
+@strictcli.arg("prompt", help="The prompt to send", required=False, default="")
 @strictcli.flag("model", type=str, help="Model to use", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
+@strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 def cmd_events(
-    prompt: str,
-    model: str,
-    profile: str,
+    prompt: str = "",
+    model: str = "",
+    profile: str = "",
     cwd: str = "",
     skip_permissions: bool = False,
     footer: bool = True,
     system_prompt: str = "",
+    stdin: bool = False,
 ) -> int | None:
+    if stdin:
+        if prompt:
+            print("error: cannot use both prompt argument and --stdin", file=sys.stderr)
+            return 1
+        prompt = sys.stdin.read().strip()
+        if not prompt:
+            print("error: --stdin provided but stdin is empty", file=sys.stderr)
+            return 1
+    elif not prompt:
+        print("error: prompt argument required (or use --stdin)", file=sys.stderr)
+        return 1
     policy = allow_all() if skip_permissions else None
     try:
         with SyncSession(
