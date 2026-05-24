@@ -128,6 +128,17 @@ class SyncSession:
     def last_result(self) -> Result | None:
         return self._async_session.last_result if self._async_session else None
 
+    # --- Cancel ---
+
+    def cancel(self, force: bool = False) -> None:
+        """Cancel the current operation.
+
+        Args:
+            force: If False, close stdin (graceful). If True, terminate subprocess.
+        """
+        if self._async_session:
+            self._run_coro(self._async_session.cancel(force=force))
+
     # --- Sending messages ---
 
     def send(self, prompt: str, *, raw: bool = False) -> Iterator[Event]:

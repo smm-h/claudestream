@@ -65,6 +65,7 @@ class AsyncSession:
         self._callbacks: dict[type, list[Callable]] = {}
         self._active_turn = False
         self._last_result: Result | None = None
+        self._cancelled = False
 
         # Convert policy to CLI flags, then route them to ProcessConfig fields
         policy_flags = policy_to_flags(policy)
@@ -172,6 +173,22 @@ class AsyncSession:
         """Shut down the session and kill the subprocess."""
         await self._process_mgr.close()
 
+    # --- Cancel ---
+
+    async def cancel(self, force: bool = False) -> None:
+        """Cancel the current operation.
+
+        Args:
+            force: If False, close stdin (graceful). If True, terminate subprocess.
+        """
+        self._cancelled = True
+        if force:
+            await self._process_mgr.close()
+        else:
+            proc = self._process_mgr._process
+            if proc and proc.stdin:
+                proc.stdin.close()
+
     # --- Sending messages ---
 
     async def send(self, prompt: str, *, raw: bool = False) -> AsyncIterator[Event]:
@@ -190,6 +207,8 @@ class AsyncSession:
             RuntimeError: If called while a previous turn is still active.
             ClaudeStreamError: If the subprocess dies unexpectedly.
         """
+        self._cancelled = False
+
         if self._active_turn:
             raise RuntimeError(
                 "Cannot send while a previous turn is active. "
@@ -237,6 +256,9 @@ class AsyncSession:
 
         try:
             async for event in read_events(self._process_mgr.stdout):
+                if self._cancelled:
+                    raise ClaudeStreamError("Session cancelled")
+
                 if not _first_event_received:
                     _first_event_received = True
                     health_task.cancel()
