@@ -9,12 +9,14 @@ from typing import Any, Callable
 
 from claudestream.events import (
     ApiRetry,
+    AssistantMessage,
     Event,
     McpRequest,
     PermissionRequest,
     RateLimit,
     Result,
     SystemInit,
+    TextBlock,
     Thinking,
     ToolResult,
     ToolUse,
@@ -287,6 +289,21 @@ class AsyncSession:
                         log.debug("event: Unknown system subtype (%s)", list(event.raw.keys()))
                     else:
                         log.warning("event: Unknown (%s)", list(event.raw.keys()))
+
+                # Detect authentication errors
+                if isinstance(event, AssistantMessage):
+                    error_text = event.error or ""
+                    # Also check content blocks for auth error text
+                    for block in event.content:
+                        if isinstance(block, TextBlock) and block.text:
+                            error_text += " " + block.text
+                    _AUTH_PATTERNS = ["not logged in", "invalid authentication", "401"]
+                    lower = error_text.lower()
+                    if any(pat in lower for pat in _AUTH_PATTERNS):
+                        raise ClaudeStreamError(
+                            "Authentication failed. Run `claude /login` to authenticate, "
+                            "or check that your profile credentials are valid."
+                        )
 
                 # Flatten or pass through
                 if raw:
