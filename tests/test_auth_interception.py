@@ -145,6 +145,42 @@ class TestAuthInterception:
         assert "AssistantText" in types
         assert "Result" in types
 
+    def test_content_mentioning_401_no_false_positive(self):
+        """AssistantMessage discussing HTTP 401 in conversation does NOT raise."""
+        raw_events = [
+            {
+                "type": "assistant",
+                "session_id": "s1",
+                "error": None,
+                "message": {
+                    "content": [{"type": "text", "text": "HTTP 401 errors typically indicate that authentication credentials are missing or invalid."}],
+                    "model": "claude-sonnet-4-5",
+                    "stop_reason": "end_turn",
+                },
+            },
+            {
+                "type": "result",
+                "subtype": "success",
+                "is_error": False,
+                "result": "",
+                "session_id": "s1",
+            },
+        ]
+        data = _build_ndjson(raw_events)
+
+        async def run():
+            session = _make_session()
+            _prepare_session(session, data)
+            events = []
+            async for event in session._read_turn(raw=False):
+                events.append(event)
+            return events
+
+        events = asyncio.run(run())
+        types = [type(e).__name__ for e in events]
+        assert "AssistantText" in types
+        assert "Result" in types
+
     def test_unrelated_error_no_raise(self):
         """AssistantMessage with an unrelated error field does NOT raise."""
         raw_events = [

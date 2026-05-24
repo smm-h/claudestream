@@ -292,14 +292,16 @@ class AsyncSession:
 
                 # Detect authentication errors
                 if isinstance(event, AssistantMessage):
-                    error_text = event.error or ""
-                    # Also check content blocks for auth error text
-                    for block in event.content:
-                        if isinstance(block, TextBlock) and block.text:
-                            error_text += " " + block.text
-                    _AUTH_PATTERNS = ["not logged in", "invalid authentication", "401"]
-                    lower = error_text.lower()
-                    if any(pat in lower for pat in _AUTH_PATTERNS):
+                    error_lower = (event.error or "").lower()
+                    content_lower = " ".join(
+                        block.text for block in event.content
+                        if isinstance(block, TextBlock) and block.text
+                    ).lower()
+                    is_auth_error = (
+                        any(p in error_lower for p in ("not logged in", "invalid authentication", "401"))
+                        or any(p in content_lower for p in ("not logged in", "invalid authentication"))
+                    )
+                    if is_auth_error:
                         raise ClaudeStreamError(
                             "Authentication failed. Run `claude /login` to authenticate, "
                             "or check that your profile credentials are valid."
