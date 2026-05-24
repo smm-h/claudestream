@@ -18,8 +18,9 @@ def _build_ndjson(events: list[dict]) -> bytes:
 def _make_session() -> AsyncSession:
     """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
     with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
-         patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"):
-        session = AsyncSession(binary="/fake/claude")
+         patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
+         patch("claudewheel.profile.resolve_profile", return_value={}):
+        session = AsyncSession(model="haiku", profile="test", binary="/fake/claude")
     return session
 
 

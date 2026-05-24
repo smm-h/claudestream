@@ -50,15 +50,15 @@ class AsyncSession:
 
     def __init__(
         self,
+        model: str,
+        profile: str,
         *,
-        model: str | None = None,
         cwd: str | None = None,
         binary: str | None = None,
         policy: Policy | None = None,
         system_prompt: str | None = None,
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
-        profile: str | None = None,
     ):
         self._binary = find_binary(binary)
         self._policy = policy
@@ -99,10 +99,9 @@ class AsyncSession:
             all_extra.append("--dangerously-skip-permissions")
         all_extra.extend(remaining_flags)
 
+        from claudewheel.profile import resolve_profile
         merged_env = {}
-        if profile:
-            from claudewheel.profile import resolve_profile
-            merged_env.update(resolve_profile(profile))
+        merged_env.update(resolve_profile(profile))
         merged_env.update(env or {})
 
         self._process_mgr = ProcessManager(ProcessConfig(

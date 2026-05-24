@@ -31,25 +31,25 @@ class SyncSession:
 
     def __init__(
         self,
+        model: str,
+        profile: str,
         *,
-        model: str | None = None,
         cwd: str | None = None,
         binary: str | None = None,
         policy: Any = None,
         system_prompt: str | None = None,
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
-        profile: str | None = None,
     ):
         self._kwargs = {
             "model": model,
+            "profile": profile,
             "cwd": cwd,
             "binary": binary,
             "policy": policy,
             "system_prompt": system_prompt,
             "extra_args": extra_args,
             "env": env,
-            "profile": profile,
         }
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None

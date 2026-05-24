@@ -90,15 +90,15 @@ __all__ = [
 
 def print_prompt(
     prompt: str,
+    model: str,
+    profile: str,
     *,
-    model: str | None = None,
     cwd: str | None = None,
     binary: str | None = None,
     policy: Policy | None = None,
     system_prompt: str | None = None,
     extra_args: list[str] | None = None,
     env: dict[str, str] | None = None,
-    profile: str | None = None,
 ) -> str:
     """One-shot convenience: send a prompt and return the full response text.
 
@@ -108,13 +108,13 @@ def print_prompt(
     parts: list[str] = []
     with SyncSession(
         model=model,
+        profile=profile,
         cwd=cwd,
         binary=binary,
         policy=policy,
         system_prompt=system_prompt,
         extra_args=extra_args,
         env=env,
-        profile=profile,
     ) as session:
         for event in session.send(prompt):
             if isinstance(event, AssistantText):
