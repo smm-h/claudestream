@@ -21,7 +21,7 @@ dev = [
 requires-dist = [
     { name = "claudewheel" },
     { name = "selfdoc" },
-    { name = "strictcli", specifier = ">=0.8.0" },
+    { name = "strictcli", specifier = ">=0.8.6" },
 ]
 
 [package.metadata.requires-dev]
@@ -111,9 +111,9 @@ wheels = [
 
 [[package]]
 name = "strictcli"
-version = "0.8.5"
+version = "0.8.6"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ba/c4/b448300fc510691f3d0c05d1c42b257c6ee3347e79756337a1f9dd34b938/strictcli-0.8.5.tar.gz", hash = "sha256:cb9cf70d6b562813f607ef331ccd4b508a0e0968744a667dcc8ec38a247c45cb", size = 91901, upload-time = "2026-05-22T07:12:56.492Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/f4/1f01a6c91cdd5116b790330990c8cff670cfdcbd27b6b667a2832cef87a4/strictcli-0.8.6.tar.gz", hash = "sha256:69344b823c31d0f4715b89d42b4145aaa30b315d50cf37508cf1ceda72bea52b", size = 92833, upload-time = "2026-05-24T14:16:31.873Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/79/6a/22ff651cffc7dd5b525a224b34af2e4000fd33501635ea7c1a6375bc0698/strictcli-0.8.5-py3-none-any.whl", hash = "sha256:6c3d68b0c4c459b1c05c76507ad7bc8476a15376f5e8f4bc1bc98a2dc44e9da3", size = 27986, upload-time = "2026-05-22T07:12:54.94Z" },
+    { url = "https://files.pythonhosted.org/packages/b0/84/29662692cca7babb3a644f8daf03d0b6e09a665a0d03bc419a85a76350ce/strictcli-0.8.6-py3-none-any.whl", hash = "sha256:984e3f767eb9607945d81f0021500f8d82d9b6a3b5d11f98e8cd61d829633913", size = 28074, upload-time = "2026-05-24T14:16:30.294Z" },
 ]
