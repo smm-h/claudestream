@@ -252,13 +252,10 @@ class AsyncSession:
                         self._model_name,
                         len(self._tools),
                     )
-                    continue  # don't yield SystemInit to consumer
 
                 # Handle permission requests via policy
                 if isinstance(event, PermissionRequest):
-                    handled = await self._handle_permission(event)
-                    if handled:
-                        continue
+                    await self._handle_permission(event)
 
                 # Per-type event logging (before flatten)
                 if isinstance(event, Thinking):

@@ -337,11 +337,8 @@ class TestStreamDeltaProperties:
 
 
 class TestSystemInitLazyCapture:
-    """Test that _read_turn() intercepts SystemInit and populates session metadata.
-
-    Bug fix: SystemInit is NOT emitted by Claude CLI until the first user
-    message when using --input-format stream-json. The session captures it
-    lazily during _read_turn() and never yields it to consumers.
+    """Test that _read_turn() intercepts SystemInit, populates session metadata,
+    and yields the event to consumers.
     """
 
     def _build_ndjson(self, events: list[dict]) -> bytes:
@@ -356,8 +353,8 @@ class TestSystemInitLazyCapture:
             session = AsyncSession(model="haiku", profile="test", binary="/fake/claude")
         return session
 
-    def test_system_init_not_yielded(self):
-        """SystemInit events should be captured internally, never yielded to the consumer."""
+    def test_system_init_yielded(self):
+        """SystemInit events should be captured internally AND yielded to the consumer."""
         raw_events = [
             {
                 "type": "system",
@@ -426,10 +423,10 @@ class TestSystemInitLazyCapture:
 
         session, yielded_events = asyncio.run(run())
 
-        # SystemInit should NOT appear in yielded events
-        assert not any(isinstance(e, SystemInit) for e in yielded_events)
+        # SystemInit should appear in yielded events
+        assert any(isinstance(e, SystemInit) for e in yielded_events)
 
-        # But the session metadata should be populated from SystemInit
+        # And the session metadata should be populated from SystemInit
         assert session.session_id == "test-session-123"
         assert session.model_name == "claude-sonnet-4-5"
         assert session.tools == ["Bash", "Read"]
@@ -490,9 +487,9 @@ class TestSystemInitLazyCapture:
         assert session.model_name == "claude-opus-4"
         assert session.tools == ["Bash", "Read", "Write"]
 
-    def test_only_non_system_init_events_yielded(self):
-        """When a stream has SystemInit among other events, only non-SystemInit
-        events should be yielded. Verify no event leaks through."""
+    def test_system_init_yielded_among_other_events(self):
+        """When a stream has SystemInit among other events, all events
+        including SystemInit should be yielded."""
         raw_events = [
             {
                 "type": "system",
@@ -548,9 +545,9 @@ class TestSystemInitLazyCapture:
 
         yielded = asyncio.run(run())
 
-        # Should yield 2 AssistantText (flattened from 2 AssistantMessages) + 1 Result
+        # Should yield 1 SystemInit + 2 AssistantText (flattened from 2 AssistantMessages) + 1 Result
         types = [type(e).__name__ for e in yielded]
-        assert "SystemInit" not in types
+        assert types.count("SystemInit") == 1
         assert types.count("AssistantText") == 2
         assert types.count("Result") == 1
 
