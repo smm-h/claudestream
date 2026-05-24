@@ -55,19 +55,26 @@ def cmd_send(
     json_output: bool = False,
     skip_permissions: bool = False,
     profile: str = "",
-) -> None:
+) -> int | None:
     policy = allow_all() if skip_permissions else None
-    with SyncSession(
-        model=model or None,
-        cwd=cwd or None,
-        policy=policy,
-        profile=profile or None,
-    ) as session:
-        for event in session.send(prompt, raw=raw):
-            if json_output:
-                _print_json(event)
-            else:
-                _print_event(event)
+    try:
+        with SyncSession(
+            model=model or None,
+            cwd=cwd or None,
+            policy=policy,
+            profile=profile or None,
+        ) as session:
+            for event in session.send(prompt, raw=raw):
+                if json_output:
+                    _print_json(event)
+                else:
+                    _print_event(event)
+    except ClaudeStreamError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        return 1
 
 
 # --- stream command ---
@@ -84,24 +91,31 @@ def cmd_stream(
     cwd: str = "",
     skip_permissions: bool = False,
     profile: str = "",
-) -> None:
+) -> int | None:
     policy = allow_all() if skip_permissions else None
-    with SyncSession(
-        model=model or None,
-        cwd=cwd or None,
-        policy=policy,
-        profile=profile or None,
-    ) as session:
-        for event in session.send(prompt):
-            if isinstance(event, StreamDelta) and event.text:
-                sys.stdout.write(event.text)
-                sys.stdout.flush()
-            elif isinstance(event, AssistantText):
-                # Fallback if streaming deltas aren't available
-                pass
-            elif isinstance(event, Result):
-                sys.stdout.write("\n")
-                sys.stdout.flush()
+    try:
+        with SyncSession(
+            model=model or None,
+            cwd=cwd or None,
+            policy=policy,
+            profile=profile or None,
+        ) as session:
+            for event in session.send(prompt):
+                if isinstance(event, StreamDelta) and event.text:
+                    sys.stdout.write(event.text)
+                    sys.stdout.flush()
+                elif isinstance(event, AssistantText):
+                    # Fallback if streaming deltas aren't available
+                    pass
+                elif isinstance(event, Result):
+                    sys.stdout.write("\n")
+                    sys.stdout.flush()
+    except ClaudeStreamError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        return 1
 
 
 # --- events command ---
@@ -118,16 +132,23 @@ def cmd_events(
     cwd: str = "",
     skip_permissions: bool = False,
     profile: str = "",
-) -> None:
+) -> int | None:
     policy = allow_all() if skip_permissions else None
-    with SyncSession(
-        model=model or None,
-        cwd=cwd or None,
-        policy=policy,
-        profile=profile or None,
-    ) as session:
-        for event in session.send(prompt, raw=True):
-            _print_json(event)
+    try:
+        with SyncSession(
+            model=model or None,
+            cwd=cwd or None,
+            policy=policy,
+            profile=profile or None,
+        ) as session:
+            for event in session.send(prompt, raw=True):
+                _print_json(event)
+    except ClaudeStreamError as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        return 1
 
 
 # --- repl command ---
