@@ -58,6 +58,7 @@ def cmd_send(
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
+        printer = EventPrinter()
         with SyncSession(
             model=model or None,
             cwd=cwd or None,
@@ -68,7 +69,7 @@ def cmd_send(
                 if json_output:
                     _print_json(event)
                 else:
-                    _print_event(event)
+                    printer.print_event(event)
     except ClaudeStreamError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -94,6 +95,7 @@ def cmd_stream(
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
+        streamed_text = ""
         with SyncSession(
             model=model or None,
             cwd=cwd or None,
@@ -102,14 +104,17 @@ def cmd_stream(
         ) as session:
             for event in session.send(prompt):
                 if isinstance(event, StreamDelta) and event.text:
+                    streamed_text += event.text
                     sys.stdout.write(event.text)
                     sys.stdout.flush()
                 elif isinstance(event, AssistantText):
-                    # Fallback if streaming deltas aren't available
-                    pass
+                    if not streamed_text or event.text not in streamed_text:
+                        sys.stdout.write(event.text)
+                        sys.stdout.flush()
                 elif isinstance(event, Result):
                     sys.stdout.write("\n")
                     sys.stdout.flush()
+                    streamed_text = ""
     except ClaudeStreamError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -206,31 +211,41 @@ def cmd_repl(
 
 # --- Helpers ---
 
-def _print_event(event: Event) -> None:
-    """Pretty-print an event to stdout."""
-    if isinstance(event, AssistantText):
-        # StreamDelta already printed this text incrementally; skip to avoid duplication
-        pass
-    elif isinstance(event, ToolUse):
-        print(f"\n--- Tool: {event.name} ---")
-        print(json.dumps(event.input, indent=2))
-    elif isinstance(event, ToolResult):
-        content = event.content if isinstance(event.content, str) else str(event.content)
-        if len(content) > 500:
-            content = content[:500] + "..."
-        print(f"--- Result ---\n{content}")
-    elif isinstance(event, Thinking):
-        print(f"[thinking: {event.text[:100]}...]")
-    elif isinstance(event, Result):
-        print(f"\n--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---")
-    elif isinstance(event, ApiRetry):
-        print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
-    elif isinstance(event, PermissionRequest):
-        print(f"[permission needed: {event.tool_name}]", file=sys.stderr)
-    elif isinstance(event, StreamDelta):
-        if event.text:
-            sys.stdout.write(event.text)
-            sys.stdout.flush()
+class EventPrinter:
+    """Stateful event printer that deduplicates AssistantText against StreamDelta."""
+
+    def __init__(self) -> None:
+        self._streamed_text: str = ""
+
+    def print_event(self, event: Event) -> None:
+        """Pretty-print an event to stdout, deduplicating AssistantText."""
+        if isinstance(event, StreamDelta):
+            if event.text:
+                self._streamed_text += event.text
+                sys.stdout.write(event.text)
+                sys.stdout.flush()
+        elif isinstance(event, AssistantText):
+            # Print only if the text differs from what StreamDelta already printed
+            if not self._streamed_text or event.text not in self._streamed_text:
+                sys.stdout.write(event.text)
+                sys.stdout.flush()
+        elif isinstance(event, ToolUse):
+            print(f"\n--- Tool: {event.name} ---")
+            print(json.dumps(event.input, indent=2))
+        elif isinstance(event, ToolResult):
+            content = event.content if isinstance(event.content, str) else str(event.content)
+            if len(content) > 500:
+                content = content[:500] + "..."
+            print(f"--- Result ---\n{content}")
+        elif isinstance(event, Thinking):
+            print(f"[thinking: {event.text[:100]}...]")
+        elif isinstance(event, Result):
+            print(f"\n--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---")
+            self._streamed_text = ""
+        elif isinstance(event, ApiRetry):
+            print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
+        elif isinstance(event, PermissionRequest):
+            print(f"[permission needed: {event.tool_name}]", file=sys.stderr)
 
 
 def _print_json(event: Event) -> None:
