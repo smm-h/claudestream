@@ -29,6 +29,7 @@ from claudestream import (
     UnknownEvent,
     allow_all,
 )
+from claudestream._color import Colorizer, should_color
 
 from importlib.metadata import version as _pkg_version
 
@@ -52,6 +53,7 @@ app = strictcli.App(
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
+@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
 def cmd_send(
     prompt: str = "",
     model: str = "",
@@ -63,21 +65,23 @@ def cmd_send(
     footer: bool = True,
     system_prompt: str = "",
     stdin: bool = False,
+    no_color: bool = False,
 ) -> int | None:
+    color = Colorizer(should_color(no_color_flag=no_color))
     if stdin:
         if prompt:
-            print("error: cannot use both prompt argument and --stdin", file=sys.stderr)
+            print(color.red("error: cannot use both prompt argument and --stdin"), file=sys.stderr)
             return 1
         prompt = sys.stdin.read().strip()
         if not prompt:
-            print("error: --stdin provided but stdin is empty", file=sys.stderr)
+            print(color.red("error: --stdin provided but stdin is empty"), file=sys.stderr)
             return 1
     elif not prompt:
-        print("error: prompt argument required (or use --stdin)", file=sys.stderr)
+        print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
         return 1
     policy = allow_all() if skip_permissions else None
     try:
-        printer = EventPrinter(footer=footer)
+        printer = EventPrinter(footer=footer, color=color)
         with SyncSession(
             model=model,
             cwd=cwd or None,
@@ -91,7 +95,7 @@ def cmd_send(
                 else:
                     printer.print_event(event)
     except ClaudeStreamError as e:
-        print(f"error: {e}", file=sys.stderr)
+        print(color.red(f"error: {e}"), file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("\nInterrupted.", file=sys.stderr)
@@ -109,6 +113,7 @@ def cmd_send(
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
+@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
 def cmd_stream(
     prompt: str = "",
     model: str = "",
@@ -118,17 +123,19 @@ def cmd_stream(
     footer: bool = True,
     system_prompt: str = "",
     stdin: bool = False,
+    no_color: bool = False,
 ) -> int | None:
+    color = Colorizer(should_color(no_color_flag=no_color))
     if stdin:
         if prompt:
-            print("error: cannot use both prompt argument and --stdin", file=sys.stderr)
+            print(color.red("error: cannot use both prompt argument and --stdin"), file=sys.stderr)
             return 1
         prompt = sys.stdin.read().strip()
         if not prompt:
-            print("error: --stdin provided but stdin is empty", file=sys.stderr)
+            print(color.red("error: --stdin provided but stdin is empty"), file=sys.stderr)
             return 1
     elif not prompt:
-        print("error: prompt argument required (or use --stdin)", file=sys.stderr)
+        print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
         return 1
     policy = allow_all() if skip_permissions else None
     try:
@@ -153,24 +160,24 @@ def cmd_stream(
                     sys.stdout.write("\n")
                     sys.stdout.flush()
                     if footer:
-                        print(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---", file=sys.stderr)
+                        print(color.cyan(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
                     streamed_text = ""
                 elif isinstance(event, Thinking):
-                    print("[thinking...]", file=sys.stderr)
+                    print(color.dim("[thinking...]"), file=sys.stderr)
                 elif isinstance(event, ToolUse):
-                    print(f"[tool: {event.name}]", file=sys.stderr)
+                    print(f"[tool: {color.bold(event.name)}]", file=sys.stderr)
                 elif isinstance(event, ToolResult):
                     print("[result]", file=sys.stderr)
                 elif isinstance(event, ApiRetry):
-                    print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
+                    print(color.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
                 elif isinstance(event, RateLimit):
-                    print(f"[rate limit: {event.status}]", file=sys.stderr)
+                    print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
                 elif isinstance(event, PermissionRequest):
-                    print(f"[permission: {event.tool_name}]", file=sys.stderr)
+                    print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
                 elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
                     pass
     except ClaudeStreamError as e:
-        print(f"error: {e}", file=sys.stderr)
+        print(color.red(f"error: {e}"), file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("\nInterrupted.", file=sys.stderr)
@@ -188,6 +195,7 @@ def cmd_stream(
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
+@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
 def cmd_events(
     prompt: str = "",
     model: str = "",
@@ -197,17 +205,19 @@ def cmd_events(
     footer: bool = True,
     system_prompt: str = "",
     stdin: bool = False,
+    no_color: bool = False,
 ) -> int | None:
+    color = Colorizer(should_color(no_color_flag=no_color))
     if stdin:
         if prompt:
-            print("error: cannot use both prompt argument and --stdin", file=sys.stderr)
+            print(color.red("error: cannot use both prompt argument and --stdin"), file=sys.stderr)
             return 1
         prompt = sys.stdin.read().strip()
         if not prompt:
-            print("error: --stdin provided but stdin is empty", file=sys.stderr)
+            print(color.red("error: --stdin provided but stdin is empty"), file=sys.stderr)
             return 1
     elif not prompt:
-        print("error: prompt argument required (or use --stdin)", file=sys.stderr)
+        print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
         return 1
     policy = allow_all() if skip_permissions else None
     try:
@@ -221,9 +231,9 @@ def cmd_events(
             for event in session.send(prompt, raw=True):
                 _print_json(event)
                 if footer and isinstance(event, Result):
-                    print(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---", file=sys.stderr)
+                    print(color.cyan(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
     except ClaudeStreamError as e:
-        print(f"error: {e}", file=sys.stderr)
+        print(color.red(f"error: {e}"), file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("\nInterrupted.", file=sys.stderr)
@@ -239,6 +249,7 @@ def cmd_events(
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
+@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
 def cmd_repl(
     model: str,
     profile: str,
@@ -246,7 +257,9 @@ def cmd_repl(
     skip_permissions: bool = False,
     footer: bool = True,
     system_prompt: str = "",
+    no_color: bool = False,
 ) -> None:
+    color = Colorizer(should_color(no_color_flag=no_color))
     policy = allow_all() if skip_permissions else None
     try:
         with SyncSession(
@@ -272,7 +285,7 @@ def cmd_repl(
                         sys.stdout.write(event.text)
                         sys.stdout.flush()
                     elif isinstance(event, ToolUse):
-                        print(f"\n[tool: {event.name}]")
+                        print(f"\n[tool: {color.bold(event.name)}]")
                     elif isinstance(event, ToolResult):
                         content = event.content if isinstance(event.content, str) else str(event.content)
                         if len(content) > 200:
@@ -280,23 +293,23 @@ def cmd_repl(
                         print(f"[result: {content}]")
                     elif isinstance(event, Result):
                         if footer:
-                            print(f"\n[cost: ${event.total_cost_usd:.4f}]", file=sys.stderr)
+                            print(color.cyan(f"\n[cost: ${event.total_cost_usd:.4f}]"), file=sys.stderr)
                     elif isinstance(event, Thinking):
-                        print("[thinking...]", file=sys.stderr)
+                        print(color.dim("[thinking...]"), file=sys.stderr)
                     elif isinstance(event, ApiRetry):
-                        print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
+                        print(color.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
                     elif isinstance(event, RateLimit):
-                        print(f"[rate limit: {event.status}]", file=sys.stderr)
+                        print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
                     elif isinstance(event, PermissionRequest):
-                        print(f"[permission: {event.tool_name}]", file=sys.stderr)
+                        print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
                     elif isinstance(event, (StreamDelta, SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
                         pass
                 if not model_shown and session.model_name:
-                    print(f"Connected: {session.model_name}", file=sys.stderr)
+                    print(color.dim(f"Connected: {session.model_name}"), file=sys.stderr)
                     model_shown = True
                 print()
     except ClaudeStreamError as e:
-        print(f"error: {e}", file=sys.stderr)
+        print(color.red(f"error: {e}"), file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("\nInterrupted.", file=sys.stderr)
@@ -308,12 +321,14 @@ def cmd_repl(
 class EventPrinter:
     """Stateful event printer that deduplicates AssistantText against StreamDelta."""
 
-    def __init__(self, footer: bool = True) -> None:
+    def __init__(self, footer: bool = True, color: Colorizer | None = None) -> None:
         self._streamed_text: str = ""
         self._footer = footer
+        self._color = color or Colorizer(use_color=False)
 
     def print_event(self, event: Event) -> None:
         """Pretty-print an event to stdout, deduplicating AssistantText."""
+        c = self._color
         if isinstance(event, StreamDelta):
             if event.text:
                 self._streamed_text += event.text
@@ -325,7 +340,7 @@ class EventPrinter:
                 sys.stdout.write(event.text)
                 sys.stdout.flush()
         elif isinstance(event, ToolUse):
-            print(f"\n--- Tool: {event.name} ---")
+            print(f"\n--- Tool: {c.bold(event.name)} ---")
             print(json.dumps(event.input, indent=2))
         elif isinstance(event, ToolResult):
             content = event.content if isinstance(event.content, str) else str(event.content)
@@ -333,17 +348,17 @@ class EventPrinter:
                 content = content[:500] + "..."
             print(f"--- Result ---\n{content}")
         elif isinstance(event, Thinking):
-            print(f"[thinking: {event.text[:100]}...]")
+            print(c.dim(f"[thinking: {event.text[:100]}...]"))
         elif isinstance(event, Result):
             if self._footer:
-                print(f"\n--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---", file=sys.stderr)
+                print(c.cyan(f"\n--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
             self._streamed_text = ""
         elif isinstance(event, ApiRetry):
-            print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
+            print(c.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
         elif isinstance(event, PermissionRequest):
-            print(f"[permission needed: {event.tool_name}]", file=sys.stderr)
+            print(c.yellow(f"[permission needed: {event.tool_name}]"), file=sys.stderr)
         elif isinstance(event, RateLimit):
-            print(f"[rate limit: {event.status}]", file=sys.stderr)
+            print(c.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
         elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
             pass
 
