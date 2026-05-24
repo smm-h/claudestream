@@ -14,3 +14,4 @@ dist/
 .env.local
 *.local-only
 docs/_build/
+.wrangler/
