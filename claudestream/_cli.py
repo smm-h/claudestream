@@ -12,7 +12,9 @@ from claudestream import (
     AssistantText,
     AsyncSession,
     ClaudeStreamError,
+    CompactBoundary,
     Event,
+    McpRequest,
     PermissionRequest,
     RateLimit,
     Result,
@@ -121,6 +123,20 @@ def cmd_stream(
                     if footer:
                         print(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---", file=sys.stderr)
                     streamed_text = ""
+                elif isinstance(event, Thinking):
+                    print("[thinking...]", file=sys.stderr)
+                elif isinstance(event, ToolUse):
+                    print(f"[tool: {event.name}]", file=sys.stderr)
+                elif isinstance(event, ToolResult):
+                    print("[result]", file=sys.stderr)
+                elif isinstance(event, ApiRetry):
+                    print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
+                elif isinstance(event, RateLimit):
+                    print(f"[rate limit: {event.status}]", file=sys.stderr)
+                elif isinstance(event, PermissionRequest):
+                    print(f"[permission: {event.tool_name}]", file=sys.stderr)
+                elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
+                    pass
     except ClaudeStreamError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
@@ -214,6 +230,16 @@ def cmd_repl(
                     elif isinstance(event, Result):
                         if footer:
                             print(f"\n[cost: ${event.total_cost_usd:.4f}]", file=sys.stderr)
+                    elif isinstance(event, Thinking):
+                        print("[thinking...]", file=sys.stderr)
+                    elif isinstance(event, ApiRetry):
+                        print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
+                    elif isinstance(event, RateLimit):
+                        print(f"[rate limit: {event.status}]", file=sys.stderr)
+                    elif isinstance(event, PermissionRequest):
+                        print(f"[permission: {event.tool_name}]", file=sys.stderr)
+                    elif isinstance(event, (StreamDelta, SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
+                        pass
                 if not model_shown and session.model_name:
                     print(f"Connected: {session.model_name}", file=sys.stderr)
                     model_shown = True
@@ -265,6 +291,10 @@ class EventPrinter:
             print(f"[retry {event.attempt}/{event.max_retries}: {event.error}]", file=sys.stderr)
         elif isinstance(event, PermissionRequest):
             print(f"[permission needed: {event.tool_name}]", file=sys.stderr)
+        elif isinstance(event, RateLimit):
+            print(f"[rate limit: {event.status}]", file=sys.stderr)
+        elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
+            pass
 
 
 def _print_json(event: Event) -> None:
