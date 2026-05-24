@@ -1,6 +1,6 @@
 {
   "name": "claudestream",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "help": "Stream Claude Code's JSON protocol",
   "env_prefix": null,
   "config": false,
@@ -93,13 +93,49 @@
           "repeatable": false,
           "negatable": true,
           "hidden": false
+        },
+        {
+          "name": "system-prompt",
+          "type": "str",
+          "help": "System prompt for Claude",
+          "short": "s",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "stdin",
+          "type": "bool",
+          "help": "Read prompt from stdin",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "no-color",
+          "type": "bool",
+          "help": "Disable colored output",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
         }
       ],
       "args": [
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": true,
+          "required": false,
           "variadic": false
         }
       ],
@@ -168,13 +204,49 @@
           "repeatable": false,
           "negatable": true,
           "hidden": false
+        },
+        {
+          "name": "system-prompt",
+          "type": "str",
+          "help": "System prompt for Claude",
+          "short": "s",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "stdin",
+          "type": "bool",
+          "help": "Read prompt from stdin",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "no-color",
+          "type": "bool",
+          "help": "Disable colored output",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
         }
       ],
       "args": [
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": true,
+          "required": false,
           "variadic": false
         }
       ],
@@ -243,13 +315,49 @@
           "repeatable": false,
           "negatable": true,
           "hidden": false
+        },
+        {
+          "name": "system-prompt",
+          "type": "str",
+          "help": "System prompt for Claude",
+          "short": "s",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "stdin",
+          "type": "bool",
+          "help": "Read prompt from stdin",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "no-color",
+          "type": "bool",
+          "help": "Disable colored output",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
         }
       ],
       "args": [
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": true,
+          "required": false,
           "variadic": false
         }
       ],
@@ -313,6 +421,30 @@
           "help": "Show cost and timing on stderr",
           "short": null,
           "default": true,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "system-prompt",
+          "type": "str",
+          "help": "System prompt for Claude",
+          "short": "s",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "no-color",
+          "type": "bool",
+          "help": "Disable colored output",
+          "short": null,
+          "default": false,
           "env": null,
           "choices": null,
           "repeatable": false,
