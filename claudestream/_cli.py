@@ -50,6 +50,7 @@ app = strictcli.App(
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
+@strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 def cmd_send(
     prompt: str,
     model: str,
@@ -59,6 +60,7 @@ def cmd_send(
     json_output: bool = False,
     skip_permissions: bool = False,
     footer: bool = True,
+    system_prompt: str = "",
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
@@ -68,6 +70,7 @@ def cmd_send(
             cwd=cwd or None,
             policy=policy,
             profile=profile,
+            system_prompt=system_prompt or None,
         ) as session:
             for event in session.send(prompt, raw=raw):
                 if json_output:
@@ -91,6 +94,7 @@ def cmd_send(
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
+@strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 def cmd_stream(
     prompt: str,
     model: str,
@@ -98,6 +102,7 @@ def cmd_stream(
     cwd: str = "",
     skip_permissions: bool = False,
     footer: bool = True,
+    system_prompt: str = "",
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
@@ -107,6 +112,7 @@ def cmd_stream(
             cwd=cwd or None,
             policy=policy,
             profile=profile,
+            system_prompt=system_prompt or None,
         ) as session:
             for event in session.send(prompt):
                 if isinstance(event, StreamDelta) and event.text:
@@ -154,6 +160,7 @@ def cmd_stream(
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
+@strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 def cmd_events(
     prompt: str,
     model: str,
@@ -161,6 +168,7 @@ def cmd_events(
     cwd: str = "",
     skip_permissions: bool = False,
     footer: bool = True,
+    system_prompt: str = "",
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
@@ -169,6 +177,7 @@ def cmd_events(
             cwd=cwd or None,
             policy=policy,
             profile=profile,
+            system_prompt=system_prompt or None,
         ) as session:
             for event in session.send(prompt, raw=True):
                 _print_json(event)
@@ -190,12 +199,14 @@ def cmd_events(
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
+@strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 def cmd_repl(
     model: str,
     profile: str,
     cwd: str = "",
     skip_permissions: bool = False,
     footer: bool = True,
+    system_prompt: str = "",
 ) -> None:
     policy = allow_all() if skip_permissions else None
     try:
@@ -204,6 +215,7 @@ def cmd_repl(
             cwd=cwd or None,
             policy=policy,
             profile=profile,
+            system_prompt=system_prompt or None,
         ) as session:
             print("claudestream repl")
             print("Type your prompts. Ctrl-D to exit.\n")
