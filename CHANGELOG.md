@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.5.1
+
+### Fixes
+
+- **Fix.** `--system-prompt` no longer adds `--bare`, which was blocking OAuth authentication. Uses `--append-system-prompt` instead.
+
 ## 0.5.0
 
 ### Breaking
