@@ -41,31 +41,31 @@ app = strictcli.App(
 
 @app.command("send", help="Send a prompt and display the response")
 @strictcli.arg("prompt", help="The prompt to send")
-@strictcli.flag("model", type=str, default="", help="Model to use (e.g. sonnet, opus)", short="m")
+@strictcli.flag("model", type=str, help="Model to use (e.g. sonnet, opus)", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("raw", type=bool, default=False, help="Show raw protocol events instead of flattened")
 @strictcli.flag("json-output", type=bool, default=False, help="Output events as JSON lines")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("profile", type=str, default="", help="claudewheel profile to use")
+@strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 def cmd_send(
     prompt: str,
-    model: str = "",
+    model: str,
+    profile: str,
     cwd: str = "",
     raw: bool = False,
     json_output: bool = False,
     skip_permissions: bool = False,
-    profile: str = "",
     footer: bool = True,
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
         printer = EventPrinter(footer=footer)
         with SyncSession(
-            model=model or None,
+            model=model,
             cwd=cwd or None,
             policy=policy,
-            profile=profile or None,
+            profile=profile,
         ) as session:
             for event in session.send(prompt, raw=raw):
                 if json_output:
@@ -84,27 +84,27 @@ def cmd_send(
 
 @app.command("stream", help="Stream a prompt with real-time token output")
 @strictcli.arg("prompt", help="The prompt to send")
-@strictcli.flag("model", type=str, default="", help="Model to use", short="m")
+@strictcli.flag("model", type=str, help="Model to use", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("profile", type=str, default="", help="claudewheel profile to use")
+@strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 def cmd_stream(
     prompt: str,
-    model: str = "",
+    model: str,
+    profile: str,
     cwd: str = "",
     skip_permissions: bool = False,
-    profile: str = "",
     footer: bool = True,
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
         streamed_text = ""
         with SyncSession(
-            model=model or None,
+            model=model,
             cwd=cwd or None,
             policy=policy,
-            profile=profile or None,
+            profile=profile,
         ) as session:
             for event in session.send(prompt):
                 if isinstance(event, StreamDelta) and event.text:
@@ -133,26 +133,26 @@ def cmd_stream(
 
 @app.command("events", help="Debug: show all raw protocol events")
 @strictcli.arg("prompt", help="The prompt to send")
-@strictcli.flag("model", type=str, default="", help="Model to use", short="m")
+@strictcli.flag("model", type=str, help="Model to use", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("profile", type=str, default="", help="claudewheel profile to use")
+@strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 def cmd_events(
     prompt: str,
-    model: str = "",
+    model: str,
+    profile: str,
     cwd: str = "",
     skip_permissions: bool = False,
-    profile: str = "",
     footer: bool = True,
 ) -> int | None:
     policy = allow_all() if skip_permissions else None
     try:
         with SyncSession(
-            model=model or None,
+            model=model,
             cwd=cwd or None,
             policy=policy,
-            profile=profile or None,
+            profile=profile,
         ) as session:
             for event in session.send(prompt, raw=True):
                 _print_json(event)
@@ -169,25 +169,25 @@ def cmd_events(
 # --- repl command ---
 
 @app.command("repl", help="Interactive multi-turn REPL")
-@strictcli.flag("model", type=str, default="", help="Model to use", short="m")
+@strictcli.flag("model", type=str, help="Model to use", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("profile", type=str, default="", help="claudewheel profile to use")
+@strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 def cmd_repl(
-    model: str = "",
+    model: str,
+    profile: str,
     cwd: str = "",
     skip_permissions: bool = False,
-    profile: str = "",
     footer: bool = True,
 ) -> None:
     policy = allow_all() if skip_permissions else None
     try:
         with SyncSession(
-            model=model or None,
+            model=model,
             cwd=cwd or None,
             policy=policy,
-            profile=profile or None,
+            profile=profile,
         ) as session:
             print(f"claudestream repl (model: {session.model_name or 'default'})")
             print("Type your prompts. Ctrl-D to exit.\n")

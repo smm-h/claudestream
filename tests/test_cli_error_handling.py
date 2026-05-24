@@ -20,14 +20,14 @@ class TestCmdSendErrorHandling:
     @patch("claudestream._cli.SyncSession")
     def test_claude_stream_error(self, mock_cls, capsys):
         mock_cls.return_value = _mock_sync_session(ClaudeStreamError("session failed"))
-        result = cmd_send("hello")
+        result = cmd_send("hello", model="sonnet", profile="test")
         assert result == 1
         assert "error: session failed" in capsys.readouterr().err
 
     @patch("claudestream._cli.SyncSession")
     def test_keyboard_interrupt(self, mock_cls, capsys):
         mock_cls.return_value = _mock_sync_session(KeyboardInterrupt())
-        result = cmd_send("hello")
+        result = cmd_send("hello", model="sonnet", profile="test")
         assert result == 1
         assert "Interrupted." in capsys.readouterr().err
 
@@ -35,7 +35,7 @@ class TestCmdSendErrorHandling:
     def test_claude_stream_error_on_init(self, mock_cls, capsys):
         """ClaudeStreamError raised during SyncSession() construction."""
         mock_cls.side_effect = ClaudeStreamError("bad config")
-        result = cmd_send("hello")
+        result = cmd_send("hello", model="sonnet", profile="test")
         assert result == 1
         assert "error: bad config" in capsys.readouterr().err
 
@@ -44,21 +44,21 @@ class TestCmdStreamErrorHandling:
     @patch("claudestream._cli.SyncSession")
     def test_claude_stream_error(self, mock_cls, capsys):
         mock_cls.return_value = _mock_sync_session(ClaudeStreamError("connection lost"))
-        result = cmd_stream("hello")
+        result = cmd_stream("hello", model="sonnet", profile="test")
         assert result == 1
         assert "error: connection lost" in capsys.readouterr().err
 
     @patch("claudestream._cli.SyncSession")
     def test_keyboard_interrupt(self, mock_cls, capsys):
         mock_cls.return_value = _mock_sync_session(KeyboardInterrupt())
-        result = cmd_stream("hello")
+        result = cmd_stream("hello", model="sonnet", profile="test")
         assert result == 1
         assert "Interrupted." in capsys.readouterr().err
 
     @patch("claudestream._cli.SyncSession")
     def test_claude_stream_error_on_init(self, mock_cls, capsys):
         mock_cls.side_effect = ClaudeStreamError("binary not found")
-        result = cmd_stream("hello")
+        result = cmd_stream("hello", model="sonnet", profile="test")
         assert result == 1
         assert "error: binary not found" in capsys.readouterr().err
 
@@ -67,20 +67,20 @@ class TestCmdEventsErrorHandling:
     @patch("claudestream._cli.SyncSession")
     def test_claude_stream_error(self, mock_cls, capsys):
         mock_cls.return_value = _mock_sync_session(ClaudeStreamError("parse error"))
-        result = cmd_events("hello")
+        result = cmd_events("hello", model="sonnet", profile="test")
         assert result == 1
         assert "error: parse error" in capsys.readouterr().err
 
     @patch("claudestream._cli.SyncSession")
     def test_keyboard_interrupt(self, mock_cls, capsys):
         mock_cls.return_value = _mock_sync_session(KeyboardInterrupt())
-        result = cmd_events("hello")
+        result = cmd_events("hello", model="sonnet", profile="test")
         assert result == 1
         assert "Interrupted." in capsys.readouterr().err
 
     @patch("claudestream._cli.SyncSession")
     def test_claude_stream_error_on_init(self, mock_cls, capsys):
         mock_cls.side_effect = ClaudeStreamError("auth failed")
-        result = cmd_events("hello")
+        result = cmd_events("hello", model="sonnet", profile="test")
         assert result == 1
         assert "error: auth failed" in capsys.readouterr().err

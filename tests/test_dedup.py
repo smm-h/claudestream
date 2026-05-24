@@ -109,7 +109,7 @@ class TestCmdStreamDedup:
             _make_result(),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello")
+        cmd_stream("hello", model="sonnet", profile="test")
 
         out = capsys.readouterr().out
         # "Hi there" from StreamDelta + "\n" from Result
@@ -123,7 +123,7 @@ class TestCmdStreamDedup:
             _make_result(),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello")
+        cmd_stream("hello", model="sonnet", profile="test")
 
         out = capsys.readouterr().out
         assert "error: unauthorized" in out
@@ -137,7 +137,7 @@ class TestCmdStreamDedup:
             _make_result(),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello")
+        cmd_stream("hello", model="sonnet", profile="test")
 
         out = capsys.readouterr().out
         assert "streamed" in out
@@ -156,7 +156,7 @@ class TestCmdStreamDedup:
             _make_result(),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello")
+        cmd_stream("hello", model="sonnet", profile="test")
 
         out = capsys.readouterr().out
         assert "turn1" in out

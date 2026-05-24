@@ -88,7 +88,7 @@ class TestCmdStreamFooter:
             _make_result(duration_ms=300.0, cost=0.005),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello", footer=True)
+        cmd_stream("hello", model="sonnet", profile="test", footer=True)
 
         captured = capsys.readouterr()
         assert "--- Done (300ms, $0.0050) ---" in captured.err
@@ -102,7 +102,7 @@ class TestCmdStreamFooter:
             _make_result(duration_ms=300.0, cost=0.005),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello", footer=False)
+        cmd_stream("hello", model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert "Done" not in captured.err
@@ -116,7 +116,7 @@ class TestCmdStreamFooter:
             _make_result(),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello", footer=False)
+        cmd_stream("hello", model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert captured.out == "text\n"
@@ -144,7 +144,7 @@ class TestCmdReplFooter:
         ctx.__exit__ = MagicMock(return_value=False)
         mock_cls.return_value = ctx
 
-        cmd_repl(footer=True)
+        cmd_repl(model="sonnet", profile="test", footer=True)
 
         captured = capsys.readouterr()
         assert "[cost: $0.0023]" in captured.err
@@ -166,7 +166,7 @@ class TestCmdReplFooter:
         ctx.__exit__ = MagicMock(return_value=False)
         mock_cls.return_value = ctx
 
-        cmd_repl(footer=False)
+        cmd_repl(model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert "cost" not in captured.err
