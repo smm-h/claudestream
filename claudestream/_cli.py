@@ -108,7 +108,7 @@ def cmd_stream(
                     sys.stdout.write(event.text)
                     sys.stdout.flush()
                 elif isinstance(event, AssistantText):
-                    if not streamed_text or event.text not in streamed_text:
+                    if event.text != streamed_text:
                         sys.stdout.write(event.text)
                         sys.stdout.flush()
                 elif isinstance(event, Result):
@@ -226,7 +226,7 @@ class EventPrinter:
                 sys.stdout.flush()
         elif isinstance(event, AssistantText):
             # Print only if the text differs from what StreamDelta already printed
-            if not self._streamed_text or event.text not in self._streamed_text:
+            if event.text != self._streamed_text:
                 sys.stdout.write(event.text)
                 sys.stdout.flush()
         elif isinstance(event, ToolUse):
