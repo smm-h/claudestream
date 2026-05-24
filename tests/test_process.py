@@ -26,7 +26,7 @@ class TestProcessConfig:
     def test_system_prompt_flag(self):
         config = ProcessConfig(binary="claude", system_prompt="")
         argv = config.build_argv()
-        idx = argv.index("--system-prompt")
+        idx = argv.index("--append-system-prompt")
         assert argv[idx + 1] == ""
 
     def test_allowed_tools_comma_joined(self):
@@ -47,25 +47,17 @@ class TestProcessConfig:
         assert argv[-2] == "--max-turns"
         assert argv[-1] == "5"
 
-    def test_bare_flag_when_system_prompt_set(self):
+    def test_no_bare_flag_with_system_prompt(self):
         config = ProcessConfig(binary="claude", system_prompt="You are a game agent.")
         argv = config.build_argv()
-        assert "--bare" in argv
-        # --bare should appear after --system-prompt
-        sp_idx = argv.index("--system-prompt")
-        bare_idx = argv.index("--bare")
-        assert bare_idx > sp_idx
-
-    def test_no_bare_flag_when_system_prompt_unset(self):
-        config = ProcessConfig(binary="claude")
-        argv = config.build_argv()
         assert "--bare" not in argv
+        assert "--append-system-prompt" in argv
 
     def test_no_optional_flags_when_unset(self):
         config = ProcessConfig(binary="claude")
         argv = config.build_argv()
         assert "--model" not in argv
-        assert "--system-prompt" not in argv
+        assert "--append-system-prompt" not in argv
         assert "--permission-mode" not in argv
         assert "--allowedTools" not in argv
 
