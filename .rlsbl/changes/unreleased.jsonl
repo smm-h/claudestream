@@ -9,3 +9,4 @@
 {"commits":["67cd4d3c96a899878f33c832bd75a5f0c035ed5e"],"user_facing":true,"description":"**Fix.** Removed unused imports, fixed inconsistent ToolResult truncation, fixed ellipsis always showing on short thinking blocks, added warning for unknown content block types.","type":"fix"}
 {"commits":["440e588dd6b8395f4c9a9510829bf4bd43128f26","c96c24bdec8d2dfeb59aea549560f2aa2d47bdfb","3bbe316efa8c0c853defea295d1f5ab636fea7ef"],"user_facing":false}
 {"commits":["e9b18c72e3e03483cce27edd414335bd36a51aca"],"user_facing":false}
+{"commits":["f66e202f08dc95f100657c9eedc091a4567ecbb6"],"user_facing":false}
