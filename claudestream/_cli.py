@@ -189,8 +189,9 @@ def cmd_repl(
             policy=policy,
             profile=profile,
         ) as session:
-            print(f"claudestream repl (model: {session.model_name or 'default'})")
+            print("claudestream repl")
             print("Type your prompts. Ctrl-D to exit.\n")
+            model_shown = False
             while True:
                 try:
                     prompt = input("> ")
@@ -213,6 +214,9 @@ def cmd_repl(
                     elif isinstance(event, Result):
                         if footer:
                             print(f"\n[cost: ${event.total_cost_usd:.4f}]", file=sys.stderr)
+                if not model_shown and session.model_name:
+                    print(f"Connected: {session.model_name}", file=sys.stderr)
+                    model_shown = True
                 print()
     except ClaudeStreamError as e:
         print(f"error: {e}", file=sys.stderr)
