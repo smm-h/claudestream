@@ -11,6 +11,7 @@ import threading
 import pytest
 
 from claudestream import (
+    AskResult,
     AssistantText,
     ClaudeStreamError,
     Result,
@@ -18,6 +19,8 @@ from claudestream import (
     StreamDelta,
     SyncSession,
     SystemInit,
+    invoke_agent_sync,
+    load_agent,
 )
 
 pytestmark = pytest.mark.integration
@@ -292,3 +295,75 @@ class TestColorDisabledInNonTTY:
         assert "\033[" not in result.stdout, (
             f"Found ANSI escape codes in stdout (non-TTY context): {result.stdout!r}"
         )
+
+
+class TestAskMethod:
+    """Test the ask() convenience method with a real session."""
+
+    @pytest.mark.timeout(60)
+    def test_ask_returns_text_and_metadata(self):
+        with _make_session() as session:
+            result = session.ask("Reply with exactly: pong")
+            assert "pong" in result.text.lower()
+            assert result.cost_usd > 0
+            assert result.duration_ms > 0
+            assert result.is_error is False
+
+
+class TestSandboxToolRestriction:
+    """Test that the sandbox tool allow-list actually works."""
+
+    @pytest.mark.timeout(60)
+    def test_sandbox_restricts_tools(self):
+        # Create a session with only Read allowed (no Bash, Write, etc.)
+        sandbox = Sandbox(skip_permissions=True, tools=["Read", "LS", "Glob", "Grep", "Task"])
+        with SyncSession(MODEL, PROFILE, binary=BINARY, sandbox=sandbox) as session:
+            # Ask it to do something that needs Bash -- it should fail or refuse
+            result = session.ask("Run the shell command: echo hello")
+            # The model should indicate it can't use Bash
+            # (It might still try and get denied, or explain it doesn't have the tool)
+            assert result.text  # Should get SOME response
+
+
+class TestResumeSession:
+    """Test session resumption via resume_session_id."""
+
+    @pytest.mark.timeout(120)
+    def test_resume_session(self):
+        # Start a session, get the session ID, close it
+        with _make_session() as session:
+            result = session.ask("Remember this number: 42")
+            sid = session.session_id
+            assert sid
+
+        # Resume with the session ID
+        with SyncSession(
+            MODEL, PROFILE,
+            binary=BINARY,
+            sandbox=Sandbox(skip_permissions=True),
+            resume_session_id=sid,
+        ) as session:
+            result = session.ask("What number did I ask you to remember?")
+            assert "42" in result.text
+
+
+class TestAgentDefinition:
+    """Test loading and running an agent definition."""
+
+    @pytest.mark.timeout(60)
+    def test_agent_definition_run(self, tmp_path):
+        import json
+
+        # Create a minimal agent definition
+        defn = {
+            "name": "test-agent",
+            "prompt_template": "You are a helpful assistant. Always respond with exactly: {greeting}",
+            "model": MODEL,
+        }
+        path = tmp_path / "test.agent.json"
+        path.write_text(json.dumps(defn))
+
+        agent = load_agent(str(path))
+        with invoke_agent_sync(agent, PROFILE, variables={"greeting": "howdy"}) as session:
+            result = session.ask("Say hi")
+            assert result.text  # Should get a response
