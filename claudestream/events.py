@@ -58,11 +58,15 @@ class CompactBoundary(Event, frozen=True):
 
 
 class TextBlock(msgspec.Struct, frozen=True):
+    """A text content block from an assistant message."""
+
     type: str = "text"
     text: str = ""
 
 
 class ToolUseBlock(msgspec.Struct, frozen=True):
+    """A tool use content block from an assistant message."""
+
     type: str = "tool_use"
     id: str = ""
     name: str = ""
@@ -70,11 +74,15 @@ class ToolUseBlock(msgspec.Struct, frozen=True):
 
 
 class ThinkingBlock(msgspec.Struct, frozen=True):
+    """An extended thinking content block from an assistant message."""
+
     type: str = "thinking"
     thinking: str = ""
 
 
 class ToolResultBlock(msgspec.Struct, frozen=True):
+    """A tool result content block from a tool result message."""
+
     type: str = "tool_result"
     tool_use_id: str = ""
     content: str | list[Any] = ""
@@ -89,6 +97,8 @@ ContentBlock = TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock
 
 
 class Usage(msgspec.Struct, frozen=True):
+    """Token usage statistics for an API call."""
+
     input_tokens: int = 0
     output_tokens: int = 0
     cache_creation_input_tokens: int = 0
