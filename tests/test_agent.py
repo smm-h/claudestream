@@ -276,7 +276,8 @@ class TestBuildTools:
     def test_no_handlers(self):
         ts = ToolSchema(name="search", description="s", input_schema={})
         ad = AgentDefinition(name="a", prompt_template="p", tools=[ts])
-        assert _build_tools(ad, None) is None
+        with pytest.raises(ValueError, match="Missing handlers for tools: search"):
+            _build_tools(ad, None)
 
     def test_builds_tools_from_handlers(self):
         ts = ToolSchema(
@@ -298,21 +299,20 @@ class TestBuildTools:
         assert tools[0].handler is handler
         assert tools[0].server == "my-server"
 
-    def test_missing_handler_skipped(self):
+    def test_missing_handler_raises(self):
         ts1 = ToolSchema(name="a", description="d", input_schema={})
         ts2 = ToolSchema(name="b", description="d", input_schema={})
         ad = AgentDefinition(name="a", prompt_template="p", tools=[ts1, ts2])
 
         def handler_a(): pass
-        tools = _build_tools(ad, {"a": handler_a})
-        assert tools is not None
-        assert len(tools) == 1
-        assert tools[0].name == "a"
+        with pytest.raises(ValueError, match="Missing handlers for tools: b"):
+            _build_tools(ad, {"a": handler_a})
 
-    def test_all_handlers_missing_returns_none(self):
+    def test_all_handlers_missing_raises(self):
         ts = ToolSchema(name="a", description="d", input_schema={})
         ad = AgentDefinition(name="a", prompt_template="p", tools=[ts])
-        assert _build_tools(ad, {"nonexistent": lambda: None}) is None
+        with pytest.raises(ValueError, match="Missing handlers for tools: a"):
+            _build_tools(ad, {"nonexistent": lambda: None})
 
 
 class TestInvokeAgent:
