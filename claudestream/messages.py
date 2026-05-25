@@ -1,15 +1,16 @@
-"""Typed dataclasses for all Claude Code stream input messages."""
+"""Typed message structs for all Claude Code stream input messages."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from typing import Any
+
+import msgspec
 
 
-@dataclass
-class UserMessage:
+class UserMessage(msgspec.Struct, frozen=True):
     """A user prompt sent to Claude Code via stdin."""
 
-    content: str | list
+    content: str | list[Any]
     parent_tool_use_id: str | None = None
     session_id: str = ""
 
@@ -23,8 +24,7 @@ class UserMessage:
         }
 
 
-@dataclass
-class AllowPermission:
+class AllowPermission(msgspec.Struct, frozen=True):
     """Allow a permission request."""
 
     request_id: str
@@ -44,8 +44,7 @@ class AllowPermission:
         }
 
 
-@dataclass
-class DenyPermission:
+class DenyPermission(msgspec.Struct, frozen=True):
     """Deny a permission request."""
 
     request_id: str
@@ -65,8 +64,7 @@ class DenyPermission:
         }
 
 
-@dataclass
-class McpResponse:
+class McpResponse(msgspec.Struct, frozen=True):
     """Response to an MCP tool call request."""
 
     request_id: str
@@ -85,13 +83,12 @@ class McpResponse:
         }
 
 
-@dataclass
-class InitializeRequest:
+class InitializeRequest(msgspec.Struct, frozen=True):
     """SDK initialization request sent at session start."""
 
     request_id: str = "init_1"
-    hooks: dict = field(default_factory=dict)
-    sdk_mcp_servers: list[str] = field(default_factory=list)
+    hooks: dict = {}
+    sdk_mcp_servers: list[str] = []
 
     def to_dict(self) -> dict:
         return {
