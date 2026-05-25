@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.6.2
+
+### Fixes
+
+- **Stricter agent validation.** CLI `agent run` now fails early with a clear message when no model is specified. `invoke_agent` raises `ValueError` listing any tools missing handlers.
+
 ## 0.6.1
 
 ### Features
