@@ -8,7 +8,7 @@ import logging
 import re
 import shutil
 import signal
-from dataclasses import dataclass, field
+import msgspec
 
 log = logging.getLogger("claudestream")
 
@@ -90,8 +90,7 @@ async def check_version(binary: str) -> str | None:
         return None
 
 
-@dataclass
-class ProcessConfig:
+class ProcessConfig(msgspec.Struct, frozen=True):
     """Configuration for spawning a Claude Code subprocess."""
 
     binary: str = "claude"
@@ -99,10 +98,10 @@ class ProcessConfig:
     model: str | None = None
     system_prompt: str | None = None
     permission_mode: str | None = None
-    allowed_tools: list[str] = field(default_factory=list)
-    disallowed_tools: list[str] = field(default_factory=list)
+    allowed_tools: list[str] = []
+    disallowed_tools: list[str] = []
     permission_prompt_tool: str | None = None  # "stdio" when sandbox needs permission interception
-    extra_args: list[str] = field(default_factory=list)
+    extra_args: list[str] = []
     env: dict[str, str] | None = None
 
     def build_argv(self) -> list[str]:
