@@ -2,14 +2,8 @@
 
 import pytest
 
-from claudestream.policy import (
-    Allow,
-    Deny,
-    Sandbox,
-    create_sandbox,
-    sandbox_to_flags,
-    sandbox_decide,
-)
+from claudestream import Allow, Deny, Sandbox, create_sandbox
+from claudestream.policy import sandbox_decide, sandbox_to_flags
 
 
 class TestSandboxDefaults:
