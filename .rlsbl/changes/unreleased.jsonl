@@ -1,3 +1,5 @@
 {"commits":["5f9d2e25f8460d751e67d0bc8a2beb43c3ebef6d","4790dc170538bc4ce7663e6542acc5d6670a46b1"],"user_facing":false}
 {"commits":["273a3b3835092a42cc9b29dcaf7fd6b09611b103","1bcb33650478b53ac672914d8520ac04db873257"],"user_facing":true,"description":"**Stricter agent validation.** CLI `agent run` now fails early with a clear message when no model is specified. `invoke_agent` raises `ValueError` listing any tools missing handlers.","type":"fix"}
 {"commits":["75e5febe5bec6430289523006fa8b4d58292147a","78c50d2b02dcc1750f0bae04bbaaf2698423161d"],"user_facing":false}
+{"commits":["8461ecf3c0c6fcb4589270ded621ec1555432a6a"],"user_facing":false}
+{"commits":["afa08fedd6ee5d3f23cf639e76c83d9ffe02a434"],"user_facing":false}
