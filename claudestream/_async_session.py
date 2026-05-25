@@ -22,7 +22,7 @@ from claudestream.events import (
     ToolUse,
     UnknownEvent,
 )
-from claudestream.messages import AllowPermission, DenyPermission, UserMessage
+from claudestream.messages import AllowPermission, DenyPermission, InitializeRequest, McpResponse, UserMessage
 from claudestream.policy import Allow, Deny, Sandbox, sandbox_to_flags, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
 from claudestream._protocol import flatten_event, read_events, write_message
@@ -103,6 +103,10 @@ class AsyncSession:
                 remaining_flags.append(flag)
                 i += 1
 
+        # Add MCP wildcard patterns for each server with registered tools
+        for server_name in self._tools_by_server:
+            allowed_tools.append(f"mcp__{server_name}__*")
+
         all_extra = list(extra_args or [])
         if skip_permissions:
             all_extra.append("--dangerously-skip-permissions")
@@ -171,6 +175,12 @@ class AsyncSession:
         self._claude_version = await check_version(self._binary)
 
         await self._process_mgr.start()
+
+        # Send InitializeRequest to register SDK MCP servers
+        if self._user_tools:
+            server_names = list(self._tools_by_server.keys())
+            init_req = InitializeRequest(sdk_mcp_servers=server_names)
+            await write_message(self._process_mgr.stdin, init_req)
 
         # With --input-format stream-json, the Claude CLI does NOT send
         # SystemInit until the first user message. We skip the blocking
@@ -287,6 +297,17 @@ class AsyncSession:
                 if isinstance(event, PermissionRequest):
                     await self._handle_permission(event)
 
+                # Handle MCP requests for registered tools
+                if isinstance(event, McpRequest):
+                    handled = await self._handle_mcp_request(event)
+                    if not handled:
+                        # Unknown method or unknown server -- pass through
+                        pass
+                    elif event.message.get("method") == "tools/list":
+                        # tools/list is fully internal, don't yield
+                        continue
+                    # tools/call is yielded so consumers can track calls
+
                 # Per-type event logging (before flatten)
                 if isinstance(event, Thinking):
                     log.info("event: Thinking (%d chars)", len(event.text))
@@ -391,6 +412,80 @@ class AsyncSession:
 
         await write_message(self._process_mgr.stdin, msg)
         return True
+
+    async def _handle_mcp_request(self, request: McpRequest) -> bool:
+        """Handle an MCP JSON-RPC request. Returns True if handled."""
+        tools = self._tools_by_server.get(request.server_name)
+        if tools is None:
+            return False
+
+        message = request.message
+        method = message.get("method", "")
+        rpc_id = message.get("id")
+
+        if method == "tools/list":
+            response = {
+                "jsonrpc": "2.0",
+                "id": rpc_id,
+                "result": {
+                    "tools": [
+                        {
+                            "name": t.name,
+                            "description": t.description,
+                            "inputSchema": t.input_schema,
+                        }
+                        for t in tools
+                    ],
+                },
+            }
+            msg = McpResponse(request_id=request.request_id, mcp_response=response)
+            await write_message(self._process_mgr.stdin, msg)
+            return True
+
+        if method == "tools/call":
+            params = message.get("params", {})
+            tool_name = params.get("name", "")
+            arguments = params.get("arguments", {})
+
+            # Find the tool by name
+            handler = None
+            for t in tools:
+                if t.name == tool_name:
+                    handler = t.handler
+                    break
+
+            if handler is None:
+                response = {
+                    "jsonrpc": "2.0",
+                    "id": rpc_id,
+                    "error": {"code": -32601, "message": f"Tool '{tool_name}' not found"},
+                }
+            else:
+                try:
+                    if asyncio.iscoroutinefunction(handler):
+                        result = await handler(**arguments)
+                    else:
+                        result = handler(**arguments)
+                    response = {
+                        "jsonrpc": "2.0",
+                        "id": rpc_id,
+                        "result": {
+                            "content": [{"type": "text", "text": str(result)}],
+                        },
+                    }
+                except Exception as e:
+                    response = {
+                        "jsonrpc": "2.0",
+                        "id": rpc_id,
+                        "error": {"code": -32000, "message": str(e)},
+                    }
+
+            msg = McpResponse(request_id=request.request_id, mcp_response=response)
+            await write_message(self._process_mgr.stdin, msg)
+            return True
+
+        # Unknown JSON-RPC method
+        return False
 
     # --- Callbacks ---
 
