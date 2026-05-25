@@ -8,6 +8,11 @@ from typing import Any, Union, get_args, get_origin
 
 import msgspec
 
+__all__ = [
+    "Tool",
+    "tool",
+]
+
 
 class Tool(msgspec.Struct, frozen=True):
     """A user-defined tool that can be served via MCP to Claude Code."""

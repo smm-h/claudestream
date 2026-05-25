@@ -6,6 +6,14 @@ from typing import Any
 
 import msgspec
 
+__all__ = [
+    "UserMessage",
+    "AllowPermission",
+    "DenyPermission",
+    "McpResponse",
+    "InitializeRequest",
+]
+
 
 class UserMessage(msgspec.Struct, frozen=True):
     """A user prompt sent to Claude Code via stdin."""

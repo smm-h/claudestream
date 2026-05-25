@@ -6,6 +6,32 @@ from typing import Any
 
 import msgspec
 
+__all__ = [
+    "Event",
+    "SystemInit",
+    "ApiRetry",
+    "CompactBoundary",
+    "TextBlock",
+    "ToolUseBlock",
+    "ThinkingBlock",
+    "ToolResultBlock",
+    "ContentBlock",
+    "Usage",
+    "AssistantMessage",
+    "ToolResultMessage",
+    "AssistantText",
+    "ToolUse",
+    "Thinking",
+    "ToolResult",
+    "StreamDelta",
+    "Result",
+    "RateLimit",
+    "PermissionRequest",
+    "McpRequest",
+    "UnknownEvent",
+    "AskResult",
+]
+
 
 # ---------------------------------------------------------------------------
 # Base
