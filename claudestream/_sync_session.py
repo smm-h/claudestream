@@ -9,7 +9,7 @@ import threading
 from collections.abc import Iterator
 from typing import Any, Callable
 
-from claudestream.events import Event, Result
+from claudestream.events import AskResult, Event, Result
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 
 log = logging.getLogger("claudestream")
@@ -142,6 +142,12 @@ class SyncSession:
             self._run_coro(self._async_session.cancel(force=force))
 
     # --- Sending messages ---
+
+    def ask(self, prompt: str) -> AskResult:
+        """Send a prompt and return the complete response text with metadata."""
+        if not self._async_session:
+            raise RuntimeError("Session not started. Use 'with SyncSession() as session:'")
+        return self._run_coro(self._async_session.ask(prompt))
 
     def send(self, prompt: str, *, raw: bool = False) -> Iterator[Event]:
         """Send a message and yield events until the turn completes.

@@ -9,7 +9,9 @@ from typing import Any, Callable
 
 from claudestream.events import (
     ApiRetry,
+    AskResult,
     AssistantMessage,
+    AssistantText,
     Event,
     McpRequest,
     PermissionRequest,
@@ -244,6 +246,27 @@ class AsyncSession:
                 yield event
         finally:
             self._active_turn = False
+
+    async def ask(self, prompt: str) -> AskResult:
+        """Send a prompt and return the complete response text with metadata."""
+        parts: list[str] = []
+        result_event: Result | None = None
+        async for event in self.send(prompt):
+            if isinstance(event, AssistantText):
+                parts.append(event.text)
+            elif isinstance(event, Result):
+                result_event = event
+
+        text = "".join(parts)
+        if result_event:
+            return AskResult(
+                text=text,
+                usage=result_event.usage,
+                cost_usd=result_event.total_cost_usd,
+                duration_ms=result_event.duration_ms,
+                is_error=result_event.is_error,
+            )
+        return AskResult(text=text)
 
     async def _read_turn(
         self, *, raw: bool, _health_timeout: float = 30.0,

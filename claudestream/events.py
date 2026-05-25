@@ -239,3 +239,18 @@ class UnknownEvent(Event, frozen=True):
     """Forward-compatible event for unrecognized event types."""
 
     raw: dict = {}
+
+
+# ---------------------------------------------------------------------------
+# Convenience result (returned by ask())
+# ---------------------------------------------------------------------------
+
+
+class AskResult(msgspec.Struct, frozen=True):
+    """Complete response from a single ask() call."""
+
+    text: str
+    usage: Usage | None = None
+    cost_usd: float = 0.0
+    duration_ms: float = 0.0
+    is_error: bool = False

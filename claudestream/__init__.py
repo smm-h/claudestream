@@ -3,6 +3,7 @@
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._sync_session import SyncSession
 from claudestream.events import (
+    AskResult,
     AssistantMessage,
     AssistantText,
     ApiRetry,
@@ -40,6 +41,7 @@ __all__ = [
     "SyncSession",
     "ClaudeStreamError",
     # Events
+    "AskResult",
     "Event",
     "SystemInit",
     "ApiRetry",
@@ -93,7 +95,6 @@ def print_prompt(
     Creates a SyncSession, sends one message, collects AssistantText events,
     and returns the concatenated text. For claudewheel integration.
     """
-    parts: list[str] = []
     with SyncSession(
         model=model,
         profile=profile,
@@ -104,7 +105,5 @@ def print_prompt(
         extra_args=extra_args,
         env=env,
     ) as session:
-        for event in session.send(prompt):
-            if isinstance(event, AssistantText):
-                parts.append(event.text)
-    return "".join(parts)
+        result = session.ask(prompt)
+    return result.text
