@@ -8,15 +8,17 @@ In gamehome's `invoke.py`, the `_run_turn` function processes events inline (tra
 
 This is a universal pattern. Any non-trivial consumer will need post-session actions: commit files, run linters, upload metrics, clean up temp files, notify external systems. Providing a hook mechanism in claudestream eliminates boilerplate and separates event processing from post-session cleanup.
 
+## Existing infrastructure
+
+The codebase already has a generic `session.on(EventType, handler)` callback system that fires per-event-type handlers inline during streaming. This todo does NOT propose replacing that. The scope is limited to **lifecycle hooks** that fire at specific session moments not covered by per-event callbacks: `on_turn_complete` (after a full turn finishes), `on_error` (on session failure), and `on_close` (before session teardown).
+
 ## Problem
 
-1. **No hook point.** AsyncSession and SyncSession have no mechanism for registering callbacks that run after a turn or session completes. Consumers must structure their own code to detect the Result event and run cleanup at the right time.
+1. **No lifecycle hook point.** AsyncSession and SyncSession have no mechanism for registering callbacks that run after a turn completes or when the session closes. The existing `.on()` system handles per-event callbacks during streaming, but there is no equivalent for post-turn or session-end moments. Consumers must structure their own code to detect the Result event and run cleanup at the right time.
 
-2. **Cleanup logic mixes with event processing.** In gamehome's `_run_turn`, file tracking happens inside the event loop (`event.name in ("Write", "Edit")` checks inline with all other event handling). Post-turn cleanup (parsing structured output, logging summaries) happens after the loop. There is no separation between "what to do during the stream" and "what to do after the stream."
+2. **Error handling is ad-hoc.** If a consumer's post-session cleanup raises, there is no standard way to handle it -- it just propagates up and may interfere with session teardown. Each consumer must write their own try/except around cleanup.
 
-3. **Error handling is ad-hoc.** If a consumer's post-session cleanup raises, there is no standard way to handle it -- it just propagates up and may interfere with session teardown. Each consumer must write their own try/except around cleanup.
-
-4. **Multi-turn sessions compound the problem.** A session may involve multiple `send()` calls (multi-turn conversation). Consumers may want hooks after each turn (on each Result) and/or hooks after the session closes. These are distinct hook points.
+3. **Multi-turn sessions compound the problem.** A session may involve multiple `send()` calls (multi-turn conversation). Consumers may want hooks after each turn (on each Result) and/or hooks after the session closes. These are distinct hook points.
 
 ## Proposed API
 
@@ -93,16 +95,6 @@ Sessions can fail in several ways: timeout (`asyncio.TimeoutError`), subprocess 
 - **Option B: Single hook with status.** `on_turn_complete` receives a result-or-error wrapper: `TurnOutcome(result: Result | None, error: Exception | None)`.
 - **Option C: on_turn_complete only fires on success; errors propagate normally.** Consumers handle errors in their own try/except.
 - **Recommendation:** Option A. Separate hooks are cleaner. `on_turn_complete` fires on success, `on_error` fires on failure. If both exist, exactly one fires per turn. This mirrors web framework middleware patterns.
-
-### Interaction with the existing `.on()` callback system
-
-AsyncSession already has `session.on(EventType, handler)` for per-event-type callbacks that fire during iteration. Post-session hooks are a different concern:
-
-- `.on()` fires inline during event streaming, before the event is yielded.
-- `on_turn_complete` fires after the full turn is done.
-- They compose naturally -- `.on()` for real-time event processing, `on_turn_complete` for post-turn actions.
-
-No naming collision, but the distinction should be documented clearly.
 
 ### Interaction with file-write tracking
 
