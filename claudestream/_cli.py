@@ -368,6 +368,10 @@ def cmd_agent_run(
         print(color.red(f"error: failed to load agent definition: {e}"), file=sys.stderr)
         return 1
 
+    if not model and not agent_def.model:
+        print("Error: no model specified. Use --model or set 'model' in the agent definition.", file=sys.stderr)
+        return 1
+
     try:
         streamed_text = ""
         with invoke_agent_sync(
