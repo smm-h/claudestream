@@ -22,3 +22,4 @@ Interactive multi-turn REPL
 | `--footer` |  | bool | True |  | Show cost and timing on stderr |
 | `--system-prompt` | `-s` | str |  |  | System prompt for Claude |
 | `--no-color` |  | bool |  |  | Disable colored output |
+| `--resume` |  | str |  |  | Resume a previous session by ID |

@@ -9,7 +9,7 @@ nav_order: 1
 
 # claudestream agent
 
-Agent definition commands
+Commands for working with .agent.json definition files. Validate agent configurations, run agents with budget enforcement and permission policies, and inspect agent metadata. Each agent file declares the model, system prompt, allowed tools, and resource limits for a Claude Code session.
 
 ## agent run
 
