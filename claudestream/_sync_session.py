@@ -11,6 +11,8 @@ from typing import Any, Callable
 
 from claudestream.events import AskResult, Event, Result
 from claudestream._async_session import AsyncSession, ClaudeStreamError
+from claudestream.policy import Sandbox
+from claudestream._tools import Tool
 
 log = logging.getLogger("claudestream")
 
@@ -36,11 +38,11 @@ class SyncSession:
         *,
         cwd: str | None = None,
         binary: str | None = None,
-        sandbox: Any = None,
+        sandbox: Sandbox | None = None,
         system_prompt: str | None = None,
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
-        tools: list | None = None,
+        tools: list[Tool] | None = None,
         resume_session_id: str | None = None,
     ):
         self._kwargs = {
