@@ -1,10 +1,10 @@
 {
-    "version": "0.5.1",
+    "version": "0.6.0",
     "language": "python",
     "source": ["claudestream"],
     "docs": "docs",
     "base_url": "https://claudestream.smmh.dev",
-    "versions": [{"version": "0.3.0", "indexed": true}, {"version": "0.5.1", "indexed": false}],
+    "versions": [{"version": "0.3.0", "indexed": true}, {"version": "0.5.1", "indexed": false}, {"version": "0.6.0", "indexed": false}],
     "locales": [{"code": "en", "label": "English", "default": true}],
     "deploy": {
         "provider": "cloudflare-pages",
