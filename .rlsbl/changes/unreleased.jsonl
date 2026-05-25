@@ -14,3 +14,4 @@
 {"commits":["a7684387b6d8148dee7ee9b86ca83c9b7c9b49e3"],"user_facing":true,"description":"**`ask()` convenience method.** Send a prompt and get back an `AskResult` with text, usage, cost, and duration \u2014 no manual event collection needed.","type":"feature"}
 {"commits":["ce9e83a459bffec83ac3adc5fc8fa17c60a483ed","e3d7527a94f8a9c0fa2698539ae463888c3dfad9"],"user_facing":true,"description":"**Agent definition toolkit.** Declarative `AgentDefinition` with prompt templates, tool schemas, sandbox config, and budget constraints. Load from `.agent.json` files. New `claudestream agent run` CLI command.","type":"feature"}
 {"commits":["c080f126b8a0e2d5fd0939927a342b7ad25eb005"],"user_facing":false}
+{"commits":["24c1bd432e0e8597a580ad967a03dbe29acebbb6"],"user_facing":false}
