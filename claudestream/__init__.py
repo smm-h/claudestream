@@ -34,6 +34,14 @@ from claudestream.policy import (
     create_sandbox,
 )
 from claudestream._tools import Tool, tool
+from claudestream._agent import (
+    AgentDefinition,
+    Budget,
+    SandboxConfig,
+    ToolSchema,
+    load_agent,
+    resolve_prompt,
+)
 
 __all__ = [
     # Sessions
@@ -73,6 +81,13 @@ __all__ = [
     # Tools
     "Tool",
     "tool",
+    # Agent definitions
+    "AgentDefinition",
+    "Budget",
+    "SandboxConfig",
+    "ToolSchema",
+    "load_agent",
+    "resolve_prompt",
     # Convenience
     "print_prompt",
 ]
