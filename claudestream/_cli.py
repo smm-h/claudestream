@@ -26,6 +26,7 @@ from claudestream import (
     SystemInit,
     UnknownEvent,
 )
+from claudestream._agent import invoke_agent_sync, load_agent
 from claudestream._color import Colorizer, should_color
 
 from importlib.metadata import version as _pkg_version
@@ -305,6 +306,96 @@ def cmd_repl(
                     print(color.dim(f"Connected: {session.model_name}"), file=sys.stderr)
                     model_shown = True
                 print()
+    except ClaudeStreamError as e:
+        print(color.red(f"error: {e}"), file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        return 1
+
+
+# --- agent group ---
+
+agent_group = app.group("agent", help="Agent definition commands")
+
+
+@agent_group.command("run", help="Run an agent from a .agent.json file")
+@strictcli.arg("definition", help="Path to .agent.json file")
+@strictcli.arg("prompt", help="User message to send to the agent")
+@strictcli.flag("var", type=str, help="Variable in key=value format (repeatable)", default=[], repeatable=True)
+@strictcli.flag("model", type=str, help="Model override", short="m", default="")
+@strictcli.flag("profile", type=str, help="claudewheel profile to use")
+@strictcli.flag("cwd", type=str, help="Working directory", default="")
+@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
+@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+def cmd_agent_run(
+    definition: str,
+    prompt: str,
+    var: list[str],
+    model: str,
+    profile: str,
+    cwd: str = "",
+    footer: bool = True,
+    no_color: bool = False,
+) -> int | None:
+    color = Colorizer(should_color(no_color_flag=no_color))
+
+    # Parse variables from --var key=value flags
+    variables: dict[str, str] = {}
+    for v in var:
+        if "=" not in v:
+            print(color.red(f"error: --var must be key=value, got: {v!r}"), file=sys.stderr)
+            return 1
+        key, value = v.split("=", 1)
+        variables[key] = value
+
+    try:
+        agent_def = load_agent(definition)
+    except Exception as e:
+        print(color.red(f"error: failed to load agent definition: {e}"), file=sys.stderr)
+        return 1
+
+    try:
+        streamed_text = ""
+        with invoke_agent_sync(
+            agent_def,
+            profile,
+            variables=variables or None,
+            model=model or None,
+            cwd=cwd or None,
+        ) as session:
+            for event in session.send(prompt):
+                if isinstance(event, StreamDelta) and event.text:
+                    streamed_text += event.text
+                    sys.stdout.write(event.text)
+                    sys.stdout.flush()
+                elif isinstance(event, AssistantText):
+                    if event.text != streamed_text:
+                        sys.stdout.write(event.text)
+                        sys.stdout.flush()
+                elif isinstance(event, Result):
+                    sys.stdout.write("\n")
+                    sys.stdout.flush()
+                    if footer:
+                        print(color.cyan(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
+                    streamed_text = ""
+                elif isinstance(event, Thinking):
+                    print(color.dim("[thinking...]"), file=sys.stderr)
+                elif isinstance(event, ToolUse):
+                    print(f"[tool: {color.bold(event.name)}]", file=sys.stderr)
+                elif isinstance(event, ToolResult):
+                    print("[result]", file=sys.stderr)
+                elif isinstance(event, ApiRetry):
+                    print(color.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
+                elif isinstance(event, RateLimit):
+                    print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
+                elif isinstance(event, PermissionRequest):
+                    print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
+                elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
+                    pass
+    except ValueError as e:
+        print(color.red(f"error: {e}"), file=sys.stderr)
+        return 1
     except ClaudeStreamError as e:
         print(color.red(f"error: {e}"), file=sys.stderr)
         return 1

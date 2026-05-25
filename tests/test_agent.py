@@ -1,8 +1,10 @@
-"""Tests for AgentDefinition, Budget, ToolSchema, SandboxConfig, and .agent.json loader."""
+"""Tests for AgentDefinition, Budget, ToolSchema, SandboxConfig, .agent.json loader, and invoke_agent."""
 
 from __future__ import annotations
 
+import asyncio
 import json
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import msgspec
 import pytest
@@ -12,9 +14,16 @@ from claudestream._agent import (
     Budget,
     SandboxConfig,
     ToolSchema,
+    _build_sandbox,
+    _build_tools,
+    _resolve_model,
+    invoke_agent,
+    invoke_agent_sync,
     load_agent,
     resolve_prompt,
 )
+from claudestream.policy import Sandbox
+from claudestream._tools import Tool
 
 
 class TestBudget:
@@ -213,3 +222,227 @@ class TestLoadAgent:
         encoded = msgspec.json.encode(ad)
         decoded = msgspec.json.decode(encoded, type=AgentDefinition)
         assert decoded == ad
+
+
+class TestResolveModel:
+    def test_arg_overrides_definition(self):
+        ad = AgentDefinition(name="a", prompt_template="p", model="haiku")
+        assert _resolve_model("opus", ad) == "opus"
+
+    def test_definition_model_used(self):
+        ad = AgentDefinition(name="a", prompt_template="p", model="haiku")
+        assert _resolve_model(None, ad) == "haiku"
+
+    def test_no_model_raises(self):
+        ad = AgentDefinition(name="a", prompt_template="p")
+        with pytest.raises(ValueError, match="model must be specified"):
+            _resolve_model(None, ad)
+
+    def test_empty_string_model_raises(self):
+        ad = AgentDefinition(name="a", prompt_template="p")
+        with pytest.raises(ValueError, match="model must be specified"):
+            _resolve_model("", ad)
+
+
+class TestBuildSandbox:
+    def test_no_sandbox_config(self):
+        ad = AgentDefinition(name="a", prompt_template="p")
+        assert _build_sandbox(ad) is None
+
+    def test_sandbox_from_config(self):
+        sc = SandboxConfig(tools=["Read", "Write"], bare=True, write_paths=["/tmp"])
+        ad = AgentDefinition(name="a", prompt_template="p", sandbox=sc)
+        sandbox = _build_sandbox(ad)
+        assert isinstance(sandbox, Sandbox)
+        assert sandbox.tools == ["Read", "Write"]
+        assert sandbox.bare is True
+        assert sandbox.write_paths == ["/tmp"]
+
+    def test_sandbox_defaults(self):
+        sc = SandboxConfig()
+        ad = AgentDefinition(name="a", prompt_template="p", sandbox=sc)
+        sandbox = _build_sandbox(ad)
+        assert isinstance(sandbox, Sandbox)
+        assert sandbox.tools is None
+        assert sandbox.bare is False
+        assert sandbox.write_paths is None
+
+
+class TestBuildTools:
+    def test_no_tools_in_definition(self):
+        ad = AgentDefinition(name="a", prompt_template="p")
+        assert _build_tools(ad, {"search": lambda: None}) is None
+
+    def test_no_handlers(self):
+        ts = ToolSchema(name="search", description="s", input_schema={})
+        ad = AgentDefinition(name="a", prompt_template="p", tools=[ts])
+        assert _build_tools(ad, None) is None
+
+    def test_builds_tools_from_handlers(self):
+        ts = ToolSchema(
+            name="search",
+            description="Search things",
+            input_schema={"type": "object"},
+            server="my-server",
+        )
+        ad = AgentDefinition(name="a", prompt_template="p", tools=[ts])
+
+        def handler(): pass
+        tools = _build_tools(ad, {"search": handler})
+        assert tools is not None
+        assert len(tools) == 1
+        assert isinstance(tools[0], Tool)
+        assert tools[0].name == "search"
+        assert tools[0].description == "Search things"
+        assert tools[0].input_schema == {"type": "object"}
+        assert tools[0].handler is handler
+        assert tools[0].server == "my-server"
+
+    def test_missing_handler_skipped(self):
+        ts1 = ToolSchema(name="a", description="d", input_schema={})
+        ts2 = ToolSchema(name="b", description="d", input_schema={})
+        ad = AgentDefinition(name="a", prompt_template="p", tools=[ts1, ts2])
+
+        def handler_a(): pass
+        tools = _build_tools(ad, {"a": handler_a})
+        assert tools is not None
+        assert len(tools) == 1
+        assert tools[0].name == "a"
+
+    def test_all_handlers_missing_returns_none(self):
+        ts = ToolSchema(name="a", description="d", input_schema={})
+        ad = AgentDefinition(name="a", prompt_template="p", tools=[ts])
+        assert _build_tools(ad, {"nonexistent": lambda: None}) is None
+
+
+class TestInvokeAgent:
+    def test_resolves_prompt_and_creates_session(self):
+        ad = AgentDefinition(
+            name="test",
+            prompt_template="Hello {name}!",
+            model="sonnet",
+        )
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+
+        async def run():
+            with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
+                async with invoke_agent(ad, "test-profile", variables={"name": "Alice"}) as session:
+                    assert session is mock_session
+                mock_cls.assert_called_once_with(
+                    "sonnet",
+                    "test-profile",
+                    sandbox=None,
+                    tools=None,
+                    system_prompt="Hello Alice!",
+                    cwd=None,
+                    env=None,
+                )
+
+        asyncio.run(run())
+
+    def test_builds_sandbox(self):
+        sc = SandboxConfig(tools=["Read"], bare=True)
+        ad = AgentDefinition(
+            name="test",
+            prompt_template="p",
+            model="sonnet",
+            sandbox=sc,
+        )
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+
+        async def run():
+            with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
+                async with invoke_agent(ad, "profile") as session:
+                    pass
+                call_kwargs = mock_cls.call_args
+                sandbox = call_kwargs.kwargs["sandbox"]
+                assert isinstance(sandbox, Sandbox)
+                assert sandbox.tools == ["Read"]
+                assert sandbox.bare is True
+
+        asyncio.run(run())
+
+    def test_requires_model(self):
+        ad = AgentDefinition(name="test", prompt_template="p")
+
+        async def run():
+            with pytest.raises(ValueError, match="model must be specified"):
+                async with invoke_agent(ad, "profile"):
+                    pass
+
+        asyncio.run(run())
+
+    def test_model_override(self):
+        ad = AgentDefinition(name="test", prompt_template="p", model="haiku")
+        mock_session = AsyncMock()
+        mock_session.__aenter__ = AsyncMock(return_value=mock_session)
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+
+        async def run():
+            with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
+                async with invoke_agent(ad, "profile", model="opus") as session:
+                    pass
+                assert mock_cls.call_args.args[0] == "opus"
+
+        asyncio.run(run())
+
+
+class TestInvokeAgentSync:
+    def test_resolves_prompt_and_creates_session(self):
+        ad = AgentDefinition(
+            name="test",
+            prompt_template="Hello {name}!",
+            model="sonnet",
+        )
+        mock_session = MagicMock()
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
+
+        with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
+            with invoke_agent_sync(ad, "test-profile", variables={"name": "Bob"}) as session:
+                assert session is mock_session
+            mock_cls.assert_called_once_with(
+                "sonnet",
+                "test-profile",
+                sandbox=None,
+                tools=None,
+                system_prompt="Hello Bob!",
+                cwd=None,
+                env=None,
+            )
+
+    def test_requires_model(self):
+        ad = AgentDefinition(name="test", prompt_template="p")
+        with pytest.raises(ValueError, match="model must be specified"):
+            with invoke_agent_sync(ad, "profile"):
+                pass
+
+    def test_model_override(self):
+        ad = AgentDefinition(name="test", prompt_template="p", model="haiku")
+        mock_session = MagicMock()
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
+
+        with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
+            with invoke_agent_sync(ad, "profile", model="opus") as session:
+                pass
+            assert mock_cls.call_args.args[0] == "opus"
+
+    def test_passes_cwd_and_env(self):
+        ad = AgentDefinition(name="test", prompt_template="p", model="sonnet")
+        mock_session = MagicMock()
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
+
+        with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
+            with invoke_agent_sync(
+                ad, "profile", cwd="/work", env={"KEY": "val"}
+            ) as session:
+                pass
+            call_kwargs = mock_cls.call_args
+            assert call_kwargs.kwargs["cwd"] == "/work"
+            assert call_kwargs.kwargs["env"] == {"KEY": "val"}

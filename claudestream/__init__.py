@@ -39,6 +39,8 @@ from claudestream._agent import (
     Budget,
     SandboxConfig,
     ToolSchema,
+    invoke_agent,
+    invoke_agent_sync,
     load_agent,
     resolve_prompt,
 )
@@ -86,6 +88,8 @@ __all__ = [
     "Budget",
     "SandboxConfig",
     "ToolSchema",
+    "invoke_agent",
+    "invoke_agent_sync",
     "load_agent",
     "resolve_prompt",
     # Convenience
