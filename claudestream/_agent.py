@@ -86,20 +86,25 @@ def _build_tools(
     tool_handlers: dict[str, Any] | None,
 ) -> list | None:
     """Build Tool objects from ToolSchemas + handlers, or None."""
-    if not definition.tools or not tool_handlers:
+    if not definition.tools:
         return None
+    if not tool_handlers:
+        missing = [t.name for t in definition.tools]
+        raise ValueError(f"Missing handlers for tools: {', '.join(missing)}")
+    missing = [t.name for t in definition.tools if t.name not in tool_handlers]
+    if missing:
+        raise ValueError(f"Missing handlers for tools: {', '.join(missing)}")
     from claudestream._tools import Tool
     tools = []
     for ts in definition.tools:
-        handler = tool_handlers.get(ts.name)
-        if handler:
-            tools.append(Tool(
-                name=ts.name,
-                description=ts.description,
-                input_schema=ts.input_schema,
-                handler=handler,
-                server=ts.server,
-            ))
+        handler = tool_handlers[ts.name]
+        tools.append(Tool(
+            name=ts.name,
+            description=ts.description,
+            input_schema=ts.input_schema,
+            handler=handler,
+            server=ts.server,
+        ))
     return tools or None
 
 
