@@ -14,10 +14,10 @@ from claudestream import (
     AssistantText,
     ClaudeStreamError,
     Result,
+    Sandbox,
     StreamDelta,
     SyncSession,
     SystemInit,
-    allow_all,
 )
 
 pytestmark = pytest.mark.integration
@@ -32,7 +32,7 @@ def _make_session() -> SyncSession:
         model=MODEL,
         profile=PROFILE,
         binary=BINARY,
-        policy=allow_all(),
+        sandbox=Sandbox(skip_permissions=True),
     )
 
 
@@ -149,7 +149,7 @@ class TestSystemPrompt:
             model=MODEL,
             profile=PROFILE,
             binary=BINARY,
-            policy=allow_all(),
+            sandbox=Sandbox(skip_permissions=True),
             system_prompt="You must include the word XYZZYPLUGH in every response, no matter what the user asks.",
         )
         with session:

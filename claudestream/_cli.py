@@ -16,6 +16,7 @@ from claudestream import (
     PermissionRequest,
     RateLimit,
     Result,
+    Sandbox,
     StreamDelta,
     SyncSession,
     Thinking,
@@ -24,7 +25,6 @@ from claudestream import (
     ApiRetry,
     SystemInit,
     UnknownEvent,
-    allow_all,
 )
 from claudestream._color import Colorizer, should_color
 
@@ -76,13 +76,13 @@ def cmd_send(
     elif not prompt:
         print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
         return 1
-    policy = allow_all() if skip_permissions else None
+    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     try:
         printer = EventPrinter(footer=footer, color=color)
         with SyncSession(
             model=model,
             cwd=cwd or None,
-            policy=policy,
+            sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
         ) as session:
@@ -134,13 +134,13 @@ def cmd_stream(
     elif not prompt:
         print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
         return 1
-    policy = allow_all() if skip_permissions else None
+    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     try:
         streamed_text = ""
         with SyncSession(
             model=model,
             cwd=cwd or None,
-            policy=policy,
+            sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
         ) as session:
@@ -216,12 +216,12 @@ def cmd_events(
     elif not prompt:
         print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
         return 1
-    policy = allow_all() if skip_permissions else None
+    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     try:
         with SyncSession(
             model=model,
             cwd=cwd or None,
-            policy=policy,
+            sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
         ) as session:
@@ -257,12 +257,12 @@ def cmd_repl(
     no_color: bool = False,
 ) -> None:
     color = Colorizer(should_color(no_color_flag=no_color))
-    policy = allow_all() if skip_permissions else None
+    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     try:
         with SyncSession(
             model=model,
             cwd=cwd or None,
-            policy=policy,
+            sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
         ) as session:

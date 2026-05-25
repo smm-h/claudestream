@@ -23,7 +23,7 @@ from claudestream.events import (
     UnknownEvent,
 )
 from claudestream.messages import AllowPermission, DenyPermission, UserMessage
-from claudestream.policy import Allow, Deny, Policy, policy_to_flags
+from claudestream.policy import Allow, Deny, Sandbox, sandbox_to_flags, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
 from claudestream._protocol import flatten_event, read_events, write_message
 
@@ -55,20 +55,20 @@ class AsyncSession:
         *,
         cwd: str | None = None,
         binary: str | None = None,
-        policy: Policy | None = None,
+        sandbox: Sandbox | None = None,
         system_prompt: str | None = None,
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
     ):
         self._binary = find_binary(binary)
-        self._policy = policy
+        self._sandbox = sandbox
         self._callbacks: dict[type, list[Callable]] = {}
         self._active_turn = False
         self._last_result: Result | None = None
         self._cancelled = False
 
-        # Convert policy to CLI flags, then route them to ProcessConfig fields
-        policy_flags = policy_to_flags(policy)
+        # Convert sandbox to CLI flags, then route them to ProcessConfig fields
+        sandbox_flags = sandbox_to_flags(sandbox)
 
         permission_mode: str | None = None
         permission_prompt_tool: str | None = None
@@ -77,19 +77,19 @@ class AsyncSession:
 
         remaining_flags: list[str] = []
         i = 0
-        while i < len(policy_flags):
-            flag = policy_flags[i]
+        while i < len(sandbox_flags):
+            flag = sandbox_flags[i]
             if flag == "--dangerously-skip-permissions":
                 skip_permissions = True
                 i += 1
             elif flag == "--permission-mode":
-                permission_mode = policy_flags[i + 1]
+                permission_mode = sandbox_flags[i + 1]
                 i += 2
             elif flag == "--permission-prompt-tool":
-                permission_prompt_tool = policy_flags[i + 1]
+                permission_prompt_tool = sandbox_flags[i + 1]
                 i += 2
             elif flag == "--allowedTools":
-                allowed_tools = policy_flags[i + 1].split(",")
+                allowed_tools = sandbox_flags[i + 1].split(",")
                 i += 2
             else:
                 remaining_flags.append(flag)
@@ -275,7 +275,7 @@ class AsyncSession:
                         len(self._tools),
                     )
 
-                # Handle permission requests via policy
+                # Handle permission requests via sandbox
                 if isinstance(event, PermissionRequest):
                     await self._handle_permission(event)
 
@@ -362,14 +362,12 @@ class AsyncSession:
                 pass
 
     async def _handle_permission(self, request: PermissionRequest) -> bool:
-        """Apply policy to a permission request. Returns True if handled."""
-        if self._policy is None:
+        """Apply sandbox rules to a permission request. Returns True if handled."""
+        if self._sandbox is None:
             return False
 
-        decision = self._policy.decide(request.tool_name, request.tool_input)
-
-        if decision is None:
-            return False
+        cwd = self._process_mgr.config.cwd or "."
+        decision = sandbox_decide(self._sandbox, request.tool_name, request.tool_input, cwd)
 
         if isinstance(decision, Allow):
             updated = decision.updated_input if decision.updated_input else request.tool_input

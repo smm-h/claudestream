@@ -101,7 +101,7 @@ class ProcessConfig:
     permission_mode: str | None = None
     allowed_tools: list[str] = field(default_factory=list)
     disallowed_tools: list[str] = field(default_factory=list)
-    permission_prompt_tool: str | None = None  # "stdio" when using callback policy
+    permission_prompt_tool: str | None = None  # "stdio" when sandbox needs permission interception
     extra_args: list[str] = field(default_factory=list)
     env: dict[str, str] | None = None
 

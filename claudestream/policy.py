@@ -53,6 +53,9 @@ class Sandbox(msgspec.Struct, frozen=True):
     log_violations: bool = False
     """Log denied tool calls at WARNING level."""
 
+    skip_permissions: bool = False
+    """If True, pass --dangerously-skip-permissions to bypass all permission prompts."""
+
 
 def create_sandbox(
     *,
@@ -60,6 +63,7 @@ def create_sandbox(
     bare: bool = False,
     write_paths: list[str] | None = None,
     log_violations: bool = False,
+    skip_permissions: bool = False,
 ) -> Sandbox:
     """Create a validated Sandbox configuration.
 
@@ -78,6 +82,7 @@ def create_sandbox(
         bare=bare,
         write_paths=write_paths,
         log_violations=log_violations,
+        skip_permissions=skip_permissions,
     )
 
 
@@ -90,6 +95,13 @@ def sandbox_to_flags(sandbox: Sandbox | None) -> list[str]:
         return []
 
     flags: list[str] = []
+
+    if sandbox.skip_permissions:
+        flags.append("--dangerously-skip-permissions")
+        # When skipping all permissions, no other permission flags are needed.
+        if sandbox.bare:
+            flags.append("--bare")
+        return flags
 
     if sandbox.bare:
         flags.append("--bare")

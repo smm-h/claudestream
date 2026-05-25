@@ -1,32 +1,15 @@
-"""Tests for Sandbox configuration and sandbox_to_flags.
-
-Imports policy.py directly to avoid triggering __init__.py, which still
-references old Policy classes removed in this phase. Phase 7 will fix
-the package-level imports and this workaround can be removed.
-"""
-
-import importlib.util
-import sys
+"""Tests for Sandbox configuration and sandbox_to_flags."""
 
 import pytest
 
-# Load policy.py directly, bypassing claudestream/__init__.py which still
-# imports the removed Policy class from _async_session.py.
-_spec = importlib.util.spec_from_file_location(
-    "claudestream.policy",
-    "claudestream/policy.py",
-    submodule_search_locations=[],
+from claudestream.policy import (
+    Allow,
+    Deny,
+    Sandbox,
+    create_sandbox,
+    sandbox_to_flags,
+    sandbox_decide,
 )
-_mod = importlib.util.module_from_spec(_spec)
-sys.modules["claudestream.policy"] = _mod
-_spec.loader.exec_module(_mod)
-
-Sandbox = _mod.Sandbox
-Allow = _mod.Allow
-Deny = _mod.Deny
-create_sandbox = _mod.create_sandbox
-sandbox_to_flags = _mod.sandbox_to_flags
-sandbox_decide = _mod.sandbox_decide
 
 
 class TestSandboxDefaults:

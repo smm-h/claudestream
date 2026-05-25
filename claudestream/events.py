@@ -218,7 +218,7 @@ class RateLimit(Event, frozen=True):
 
 
 class PermissionRequest(Event, frozen=True):
-    """Permission request from Claude Code. Surfaced when policy doesn't auto-resolve."""
+    """Permission request from Claude Code. Surfaced when sandbox doesn't auto-resolve."""
 
     request_id: str = ""
     tool_name: str = ""

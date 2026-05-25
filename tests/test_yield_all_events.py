@@ -11,7 +11,7 @@ from claudestream.events import (
     Result,
     SystemInit,
 )
-from claudestream.policy import AllowAllPolicy
+from claudestream.policy import Sandbox
 
 
 def _build_ndjson(events: list[dict]) -> bytes:
@@ -132,15 +132,15 @@ class TestSystemInitYielded:
 
 
 class TestPermissionRequestYieldedWhenHandled:
-    """PermissionRequest events should be yielded even when the policy auto-handles them."""
+    """PermissionRequest events should be yielded even when the sandbox auto-handles them."""
 
     def test_handled_permission_request_yielded(self):
-        """When a policy auto-allows a PermissionRequest, the event should still
+        """When the sandbox auto-allows a PermissionRequest, the event should still
         appear in the consumer's event stream."""
         data = _build_ndjson([PERMISSION_REQUEST_RAW, RESULT_RAW])
 
         async def run():
-            session = _make_session(policy=AllowAllPolicy())
+            session = _make_session(sandbox=Sandbox(skip_permissions=True))
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -152,12 +152,12 @@ class TestPermissionRequestYieldedWhenHandled:
         assert "PermissionRequest" in types
 
     def test_handled_permission_request_still_auto_responded(self):
-        """The policy should still send the auto-response even though the event
+        """The sandbox should still send the auto-response even though the event
         is also yielded to the consumer."""
         data = _build_ndjson([PERMISSION_REQUEST_RAW, RESULT_RAW])
 
         async def run():
-            session = _make_session(policy=AllowAllPolicy())
+            session = _make_session(sandbox=Sandbox(skip_permissions=True))
             _prepare_session(session, data)
 
             events = []

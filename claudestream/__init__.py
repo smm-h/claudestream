@@ -28,17 +28,9 @@ from claudestream.events import (
 )
 from claudestream.policy import (
     Allow,
-    AllowAllPolicy,
-    AllowBuiltinsPolicy,
-    AllowListPolicy,
-    CallbackPolicy,
     Deny,
-    Policy,
-    allow_all,
-    allow_builtins,
-    allow_list,
-    callback,
-    deny_all,
+    Sandbox,
+    create_sandbox,
 )
 
 __all__ = [
@@ -70,19 +62,11 @@ __all__ = [
     "ToolResultBlock",
     "ContentBlock",
     "Usage",
-    # Policy
-    "Policy",
+    # Sandbox
     "Allow",
     "Deny",
-    "AllowAllPolicy",
-    "AllowBuiltinsPolicy",
-    "AllowListPolicy",
-    "CallbackPolicy",
-    "allow_all",
-    "deny_all",
-    "allow_builtins",
-    "allow_list",
-    "callback",
+    "Sandbox",
+    "create_sandbox",
     # Convenience
     "print_prompt",
 ]
@@ -95,7 +79,7 @@ def print_prompt(
     *,
     cwd: str | None = None,
     binary: str | None = None,
-    policy: Policy | None = None,
+    sandbox: Sandbox | None = None,
     system_prompt: str | None = None,
     extra_args: list[str] | None = None,
     env: dict[str, str] | None = None,
@@ -111,7 +95,7 @@ def print_prompt(
         profile=profile,
         cwd=cwd,
         binary=binary,
-        policy=policy,
+        sandbox=sandbox,
         system_prompt=system_prompt,
         extra_args=extra_args,
         env=env,
