@@ -1,6 +1,6 @@
 {
   "name": "claudestream",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "help": "Stream Claude Code's JSON protocol",
   "env_prefix": null,
   "config": false,
@@ -456,6 +456,108 @@
       "passthrough": false
     }
   },
-  "groups": {},
+  "groups": {
+    "agent": {
+      "name": "agent",
+      "help": "Agent definition commands",
+      "commands": {
+        "run": {
+          "name": "run",
+          "help": "Run an agent from a .agent.json file",
+          "flags": [
+            {
+              "name": "var",
+              "type": "str",
+              "help": "Variable in key=value format (repeatable)",
+              "short": null,
+              "default": [],
+              "env": null,
+              "choices": null,
+              "repeatable": true,
+              "negatable": null,
+              "hidden": false
+            },
+            {
+              "name": "model",
+              "type": "str",
+              "help": "Model override",
+              "short": "m",
+              "default": "",
+              "env": null,
+              "choices": null,
+              "repeatable": false,
+              "negatable": null,
+              "hidden": false
+            },
+            {
+              "name": "profile",
+              "type": "str",
+              "help": "claudewheel profile to use",
+              "short": null,
+              "default": null,
+              "env": null,
+              "choices": null,
+              "repeatable": false,
+              "negatable": null,
+              "hidden": false
+            },
+            {
+              "name": "cwd",
+              "type": "str",
+              "help": "Working directory",
+              "short": null,
+              "default": "",
+              "env": null,
+              "choices": null,
+              "repeatable": false,
+              "negatable": null,
+              "hidden": false
+            },
+            {
+              "name": "footer",
+              "type": "bool",
+              "help": "Show cost and timing on stderr",
+              "short": null,
+              "default": true,
+              "env": null,
+              "choices": null,
+              "repeatable": false,
+              "negatable": true,
+              "hidden": false
+            },
+            {
+              "name": "no-color",
+              "type": "bool",
+              "help": "Disable colored output",
+              "short": null,
+              "default": false,
+              "env": null,
+              "choices": null,
+              "repeatable": false,
+              "negatable": true,
+              "hidden": false
+            }
+          ],
+          "args": [
+            {
+              "name": "prompt",
+              "help": "User message to send to the agent",
+              "required": true,
+              "variadic": false
+            },
+            {
+              "name": "definition",
+              "help": "Path to .agent.json file",
+              "required": true,
+              "variadic": false
+            }
+          ],
+          "passthrough": false
+        }
+      },
+      "groups": {},
+      "deprecated": {}
+    }
+  },
   "deprecated": {}
 }
