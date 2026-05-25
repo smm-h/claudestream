@@ -12,7 +12,7 @@ order: 91
 
 Stream Claude Code's JSON protocol
 
-Version: 0.6.0
+Version: 0.6.1
 
 ## Commands
 
@@ -23,4 +23,4 @@ Version: 0.6.0
 
 ## Command Groups
 
-- [agent](cli-agent.html) -- Commands for working with .agent.json definition files. Validate agent configurations, run agents with budget enforcement and permission policies, and inspect agent metadata. Each agent file declares the model, system prompt, allowed tools, and resource limits for a Claude Code session.
+- [agent](cli-agent.html) -- Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata.
