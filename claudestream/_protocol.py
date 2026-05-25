@@ -92,7 +92,7 @@ def parse_usage(raw: dict | None) -> Usage | None:
 
 
 def parse_event(raw: dict) -> Event:
-    """Map a raw JSON dict to the correct typed Event dataclass."""
+    """Map a raw JSON dict to the correct typed Event Struct."""
     event_type = raw.get("type", "")
     session_id = raw.get("session_id")
     uuid = raw.get("uuid")

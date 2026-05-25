@@ -1,8 +1,7 @@
-"""Typed dataclasses for all Claude Code stream output events."""
+"""Typed event classes for all Claude Code stream output events."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Any
 
 import msgspec
@@ -13,8 +12,7 @@ import msgspec
 # ---------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class Event:
+class Event(msgspec.Struct, frozen=True):
     """Base class for all stream events."""
 
     type: str
@@ -27,20 +25,18 @@ class Event:
 # ---------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class SystemInit(Event):
+class SystemInit(Event, frozen=True):
     """First event in the stream. Contains session metadata."""
 
     cwd: str = ""
-    tools: list[str] = field(default_factory=list)
-    mcp_servers: list[str] = field(default_factory=list)
+    tools: list[str] = []
+    mcp_servers: list[str] = []
     model: str = ""
     permission_mode: str = ""
     claude_code_version: str = ""
 
 
-@dataclass(frozen=True)
-class ApiRetry(Event):
+class ApiRetry(Event, frozen=True):
     """Emitted before retrying a failed API call."""
 
     attempt: int = 0
@@ -50,8 +46,7 @@ class ApiRetry(Event):
     error: str = ""
 
 
-@dataclass(frozen=True)
-class CompactBoundary(Event):
+class CompactBoundary(Event, frozen=True):
     """Emitted when conversation history is compacted."""
 
     pass
@@ -105,11 +100,10 @@ class Usage(msgspec.Struct, frozen=True):
 # ---------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class AssistantMessage(Event):
+class AssistantMessage(Event, frozen=True):
     """Complete assistant response with content blocks."""
 
-    content: list[ContentBlock] = field(default_factory=list)
+    content: list[ContentBlock] = []
     model: str = ""
     stop_reason: str = ""
     usage: Usage | None = None
@@ -117,11 +111,10 @@ class AssistantMessage(Event):
     error: str | None = None
 
 
-@dataclass(frozen=True)
-class ToolResultMessage(Event):
+class ToolResultMessage(Event, frozen=True):
     """Tool execution results returned to the model."""
 
-    content: list[ToolResultBlock] = field(default_factory=list)
+    content: list[ToolResultBlock] = []
     parent_tool_use_id: str | None = None
 
 
@@ -130,38 +123,34 @@ class ToolResultMessage(Event):
 # ---------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class AssistantText(Event):
+class AssistantText(Event, frozen=True):
     """Single text block from an assistant message."""
 
     text: str = ""
     parent_tool_use_id: str | None = None
 
 
-@dataclass(frozen=True)
-class ToolUse(Event):
+class ToolUse(Event, frozen=True):
     """Single tool call from an assistant message."""
 
     tool_use_id: str = ""
     name: str = ""
-    input: dict = field(default_factory=dict)
+    input: dict = {}
     parent_tool_use_id: str | None = None
 
 
-@dataclass(frozen=True)
-class Thinking(Event):
+class Thinking(Event, frozen=True):
     """Single thinking block from an assistant message."""
 
     text: str = ""
     parent_tool_use_id: str | None = None
 
 
-@dataclass(frozen=True)
-class ToolResult(Event):
+class ToolResult(Event, frozen=True):
     """Single tool result."""
 
     tool_use_id: str = ""
-    content: str | list = ""
+    content: str | list[Any] = ""
     parent_tool_use_id: str | None = None
 
 
@@ -170,11 +159,10 @@ class ToolResult(Event):
 # ---------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class StreamDelta(Event):
+class StreamDelta(Event, frozen=True):
     """Partial streaming token. Wraps a raw API streaming event."""
 
-    event: dict = field(default_factory=dict)
+    event: dict = {}
     parent_tool_use_id: str | None = None
 
     @property
@@ -205,8 +193,7 @@ class StreamDelta(Event):
         return self.event.get("type")
 
 
-@dataclass(frozen=True)
-class Result(Event):
+class Result(Event, frozen=True):
     """Final event in a turn. Contains cost and usage summary."""
 
     subtype: str = ""
@@ -221,8 +208,7 @@ class Result(Event):
     api_error_status: int | None = None
 
 
-@dataclass(frozen=True)
-class RateLimit(Event):
+class RateLimit(Event, frozen=True):
     """Rate limit status change."""
 
     status: str = ""
@@ -231,28 +217,25 @@ class RateLimit(Event):
     utilization: float = 0.0
 
 
-@dataclass(frozen=True)
-class PermissionRequest(Event):
+class PermissionRequest(Event, frozen=True):
     """Permission request from Claude Code. Surfaced when policy doesn't auto-resolve."""
 
     request_id: str = ""
     tool_name: str = ""
-    tool_input: dict = field(default_factory=dict)
+    tool_input: dict = {}
     decision_reason: str = ""
     tool_use_id: str = ""
 
 
-@dataclass(frozen=True)
-class McpRequest(Event):
+class McpRequest(Event, frozen=True):
     """MCP tool call request from Claude Code."""
 
     request_id: str = ""
     server_name: str = ""
-    message: dict = field(default_factory=dict)
+    message: dict = {}
 
 
-@dataclass(frozen=True)
-class UnknownEvent(Event):
+class UnknownEvent(Event, frozen=True):
     """Forward-compatible event for unrecognized event types."""
 
-    raw: dict = field(default_factory=dict)
+    raw: dict = {}

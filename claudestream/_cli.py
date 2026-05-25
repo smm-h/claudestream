@@ -363,8 +363,8 @@ class EventPrinter:
 
 def _print_json(event: Event) -> None:
     """Print an event as a JSON line."""
-    import dataclasses
-    d = dataclasses.asdict(event)
+    import msgspec
+    d = msgspec.to_builtins(event)
     print(json.dumps(d))
 
 
