@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.6.1
+
+### Features
+
+- **Session resumption.** New `resume_session_id` parameter and `--resume` CLI flag to continue a previous Claude Code session.
+
 ## 0.6.0
 
 ### Breaking
