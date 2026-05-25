@@ -329,10 +329,10 @@ def cmd_repl(
 
 # --- agent group ---
 
-agent_group = app.group("agent", help="Commands for working with .agent.json definition files. Validate agent configurations, run agents with budget enforcement and permission policies, and inspect agent metadata. Each agent file declares the model, system prompt, allowed tools, and resource limits for a Claude Code session.")
+agent_group = app.group("agent", help="Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata.")
 
 
-@agent_group.command("run", help="Run an agent from a .agent.json file")
+@agent_group.command("run", help="Load an agent definition from a .agent.json file and run it with the given prompt. The definition file specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.")
 @strictcli.arg("definition", help="Path to .agent.json file")
 @strictcli.arg("prompt", help="User message to send to the agent")
 @strictcli.flag("var", type=str, help="Variable in key=value format (repeatable)", default=[], repeatable=True)
