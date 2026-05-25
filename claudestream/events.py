@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
+
+import msgspec
 
 
 # ---------------------------------------------------------------------------
@@ -59,31 +62,27 @@ class CompactBoundary(Event):
 # ---------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class TextBlock:
+class TextBlock(msgspec.Struct, frozen=True):
     type: str = "text"
     text: str = ""
 
 
-@dataclass(frozen=True)
-class ToolUseBlock:
+class ToolUseBlock(msgspec.Struct, frozen=True):
     type: str = "tool_use"
     id: str = ""
     name: str = ""
-    input: dict = field(default_factory=dict)
+    input: dict = {}
 
 
-@dataclass(frozen=True)
-class ThinkingBlock:
+class ThinkingBlock(msgspec.Struct, frozen=True):
     type: str = "thinking"
     thinking: str = ""
 
 
-@dataclass(frozen=True)
-class ToolResultBlock:
+class ToolResultBlock(msgspec.Struct, frozen=True):
     type: str = "tool_result"
     tool_use_id: str = ""
-    content: str | list = ""
+    content: str | list[Any] = ""
 
 
 ContentBlock = TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock
@@ -94,8 +93,7 @@ ContentBlock = TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock
 # ---------------------------------------------------------------------------
 
 
-@dataclass(frozen=True)
-class Usage:
+class Usage(msgspec.Struct, frozen=True):
     input_tokens: int = 0
     output_tokens: int = 0
     cache_creation_input_tokens: int = 0
