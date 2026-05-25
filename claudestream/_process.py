@@ -101,6 +101,7 @@ class ProcessConfig(msgspec.Struct, frozen=True):
     allowed_tools: list[str] = []
     disallowed_tools: list[str] = []
     permission_prompt_tool: str | None = None  # "stdio" when sandbox needs permission interception
+    resume_session_id: str | None = None
     extra_args: list[str] = []
     env: dict[str, str] | None = None
 
@@ -127,6 +128,8 @@ class ProcessConfig(msgspec.Struct, frozen=True):
             argv.extend(["--disallowedTools", ",".join(self.disallowed_tools)])
         if self.permission_prompt_tool:
             argv.extend(["--permission-prompt-tool", self.permission_prompt_tool])
+        if self.resume_session_id:
+            argv.extend(["--resume", self.resume_session_id])
         argv.extend(self.extra_args)
         return argv
 

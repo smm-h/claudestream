@@ -41,6 +41,7 @@ class SyncSession:
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
         tools: list | None = None,
+        resume_session_id: str | None = None,
     ):
         self._kwargs = {
             "model": model,
@@ -52,6 +53,7 @@ class SyncSession:
             "extra_args": extra_args,
             "env": env,
             "tools": tools,
+            "resume_session_id": resume_session_id,
         }
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None

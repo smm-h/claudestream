@@ -63,6 +63,7 @@ class AsyncSession:
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
         tools: list[Tool] | None = None,
+        resume_session_id: str | None = None,
     ):
         self._binary = find_binary(binary)
         self._sandbox = sandbox
@@ -127,6 +128,7 @@ class AsyncSession:
             permission_mode=permission_mode,
             allowed_tools=allowed_tools,
             permission_prompt_tool=permission_prompt_tool,
+            resume_session_id=resume_session_id,
             extra_args=all_extra,
             env=merged_env or None,
         ))

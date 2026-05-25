@@ -53,6 +53,7 @@ app = strictcli.App(
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 def cmd_send(
     prompt: str = "",
     model: str = "",
@@ -65,6 +66,7 @@ def cmd_send(
     system_prompt: str = "",
     stdin: bool = False,
     no_color: bool = False,
+    resume: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
     if stdin:
@@ -87,6 +89,7 @@ def cmd_send(
             sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
+            resume_session_id=resume or None,
         ) as session:
             for event in session.send(prompt, raw=raw):
                 if json_output:
@@ -113,6 +116,7 @@ def cmd_send(
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 def cmd_stream(
     prompt: str = "",
     model: str = "",
@@ -123,6 +127,7 @@ def cmd_stream(
     system_prompt: str = "",
     stdin: bool = False,
     no_color: bool = False,
+    resume: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
     if stdin:
@@ -145,6 +150,7 @@ def cmd_stream(
             sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
+            resume_session_id=resume or None,
         ) as session:
             for event in session.send(prompt):
                 if isinstance(event, StreamDelta) and event.text:
@@ -195,6 +201,7 @@ def cmd_stream(
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 def cmd_events(
     prompt: str = "",
     model: str = "",
@@ -205,6 +212,7 @@ def cmd_events(
     system_prompt: str = "",
     stdin: bool = False,
     no_color: bool = False,
+    resume: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
     if stdin:
@@ -226,6 +234,7 @@ def cmd_events(
             sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
+            resume_session_id=resume or None,
         ) as session:
             for event in session.send(prompt, raw=True):
                 _print_json(event)
@@ -249,6 +258,7 @@ def cmd_events(
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 def cmd_repl(
     model: str,
     profile: str,
@@ -257,6 +267,7 @@ def cmd_repl(
     footer: bool = True,
     system_prompt: str = "",
     no_color: bool = False,
+    resume: str = "",
 ) -> None:
     color = Colorizer(should_color(no_color_flag=no_color))
     sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
@@ -267,6 +278,7 @@ def cmd_repl(
             sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
+            resume_session_id=resume or None,
         ) as session:
             print("claudestream repl")
             print("Type your prompts. Ctrl-D to exit.\n")
