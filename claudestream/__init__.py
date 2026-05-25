@@ -32,6 +32,7 @@ from claudestream.policy import (
     Sandbox,
     create_sandbox,
 )
+from claudestream._tools import Tool, tool
 
 __all__ = [
     # Sessions
@@ -67,6 +68,9 @@ __all__ = [
     "Deny",
     "Sandbox",
     "create_sandbox",
+    # Tools
+    "Tool",
+    "tool",
     # Convenience
     "print_prompt",
 ]

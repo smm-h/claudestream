@@ -40,6 +40,7 @@ class SyncSession:
         system_prompt: str | None = None,
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
+        tools: list | None = None,
     ):
         self._kwargs = {
             "model": model,
@@ -50,6 +51,7 @@ class SyncSession:
             "system_prompt": system_prompt,
             "extra_args": extra_args,
             "env": env,
+            "tools": tools,
         }
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None

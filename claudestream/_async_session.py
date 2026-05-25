@@ -26,6 +26,7 @@ from claudestream.messages import AllowPermission, DenyPermission, UserMessage
 from claudestream.policy import Allow, Deny, Sandbox, sandbox_to_flags, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
 from claudestream._protocol import flatten_event, read_events, write_message
+from claudestream._tools import Tool
 
 log = logging.getLogger("claudestream")
 
@@ -59,6 +60,7 @@ class AsyncSession:
         system_prompt: str | None = None,
         extra_args: list[str] | None = None,
         env: dict[str, str] | None = None,
+        tools: list[Tool] | None = None,
     ):
         self._binary = find_binary(binary)
         self._sandbox = sandbox
@@ -66,6 +68,12 @@ class AsyncSession:
         self._active_turn = False
         self._last_result: Result | None = None
         self._cancelled = False
+
+        # User-defined tools, grouped by server name for MCP handling
+        self._user_tools: list[Tool] = tools or []
+        self._tools_by_server: dict[str, list[Tool]] = {}
+        for t in self._user_tools:
+            self._tools_by_server.setdefault(t.server, []).append(t)
 
         # Convert sandbox to CLI flags, then route them to ProcessConfig fields
         sandbox_flags = sandbox_to_flags(sandbox)
