@@ -1,6 +1,6 @@
 {
   "name": "claudestream",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "help": "Stream Claude Code's JSON protocol",
   "env_prefix": null,
   "config": false,
@@ -129,6 +129,18 @@
           "repeatable": false,
           "negatable": true,
           "hidden": false
+        },
+        {
+          "name": "resume",
+          "type": "str",
+          "help": "Resume a previous session by ID",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
         }
       ],
       "args": [
@@ -239,6 +251,18 @@
           "choices": null,
           "repeatable": false,
           "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "resume",
+          "type": "str",
+          "help": "Resume a previous session by ID",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
           "hidden": false
         }
       ],
@@ -351,6 +375,18 @@
           "repeatable": false,
           "negatable": true,
           "hidden": false
+        },
+        {
+          "name": "resume",
+          "type": "str",
+          "help": "Resume a previous session by ID",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
         }
       ],
       "args": [
@@ -450,6 +486,18 @@
           "repeatable": false,
           "negatable": true,
           "hidden": false
+        },
+        {
+          "name": "resume",
+          "type": "str",
+          "help": "Resume a previous session by ID",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
         }
       ],
       "args": [],
@@ -459,7 +507,7 @@
   "groups": {
     "agent": {
       "name": "agent",
-      "help": "Agent definition commands",
+      "help": "Commands for working with .agent.json definition files. Validate agent configurations, run agents with budget enforcement and permission policies, and inspect agent metadata. Each agent file declares the model, system prompt, allowed tools, and resource limits for a Claude Code session.",
       "commands": {
         "run": {
           "name": "run",

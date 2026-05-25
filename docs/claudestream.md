@@ -1,6 +1,6 @@
 ---
 title: claudestream
-description: "A Python library and CLI for streaming Claude Code's JSON protocol."
+description: "A Python library and CLI for streaming Claude Code's JSON protocol, providing typed events, async/sync sessions, and tool registration."
 generated: true
 nav_group: "API Reference"
 nav_order: 1

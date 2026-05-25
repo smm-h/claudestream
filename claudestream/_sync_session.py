@@ -1,4 +1,4 @@
-"""Synchronous session wrapper for Claude Code stream-json protocol."""
+"""Synchronous session wrapper that bridges the async Claude Code stream-json protocol to a blocking iterator-based interface."""
 
 from __future__ import annotations
 

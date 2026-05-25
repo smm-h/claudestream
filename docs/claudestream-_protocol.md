@@ -1,6 +1,6 @@
 ---
 title: claudestream._protocol
-description: "NDJSON protocol layer for Claude Code stream-json."
+description: "NDJSON protocol layer that reads raw Claude Code stream-json output lines and decodes them into typed Event objects for consumption."
 generated: true
 nav_group: "API Reference"
 nav_order: 7

@@ -1,6 +1,6 @@
 ---
 title: claudestream._sync_session
-description: "Synchronous session wrapper for Claude Code stream-json protocol."
+description: "Synchronous session wrapper that bridges the async Claude Code stream-json protocol to a blocking iterator-based interface."
 generated: true
 nav_group: "API Reference"
 nav_order: 8

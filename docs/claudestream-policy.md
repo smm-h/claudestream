@@ -1,6 +1,6 @@
 ---
 title: claudestream.policy
-description: "Sandbox and permission types for Claude Code sessions."
+description: "Sandbox and permission policy types for Claude Code sessions, defining allow, deny, and approval rules for tool execution requests."
 generated: true
 nav_group: "API Reference"
 nav_order: 12

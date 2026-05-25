@@ -1,6 +1,6 @@
 ---
 title: claudestream._process
-description: "Subprocess management for Claude Code CLI."
+description: "Subprocess management for launching and monitoring the Claude Code CLI process, including graceful shutdown and atexit cleanup."
 generated: true
 nav_group: "API Reference"
 nav_order: 6

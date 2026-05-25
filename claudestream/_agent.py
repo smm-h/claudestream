@@ -1,4 +1,4 @@
-"""AgentDefinition, Budget, .agent.json loader, and invoke_agent context managers."""
+"""Agent definition loader and budget enforcement for Claude Code sessions, with sync and async context managers for invoking agents."""
 
 from __future__ import annotations
 

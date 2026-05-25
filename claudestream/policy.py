@@ -1,4 +1,4 @@
-"""Sandbox and permission types for Claude Code sessions."""
+"""Sandbox and permission policy types for Claude Code sessions, defining allow, deny, and approval rules for tool execution requests."""
 
 from __future__ import annotations
 

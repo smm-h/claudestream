@@ -1,6 +1,6 @@
 ---
 title: claudestream.events
-description: "Typed event classes for all Claude Code stream output events."
+description: "Typed event dataclasses for every Claude Code stream output event, including assistant messages, tool use, permissions, and results."
 generated: true
 nav_group: "API Reference"
 nav_order: 10

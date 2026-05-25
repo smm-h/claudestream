@@ -1,4 +1,4 @@
-"""NDJSON protocol layer for Claude Code stream-json."""
+"""NDJSON protocol layer that reads raw Claude Code stream-json output lines and decodes them into typed Event objects for consumption."""
 
 from __future__ import annotations
 

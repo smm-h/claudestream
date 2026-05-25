@@ -1,6 +1,6 @@
 ---
 title: claudestream.messages
-description: "Typed message structs for all Claude Code stream input messages."
+description: "Typed message structs for all Claude Code stream input messages, including user prompts, tool results, and permission responses."
 generated: true
 nav_group: "API Reference"
 nav_order: 11

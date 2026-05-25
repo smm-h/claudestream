@@ -1,4 +1,4 @@
-"""A Python library and CLI for streaming Claude Code's JSON protocol."""
+"""A Python library and CLI for streaming Claude Code's JSON protocol, providing typed events, async/sync sessions, and tool registration."""
 
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._sync_session import SyncSession

@@ -1,4 +1,4 @@
-"""ANSI color support with TTY auto-detection."""
+"""ANSI color output support with automatic TTY detection, NO_COLOR environment variable compliance, and a reusable Colorizer class."""
 
 from __future__ import annotations
 

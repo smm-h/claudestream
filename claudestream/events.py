@@ -1,4 +1,4 @@
-"""Typed event classes for all Claude Code stream output events."""
+"""Typed event dataclasses for every Claude Code stream output event, including assistant messages, tool use, permissions, and results."""
 
 from __future__ import annotations
 

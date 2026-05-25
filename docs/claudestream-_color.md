@@ -1,6 +1,6 @@
 ---
 title: claudestream._color
-description: "ANSI color support with TTY auto-detection."
+description: "ANSI color output support with automatic TTY detection, NO_COLOR environment variable compliance, and a reusable Colorizer class."
 generated: true
 nav_group: "API Reference"
 nav_order: 5

@@ -1,4 +1,4 @@
-"""CLI entry point for claudestream."""
+"""Command-line interface entry point for claudestream, providing send, listen, and agent commands for interacting with Claude Code."""
 
 from __future__ import annotations
 
@@ -329,7 +329,7 @@ def cmd_repl(
 
 # --- agent group ---
 
-agent_group = app.group("agent", help="Agent definition commands")
+agent_group = app.group("agent", help="Commands for working with .agent.json definition files. Validate agent configurations, run agents with budget enforcement and permission policies, and inspect agent metadata. Each agent file declares the model, system prompt, allowed tools, and resource limits for a Claude Code session.")
 
 
 @agent_group.command("run", help="Run an agent from a .agent.json file")

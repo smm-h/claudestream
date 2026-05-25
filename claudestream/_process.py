@@ -1,4 +1,4 @@
-"""Subprocess management for Claude Code CLI."""
+"""Subprocess management for launching and monitoring the Claude Code CLI process, including graceful shutdown and atexit cleanup."""
 
 from __future__ import annotations
 

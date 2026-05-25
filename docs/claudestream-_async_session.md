@@ -1,6 +1,6 @@
 ---
 title: claudestream._async_session
-description: "Async session for Claude Code stream-json protocol."
+description: "Async session manager for the Claude Code stream-json protocol, handling process lifecycle, event parsing, and permission callbacks."
 generated: true
 nav_group: "API Reference"
 nav_order: 3

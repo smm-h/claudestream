@@ -1,4 +1,4 @@
-"""Async session for Claude Code stream-json protocol."""
+"""Async session manager for the Claude Code stream-json protocol, handling process lifecycle, event parsing, and permission callbacks."""
 
 from __future__ import annotations
 

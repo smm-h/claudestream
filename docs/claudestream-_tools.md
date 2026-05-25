@@ -1,6 +1,6 @@
 ---
 title: claudestream._tools
-description: "Tool registration API: Tool struct and @tool decorator."
+description: "Tool registration API providing the Tool struct and a decorator for defining user tools that are served via MCP to Claude Code."
 generated: true
 nav_group: "API Reference"
 nav_order: 9

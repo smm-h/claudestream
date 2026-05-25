@@ -1,4 +1,4 @@
-"""Typed message structs for all Claude Code stream input messages."""
+"""Typed message structs for all Claude Code stream input messages, including user prompts, tool results, and permission responses."""
 
 from __future__ import annotations
 

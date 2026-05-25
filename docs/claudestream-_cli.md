@@ -1,6 +1,6 @@
 ---
 title: claudestream._cli
-description: "CLI entry point for claudestream."
+description: "Command-line interface entry point for claudestream, providing send, listen, and agent commands for interacting with Claude Code."
 generated: true
 nav_group: "API Reference"
 nav_order: 4
