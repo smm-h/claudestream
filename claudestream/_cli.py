@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sys
 
+import msgspec
 import strictcli
 
 from claudestream import (
@@ -454,7 +455,6 @@ class EventPrinter:
 
 def _print_json(event: Event) -> None:
     """Print an event as a JSON line."""
-    import msgspec
     d = msgspec.to_builtins(event)
     print(json.dumps(d))
 
