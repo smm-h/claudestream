@@ -27,12 +27,8 @@ class TestToolStruct:
         assert t.handler is handler
         assert t.server == "test_server"
 
-    def test_default_server(self):
-        t = Tool(name="t", description="d", input_schema={}, handler=lambda: None)
-        assert t.server == "claudestream"
-
     def test_frozen(self):
-        t = Tool(name="t", description="d", input_schema={}, handler=lambda: None)
+        t = Tool(name="t", description="d", input_schema={}, handler=lambda: None, server="test")
         try:
             t.name = "other"  # type: ignore[misc]
             assert False, "Should have raised"
@@ -42,7 +38,7 @@ class TestToolStruct:
 
 class TestToolDecorator:
     def test_async_function(self):
-        @tool()
+        @tool("test_server")
         async def create_child(name: str, age: int) -> str:
             """Create a child record."""
             return f"{name} {age}"
@@ -52,14 +48,14 @@ class TestToolDecorator:
         assert t.name == "create_child"
         assert t.description == "Create a child record."
         assert t.handler is create_child
-        assert t.server == "claudestream"
+        assert t.server == "test_server"
         assert t.input_schema["properties"]["name"] == {"type": "string"}
         assert t.input_schema["properties"]["age"] == {"type": "integer"}
         assert "name" in t.input_schema["required"]
         assert "age" in t.input_schema["required"]
 
     def test_sync_function(self):
-        @tool()
+        @tool("test_server")
         def greet(message: str) -> str:
             """Say hello."""
             return message
@@ -79,7 +75,7 @@ class TestToolDecorator:
         assert fn._tool.server == "my_server"
 
     def test_custom_name(self):
-        @tool(name="custom_name")
+        @tool("test_server", name="custom_name")
         def fn(x: str) -> str:
             """Do something."""
             return x
@@ -87,7 +83,7 @@ class TestToolDecorator:
         assert fn._tool.name == "custom_name"
 
     def test_custom_description(self):
-        @tool(description="custom desc")
+        @tool("test_server", description="custom desc")
         def fn(x: str) -> str:
             """Original docstring."""
             return x
@@ -95,14 +91,14 @@ class TestToolDecorator:
         assert fn._tool.description == "custom desc"
 
     def test_no_docstring_uses_name(self):
-        @tool()
+        @tool("test_server")
         def my_func(x: str) -> str:
             ...
 
         assert my_func._tool.description == "my_func"
 
     def test_multiline_docstring_uses_first_line(self):
-        @tool()
+        @tool("test_server")
         def fn(x: str) -> str:
             """First line.
 
@@ -223,7 +219,7 @@ class TestSessionToolsParam:
         """AsyncSession constructor accepts tools parameter without error."""
         from tests.conftest import make_test_session
 
-        @tool()
+        @tool("test_server")
         def my_tool(x: str) -> str:
             """A tool."""
             return x
@@ -231,8 +227,8 @@ class TestSessionToolsParam:
         session = make_test_session(model="sonnet", tools=[my_tool._tool])
         assert len(session._user_tools) == 1
         assert session._user_tools[0].name == "my_tool"
-        assert "claudestream" in session._tools_by_server
-        assert len(session._tools_by_server["claudestream"]) == 1
+        assert "test_server" in session._tools_by_server
+        assert len(session._tools_by_server["test_server"]) == 1
 
     def test_async_session_tools_grouped_by_server(self):
         """Tools are grouped by server name."""

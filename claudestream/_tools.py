@@ -21,7 +21,7 @@ class Tool(msgspec.Struct, frozen=True):
     description: str
     input_schema: dict
     handler: Any
-    server: str = "claudestream"
+    server: str
 
 
 # Type-hint to JSON Schema type mapping
@@ -103,7 +103,7 @@ def _get_type_hints_safe(fn: Callable) -> dict[str, Any]:
 
 
 def tool(
-    server: str = "claudestream",
+    server: str,
     *,
     name: str | None = None,
     description: str | None = None,
@@ -112,7 +112,7 @@ def tool(
 
     Usage::
 
-        @tool()
+        @tool("my_server")
         async def create_child(name: str, age: int) -> str:
             \"\"\"Create a child record.\"\"\"
             ...
