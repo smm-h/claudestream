@@ -1,22 +1,26 @@
 {
   "claudestream-_agent.md": {
-    "content": "3067cdd5618366378a8edbf19edd93dd44eec2ff5d00089087e8b6aec892d4db",
+    "content": "02e34ae98b9990b86f76dc87d57bbfec03fd912a775a7bacc0deba7b0d6c72e9",
     "description": "448cb117d26e31d27b070b3e4493d368e74b958ec92c5d131b3ae80154b4bbd3"
   },
   "claudestream-_async_session.md": {
-    "content": "a3b6ace48aebcfbff5ff797720451266933f07e762c6ed618fae0bb2532294c0",
+    "content": "3a8b026dd63703b213a512c9ac02feefe191b84cbaa29742dc40f3882cd9ab76",
     "description": "eb7292da18c96240dd1e11507331026261fd5c6567f9f786aa480ac0a8acadb8"
   },
   "claudestream-_cli.md": {
-    "content": "03fe7fff1ec0517c28016847de4805f6d850818e31fc80c399b2e69ce691fc75",
+    "content": "4fd1f0d5381d372d5a462bb9061352334bb0678653996219858d33407ef308e2",
     "description": "23545c3179ca6230f161364ace3426ed96a2b257ab608c59082a591af088c1ea"
   },
   "claudestream-_color.md": {
     "content": "f79d93c8159fcad4c679ef7073776aa26c3f2310a75946f2b6c724d3f28ba1bc",
     "description": "272392e6ec3ac09809bcebe891c06be2e5ca30907f4ca0a7db3fe7160ac7b7d9"
   },
+  "claudestream-_options.md": {
+    "content": "1bb18cb1449a5bd0f64ead215469c18ed16d15c8fe2972de3c6d101df09af183",
+    "description": "21aad6e0c71d20c39ab7e14b5c0c0b6e1d1faff4d644c974c5c1ec758e03457f"
+  },
   "claudestream-_process.md": {
-    "content": "3f3f06523383e255e313b9c704c086ef42095fe0672d93a4df12e6cc7a492d19",
+    "content": "2506a73d8acdc7f6c43bee9741700ac4682a11255f58ce24787599a528936d57",
     "description": "500483b85ccd6f9317310de5bc70af5f37848904f43a01984915ee19f48d41b4"
   },
   "claudestream-_protocol.md": {
@@ -24,15 +28,15 @@
     "description": "413dc8559243c1deb1cf0e6861cb1f6578c079ef224dadf0ea4c260eca2c8f68"
   },
   "claudestream-_sync_session.md": {
-    "content": "fec1c917e83d6f594532f0b8a1fd4e1456dde02385037d815c950bbebdc5a655",
+    "content": "6e1e498f6d32e54bf2bd53dec9f8b6d3daec785cc3459abb8a80b77fb1674114",
     "description": "e36a2c64066eae5739ce8bb583c5362b4c34db941c154665334db2cd5f5e3a87"
   },
   "claudestream-_tools.md": {
-    "content": "bfb8a0917d4bfd61d9bd57544b03b3facc8938d42a4ec21737e81ff011171cf2",
+    "content": "f716ac8ea09c1bd8703605b9cb0db07e06fff79e598bab5b431de14326e36aa3",
     "description": "74c78248ef2b1cbdf16a0dcd3b59cc732a3b323e09f177c7f9923c33a0a614a5"
   },
   "claudestream-events.md": {
-    "content": "40c9b33e6101e9f807e2972fad6e309059f4b129873ef37c1c00527a0f539435",
+    "content": "a672cb88021ea157ff9880581db834c8ab7c29096e387b94a47391a323f18dd4",
     "description": "7f97513fb5ce08f7fc07d06685cb8bdb519d3ff59626540543e191c7f3514f26"
   },
   "claudestream-messages.md": {
@@ -44,19 +48,31 @@
     "description": "405633d451d57cfd84c757d434e3752de564eed03e1db825693cdfc6b3a80f12"
   },
   "claudestream.md": {
-    "content": "09b33e0f055de77f4754f33b5269756ddaa4575e300b102172583f1f8f175120",
+    "content": "b9d0e69b527afad00418ee25ad625e2083058f2cd8f12d9955668324ae484c39",
     "description": "f50401cc9e505481954edc9e5b82cd23f0272e63b1794cbe1f92bb57b35478ce"
   },
   "cli-agent.md": {
-    "content": "9bee703a99340e3371e75be422be4ee9fdff08bad56c50bf3fe206b30417261a",
+    "content": "dd6db658966db6a2dad15b3852e7be1a13588dec1955d853ae3f08c67ad9f631",
     "description": "2e35a50823dcfa0a972444e2c03942cbb991c7774d7c292fec043b5dbea80497"
+  },
+  "cli-ask.md": {
+    "content": "1a9ab94cdc28473633057a661a88f8885b29c4e7562d8d81a59a4a9c44b87c1f",
+    "description": "2048e265e186181855d3304b2a60f9478353f541f06efd0b352d6a5a6b867491"
+  },
+  "cli-config.md": {
+    "content": "d978ac4b78f5a2bd107307864b25e7b72254cd64d57d678716d8a9d594aefeb8",
+    "description": "44a1283cd8df2cc6c3d71f0c0227f92550eae8fd7cfd37417d8e8ed567d70947"
+  },
+  "cli-doctor.md": {
+    "content": "67739d9f6339d00dea738fceac880cc57f285df08b48891c63a7653d6a1610ad",
+    "description": "a6923a594451d0ab70dd5d1bb9b342546c9d2696c49aa01ed213585e79b68cd7"
   },
   "cli-events.md": {
     "content": "58516e446204ce3bf31597b16ad438e0013dca8fd73c51da21241ecbd7c2bfff",
     "description": "8e6085392b28c54a07787fbbf23748a2a910624cc38b30858395a647bf828c9c"
   },
   "cli-index.md": {
-    "content": "f608c41d50d7bf6cea9658c1c88511593fe747520a69c76c9f758a07797d5722",
+    "content": "0dff2ffc8b19ac6c4a08b7e945ada2e0efd81e91676835448eb28f17b03ebc67",
     "description": "160dac3a666212f735378ede9e70b41f7bf7fa869de54000440ae80cc6347e6c"
   },
   "cli-repl.md": {
@@ -76,7 +92,7 @@
     "description": "32ca938b15c885e70bfc974b258bc4ecca0399ae1449a921bb464f44fa48ee90"
   },
   "gen-index.md": {
-    "content": "0534cba9e17373daab00c4514ba55a1cc27c66454690857fbc6a1bc01b6aa7ca",
+    "content": "d12b1657e25d04fac1d0f5d2e7d70db2899997bc735eee49d5452fb8067701bc",
     "description": "bb3cd9d34f014c0674a9285c25ee14b5b4abc5cf941f0d83594c301405e8f3b6"
   },
   "index.md": {
