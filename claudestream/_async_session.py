@@ -59,6 +59,9 @@ class AsyncSession:
         self._binary = find_binary(config.binary)
         self._sandbox = config.sandbox
         self._callbacks: dict[type, list[Callable]] = {}
+        self._on_turn_complete: list[Callable] = []
+        self._on_error: list[Callable] = []
+        self._on_close: list[Callable] = []
         self._active_turn = False
         self._last_result: Result | None = None
         self._cancelled = False
@@ -356,6 +359,7 @@ class AsyncSession:
 
     async def close(self) -> None:
         """Shut down the session and kill the subprocess."""
+        await self._fire_hooks(self._on_close, self)
         await self._process_mgr.close()
 
     # --- Cancel ---
@@ -418,6 +422,9 @@ class AsyncSession:
 
             async for event in self._read_turn(raw=raw, _health_timeout=self._health_timeout):
                 yield event
+        except Exception as exc:
+            await self._fire_hooks(self._on_error, self, exc)
+            raise
         finally:
             self._active_turn = False
 
@@ -589,6 +596,7 @@ class AsyncSession:
                     self._turn_count += 1
                     if event.usage is not None:
                         self._total_tokens += event.usage.input_tokens + event.usage.output_tokens
+                    await self._fire_hooks(self._on_turn_complete, self, event)
                     return
 
             # stdout closed without a Result event
@@ -718,6 +726,43 @@ class AsyncSession:
         if event_type not in self._callbacks:
             self._callbacks[event_type] = []
         self._callbacks[event_type].append(handler)
+
+    # --- Lifecycle hooks ---
+
+    def on_turn_complete(self, hook: Callable) -> None:
+        """Register a hook that fires after each turn completes (after Result event).
+
+        Hook signature: ``async def hook(session, result)`` or ``def hook(session, result)``.
+        Hooks run in registration order. Errors are logged but do not propagate.
+        """
+        self._on_turn_complete.append(hook)
+
+    def on_error(self, hook: Callable) -> None:
+        """Register a hook that fires when a turn fails with an exception.
+
+        Hook signature: ``async def hook(session, exception)`` or ``def hook(session, exception)``.
+        Hooks run in registration order. Errors are logged but do not propagate.
+        """
+        self._on_error.append(hook)
+
+    def on_close(self, hook: Callable) -> None:
+        """Register a hook that fires when the session closes.
+
+        Hook signature: ``async def hook(session)`` or ``def hook(session)``.
+        Hooks run in registration order. Errors are logged but do not propagate.
+        """
+        self._on_close.append(hook)
+
+    async def _fire_hooks(self, hooks: list[Callable], *args: Any) -> None:
+        """Fire a list of hooks with the given arguments, logging and swallowing errors."""
+        for hook in hooks:
+            try:
+                if asyncio.iscoroutinefunction(hook):
+                    await hook(*args)
+                else:
+                    hook(*args)
+            except Exception:
+                log.warning("lifecycle hook %s error", hook.__name__, exc_info=True)
 
     # --- Permission response (for consumer-handled requests) ---
 

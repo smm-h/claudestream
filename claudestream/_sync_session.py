@@ -191,6 +191,50 @@ class SyncSession:
             raise RuntimeError("Session not started. Use 'with SyncSession() as session:'")
         self._async_session.on(event_type, handler)
 
+    # --- Lifecycle hooks ---
+
+    def on_turn_complete(self, hook: Callable) -> None:
+        """Register a hook that fires after each turn completes (after Result event).
+
+        Hook signature: ``def hook(session, result)``.
+        The session argument is this SyncSession instance (not the underlying AsyncSession).
+        """
+        if not self._async_session:
+            raise RuntimeError("Session not started. Use 'with SyncSession() as session:'")
+
+        async def _wrapper(async_session, result):
+            hook(self, result)
+
+        self._async_session.on_turn_complete(_wrapper)
+
+    def on_error(self, hook: Callable) -> None:
+        """Register a hook that fires when a turn fails with an exception.
+
+        Hook signature: ``def hook(session, exception)``.
+        The session argument is this SyncSession instance (not the underlying AsyncSession).
+        """
+        if not self._async_session:
+            raise RuntimeError("Session not started. Use 'with SyncSession() as session:'")
+
+        async def _wrapper(async_session, exception):
+            hook(self, exception)
+
+        self._async_session.on_error(_wrapper)
+
+    def on_close(self, hook: Callable) -> None:
+        """Register a hook that fires when the session closes.
+
+        Hook signature: ``def hook(session)``.
+        The session argument is this SyncSession instance (not the underlying AsyncSession).
+        """
+        if not self._async_session:
+            raise RuntimeError("Session not started. Use 'with SyncSession() as session:'")
+
+        async def _wrapper(async_session):
+            hook(self)
+
+        self._async_session.on_close(_wrapper)
+
     # --- Permission responses ---
 
     def respond_allow(self, request_id: str, updated_input: dict) -> None:
