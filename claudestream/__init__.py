@@ -27,14 +27,40 @@ from claudestream.events import (
     UnknownEvent,
     Usage,
 )
+from claudestream.messages import (
+    AllowPermission,
+    DenyPermission,
+    InitializeRequest,
+    McpResponse,
+    UserMessage,
+)
+from claudestream._protocol import (
+    Writable,
+    flatten_event,
+    parse_event,
+    read_events,
+    write_message,
+)
 from claudestream.policy import (
     Allow,
+    BUILTIN_TOOLS,
     Deny,
     Sandbox,
     create_sandbox,
 )
 from claudestream._tools import Tool, tool
-from claudestream._options import Budget, SessionConfig, ToolSchema
+from claudestream._options import (
+    Budget,
+    DebugOptions,
+    McpOptions,
+    PluginOptions,
+    ProcessLimits,
+    SessionConfig,
+    SessionResolution,
+    StreamOptions,
+    ToolSchema,
+)
+from claudestream._process import ProcessConfig, ProcessManager
 from claudestream._agent import (
     AgentDefinition,
     SandboxConfig,
@@ -74,25 +100,47 @@ __all__ = [
     "ToolResultBlock",
     "ContentBlock",
     "Usage",
-    # Sandbox
+    # Messages
+    "AllowPermission",
+    "DenyPermission",
+    "InitializeRequest",
+    "McpResponse",
+    "UserMessage",
+    # Protocol
+    "Writable",
+    "flatten_event",
+    "parse_event",
+    "read_events",
+    "write_message",
+    # Policy
     "Allow",
+    "BUILTIN_TOOLS",
     "Deny",
     "Sandbox",
     "create_sandbox",
     # Tools
     "Tool",
     "tool",
+    # Options
+    "Budget",
+    "DebugOptions",
+    "McpOptions",
+    "PluginOptions",
+    "ProcessLimits",
+    "SessionConfig",
+    "SessionResolution",
+    "StreamOptions",
+    "ToolSchema",
+    # Process
+    "ProcessConfig",
+    "ProcessManager",
     # Agent definitions
     "AgentDefinition",
-    "Budget",
     "SandboxConfig",
-    "ToolSchema",
     "invoke_agent",
     "invoke_agent_sync",
     "load_agent",
     "resolve_prompt",
-    # Options
-    "SessionConfig",
     # Convenience
     "print_prompt",
 ]
