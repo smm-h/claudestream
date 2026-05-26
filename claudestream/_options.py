@@ -133,3 +133,4 @@ class SessionConfig(msgspec.Struct, frozen=True):
     agents_json: str | None = None
     hooks: dict | None = None
     no_persistence: bool = False
+    from_pr: str | None = None

@@ -204,6 +204,7 @@ class AsyncSession:
             debug_file=debug_file,
             agent=config.agent_name,
             agents_json=config.agents_json,
+            from_pr=config.from_pr,
             session_id=session_id,
             # List flags
             betas=list(config.betas or []),
