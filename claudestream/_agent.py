@@ -6,6 +6,7 @@ import logging
 import os
 import re
 from contextlib import asynccontextmanager, contextmanager
+from importlib.resources import files
 from pathlib import Path
 from typing import Any
 
@@ -47,18 +48,19 @@ def resolve_prompt(template: str, variables: dict[str, str]) -> str:
     return result
 
 
-def load_agent(path: str | Path) -> AgentDefinition:
+def load_agent(path: str | Path, cwd: str | None = None) -> AgentDefinition:
     """Load an AgentDefinition from a .agent.json file or by bare name.
 
     If ``path`` has no path separators and doesn't end with ``.json``, it is
     treated as a bare agent name.  The loader looks for
-    ``.claudestream/agents/<name>.agent.json`` relative to the current working
-    directory.
+    ``.claudestream/agents/<name>.agent.json`` relative to *cwd* (or the
+    current working directory when *cwd* is ``None``).
     """
     p = str(path)
     if os.sep not in p and (os.altsep is None or os.altsep not in p) and not p.endswith(".json"):
         # Bare name resolution
-        expected = Path.cwd() / ".claudestream" / "agents" / f"{p}.agent.json"
+        base = Path(cwd) if cwd else Path.cwd()
+        expected = base / ".claudestream" / "agents" / f"{p}.agent.json"
         if not expected.exists():
             raise FileNotFoundError(
                 f"Agent '{p}' not found at {expected}"
@@ -69,20 +71,74 @@ def load_agent(path: str | Path) -> AgentDefinition:
     return msgspec.json.decode(data, type=AgentDefinition)
 
 
-def discover_agents(cwd: str | None = None) -> list[AgentDefinition]:
-    """Discover agent definitions in ``.claudestream/agents/``.
+def discover_agents(
+    cwd: str | None = None,
+    paths: list[str] | None = None,
+    packages: list[str] | None = None,
+) -> list[AgentDefinition]:
+    """Discover agent definitions from multiple sources.
 
-    Finds all ``*.agent.json`` files and returns a list of
-    :class:`AgentDefinition` sorted by name.  Returns an empty list if the
-    directory does not exist.
+    Sources are searched in order; the first occurrence of each agent name wins.
+
+    1. ``.claudestream/agents/`` relative to *cwd* (or the current working
+       directory when *cwd* is ``None``).
+    2. Each directory in *paths* (relative paths resolved against *cwd*).
+    3. Each Python package in *packages* via ``importlib.resources``.
+
+    Returns a deduplicated list of :class:`AgentDefinition` sorted by name.
     """
     base = Path(cwd) if cwd else Path.cwd()
-    agents_dir = base / ".claudestream" / "agents"
-    if not agents_dir.is_dir():
-        return []
+    seen: dict[str, str] = {}  # name -> source description (for warnings)
     agents: list[AgentDefinition] = []
-    for f in sorted(agents_dir.glob("*.agent.json")):
-        agents.append(msgspec.json.decode(f.read_bytes(), type=AgentDefinition))
+
+    def _add(agent: AgentDefinition, source: str) -> None:
+        if agent.name in seen:
+            log.warning(
+                "Agent '%s' found in multiple locations, using first occurrence",
+                agent.name,
+            )
+            return
+        seen[agent.name] = source
+        agents.append(agent)
+
+    # 1. Default .claudestream/agents/ directory
+    agents_dir = base / ".claudestream" / "agents"
+    if agents_dir.is_dir():
+        for f in sorted(agents_dir.glob("*.agent.json")):
+            _add(msgspec.json.decode(f.read_bytes(), type=AgentDefinition), str(f))
+
+    # 2. Custom paths
+    if paths:
+        for p in paths:
+            d = Path(p)
+            if not d.is_absolute():
+                d = base / d
+            if not d.is_dir():
+                continue
+            for f in sorted(d.glob("*.agent.json")):
+                _add(msgspec.json.decode(f.read_bytes(), type=AgentDefinition), str(f))
+
+    # 3. Package resources
+    if packages:
+        for package_name in packages:
+            try:
+                pkg_files = files(package_name)
+            except (ModuleNotFoundError, TypeError, ValueError) as exc:
+                log.warning("Could not load package '%s': %s", package_name, exc)
+                continue
+            try:
+                items = list(pkg_files.iterdir())
+            except (FileNotFoundError, OSError) as exc:
+                log.warning("Could not iterate package '%s': %s", package_name, exc)
+                continue
+            for item in sorted(items, key=lambda x: x.name):
+                if item.name.endswith(".agent.json"):
+                    data = item.read_bytes()
+                    _add(
+                        msgspec.json.decode(data, type=AgentDefinition),
+                        f"{package_name}/{item.name}",
+                    )
+
     agents.sort(key=lambda a: a.name)
     return agents
 

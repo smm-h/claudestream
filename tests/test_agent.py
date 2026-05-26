@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import os
+import types
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import msgspec
@@ -547,6 +548,21 @@ class TestLoadAgentBareName:
         ad = load_agent(str(path))
         assert ad.name == "bot"
 
+    def test_bare_name_with_cwd(self, tmp_path):
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        data = {"name": "mybot", "prompt_template": "Hello.", "version": "1.0"}
+        (agents_dir / "mybot.agent.json").write_text(json.dumps(data))
+
+        # Does not need monkeypatch.chdir -- cwd parameter is used instead
+        ad = load_agent("mybot", cwd=str(tmp_path))
+        assert ad.name == "mybot"
+        assert ad.version == "1.0"
+
+    def test_bare_name_with_cwd_not_found(self, tmp_path):
+        with pytest.raises(FileNotFoundError, match="Agent 'ghost' not found"):
+            load_agent("ghost", cwd=str(tmp_path))
+
 
 class TestDiscoverAgents:
     def test_discover_agents(self, tmp_path):
@@ -594,3 +610,129 @@ class TestDiscoverAgents:
         agents = discover_agents(None)
         assert len(agents) == 1
         assert agents[0].name == "bot"
+
+    def test_discover_with_custom_paths(self, tmp_path):
+        custom_dir = tmp_path / "my_agents"
+        custom_dir.mkdir()
+        for name in ["alpha", "beta"]:
+            data = {"name": name, "prompt_template": "p", "version": "1.0"}
+            (custom_dir / f"{name}.agent.json").write_text(json.dumps(data))
+
+        agents = discover_agents(str(tmp_path), paths=[str(custom_dir)])
+        assert len(agents) == 2
+        assert [a.name for a in agents] == ["alpha", "beta"]
+
+    def test_discover_with_relative_custom_path(self, tmp_path):
+        custom_dir = tmp_path / "extras"
+        custom_dir.mkdir()
+        data = {"name": "rel", "prompt_template": "p", "version": "1.0"}
+        (custom_dir / "rel.agent.json").write_text(json.dumps(data))
+
+        # Relative path resolved against cwd
+        agents = discover_agents(str(tmp_path), paths=["extras"])
+        assert len(agents) == 1
+        assert agents[0].name == "rel"
+
+    def test_discover_with_nonexistent_path(self, tmp_path):
+        agents = discover_agents(str(tmp_path), paths=[str(tmp_path / "nope")])
+        assert agents == []
+
+    def test_discover_with_packages(self, tmp_path):
+        # Create a fake package resource that yields .agent.json files
+        agent_data = msgspec.json.encode(
+            AgentDefinition(name="pkg-agent", prompt_template="p", version="1.0")
+        )
+
+        class FakeResource:
+            name = "pkg-agent.agent.json"
+            def read_bytes(self):
+                return agent_data
+
+        class FakeNonAgent:
+            name = "readme.md"
+            def read_bytes(self):
+                return b""
+
+        class FakePkgFiles:
+            def iterdir(self):
+                return [FakeNonAgent(), FakeResource()]
+
+        with patch("claudestream._agent.files", return_value=FakePkgFiles()):
+            agents = discover_agents(str(tmp_path), packages=["mypkg.agents"])
+        assert len(agents) == 1
+        assert agents[0].name == "pkg-agent"
+
+    def test_discover_package_import_error(self, tmp_path, caplog):
+        with caplog.at_level(logging.WARNING, logger="claudestream"):
+            agents = discover_agents(str(tmp_path), packages=["nonexistent.pkg.xyz"])
+        assert agents == []
+        assert "Could not load package 'nonexistent.pkg.xyz'" in caplog.text
+
+    def test_discover_deduplication(self, tmp_path):
+        # Agent "dup" in default location
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        data_v1 = {"name": "dup", "prompt_template": "first", "version": "1.0"}
+        (agents_dir / "dup.agent.json").write_text(json.dumps(data_v1))
+
+        # Same agent name in a custom path
+        custom_dir = tmp_path / "custom"
+        custom_dir.mkdir()
+        data_v2 = {"name": "dup", "prompt_template": "second", "version": "2.0"}
+        (custom_dir / "dup.agent.json").write_text(json.dumps(data_v2))
+
+        agents = discover_agents(str(tmp_path), paths=[str(custom_dir)])
+        assert len(agents) == 1
+        # First occurrence wins (from .claudestream/agents/)
+        assert agents[0].prompt_template == "first"
+        assert agents[0].version == "1.0"
+
+    def test_discover_conflict_warning(self, tmp_path, caplog):
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        data = {"name": "dup", "prompt_template": "p", "version": "1.0"}
+        (agents_dir / "dup.agent.json").write_text(json.dumps(data))
+
+        custom_dir = tmp_path / "custom"
+        custom_dir.mkdir()
+        (custom_dir / "dup.agent.json").write_text(json.dumps(data))
+
+        with caplog.at_level(logging.WARNING, logger="claudestream"):
+            discover_agents(str(tmp_path), paths=[str(custom_dir)])
+        assert "Agent 'dup' found in multiple locations, using first occurrence" in caplog.text
+
+    def test_discover_combined(self, tmp_path):
+        # Default location
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        d1 = {"name": "default-agent", "prompt_template": "p", "version": "1.0"}
+        (agents_dir / "default-agent.agent.json").write_text(json.dumps(d1))
+
+        # Custom path
+        custom_dir = tmp_path / "custom"
+        custom_dir.mkdir()
+        d2 = {"name": "custom-agent", "prompt_template": "p", "version": "1.0"}
+        (custom_dir / "custom-agent.agent.json").write_text(json.dumps(d2))
+
+        # Package resource
+        agent_data = msgspec.json.encode(
+            AgentDefinition(name="pkg-agent", prompt_template="p", version="1.0")
+        )
+
+        class FakeResource:
+            name = "pkg-agent.agent.json"
+            def read_bytes(self):
+                return agent_data
+
+        class FakePkgFiles:
+            def iterdir(self):
+                return [FakeResource()]
+
+        with patch("claudestream._agent.files", return_value=FakePkgFiles()):
+            agents = discover_agents(
+                str(tmp_path),
+                paths=[str(custom_dir)],
+                packages=["mypkg"],
+            )
+        assert len(agents) == 3
+        assert [a.name for a in agents] == ["custom-agent", "default-agent", "pkg-agent"]
