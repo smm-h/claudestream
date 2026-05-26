@@ -25,7 +25,8 @@ from claudestream.events import (
     UnknownEvent,
 )
 from claudestream.messages import AllowPermission, DenyPermission, InitializeRequest, McpResponse, UserMessage
-from claudestream.policy import Allow, Deny, Sandbox, sandbox_to_flags, sandbox_decide
+from claudestream._options import SessionConfig
+from claudestream.policy import Allow, Deny, Sandbox, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
 from claudestream._protocol import flatten_event, read_events, write_message
 from claudestream._tools import Tool
@@ -51,93 +52,179 @@ class AsyncSession:
                 print(event)
     """
 
-    def __init__(
-        self,
-        model: str,
-        profile: str,
-        *,
-        cwd: str | None = None,
-        binary: str | None = None,
-        sandbox: Sandbox | None = None,
-        system_prompt: str | None = None,
-        extra_args: list[str] | None = None,
-        env: dict[str, str] | None = None,
-        tools: list[Tool] | None = None,
-        resume_session_id: str | None = None,
-    ):
-        self._binary = find_binary(binary)
-        self._sandbox = sandbox
+    def __init__(self, config: SessionConfig):
+        self._config = config
+        self._binary = find_binary(config.binary)
+        self._sandbox = config.sandbox
         self._callbacks: dict[type, list[Callable]] = {}
         self._active_turn = False
         self._last_result: Result | None = None
         self._cancelled = False
 
         # User-defined tools, grouped by server name for MCP handling
-        self._user_tools: list[Tool] = tools or []
+        self._user_tools: list[Tool] = list(config.tools or [])
         self._tools_by_server: dict[str, list[Tool]] = {}
         for t in self._user_tools:
             self._tools_by_server.setdefault(t.server, []).append(t)
 
-        # Convert sandbox to CLI flags, then route them to ProcessConfig fields
-        sandbox_flags = sandbox_to_flags(sandbox)
-
-        permission_mode: str | None = None
-        permission_prompt_tool: str | None = None
-        allowed_tools: list[str] = []
-        skip_permissions = False
-
-        remaining_flags: list[str] = []
-        i = 0
-        while i < len(sandbox_flags):
-            flag = sandbox_flags[i]
-            if flag == "--dangerously-skip-permissions":
-                skip_permissions = True
-                i += 1
-            elif flag == "--permission-mode":
-                permission_mode = sandbox_flags[i + 1]
-                i += 2
-            elif flag == "--permission-prompt-tool":
-                permission_prompt_tool = sandbox_flags[i + 1]
-                i += 2
-            elif flag == "--allowedTools":
-                allowed_tools = sandbox_flags[i + 1].split(",")
-                i += 2
-            else:
-                remaining_flags.append(flag)
-                i += 1
-
-        # Add MCP wildcard patterns for each server with registered tools
-        for server_name in self._tools_by_server:
-            allowed_tools.append(f"mcp__{server_name}__*")
-
-        all_extra = list(extra_args or [])
-        if skip_permissions:
-            all_extra.append("--dangerously-skip-permissions")
-        all_extra.extend(remaining_flags)
-
-        from claudewheel.profile import resolve_profile
-        merged_env = {}
-        merged_env.update(resolve_profile(profile))
-        merged_env.update(env or {})
-
-        self._process_mgr = ProcessManager(ProcessConfig(
-            binary=self._binary,
-            cwd=cwd,
-            model=model,
-            system_prompt=system_prompt,
-            permission_mode=permission_mode,
-            allowed_tools=allowed_tools,
-            permission_prompt_tool=permission_prompt_tool,
-            resume_session_id=resume_session_id,
-            extra_args=all_extra,
-            env=merged_env or None,
-        ))
+        self._process_mgr = ProcessManager(self._build_process_config())
 
         # Session metadata (populated from SystemInit)
         self._session_id: str | None = None
         self._model_name: str | None = None
         self._tools: list[str] = []
         self._claude_version: str | None = None
+
+    def _build_process_config(self) -> ProcessConfig:
+        """Build a ProcessConfig from the stored SessionConfig.
+
+        This is the single mapping point between the user-facing config
+        and the subprocess CLI flags.
+        """
+        config = self._config
+        sandbox = config.sandbox
+
+        # --- Sandbox → ProcessConfig fields (no flag round-trip) ---
+        allowed_tools: list[str] = []
+        bare = False
+        dangerously_skip_permissions = False
+        permission_prompt_tool: str | None = None
+
+        if sandbox is not None:
+            bare = sandbox.bare
+            dangerously_skip_permissions = sandbox.skip_permissions
+            if sandbox.tools is not None:
+                allowed_tools = list(sandbox.tools)
+            # Permission interception needed when we restrict tools or write paths
+            if sandbox.tools is not None or sandbox.write_paths is not None:
+                permission_prompt_tool = "stdio"
+
+        # Add MCP wildcard patterns for each server with registered tools
+        for server_name in self._tools_by_server:
+            allowed_tools.append(f"mcp__{server_name}__*")
+
+        # --- Option structs → ProcessConfig fields ---
+        debug_enabled = False
+        debug_filter: str | None = None
+        debug_file: str | None = None
+        if config.debug is not None:
+            debug_enabled = config.debug.enabled
+            debug_filter = config.debug.filter
+            debug_file = config.debug.file
+
+        mcp_config: list[str] = []
+        strict_mcp_config = False
+        if config.mcp is not None:
+            mcp_config = list(config.mcp.config_files)
+            strict_mcp_config = config.mcp.strict
+
+        plugin_dirs: list[str] = []
+        plugin_urls: list[str] = []
+        if config.plugins is not None:
+            plugin_dirs = list(config.plugins.dirs)
+            plugin_urls = list(config.plugins.urls)
+
+        verbose = True
+        include_partial_messages = True
+        include_hook_events = False
+        replay_user_messages = False
+        exclude_dynamic_prompt_sections = False
+        if config.stream is not None:
+            verbose = config.stream.verbose
+            include_partial_messages = config.stream.include_partial_messages
+            include_hook_events = config.stream.include_hook_events
+            replay_user_messages = config.stream.replay_user_messages
+            exclude_dynamic_prompt_sections = config.stream.exclude_dynamic_prompt_sections
+
+        buffer_limit = 16_777_216
+        shutdown_timeout = 5.0
+        if config.process_limits is not None:
+            buffer_limit = config.process_limits.buffer_limit
+            shutdown_timeout = config.process_limits.shutdown_timeout
+
+        max_budget_usd: float | None = None
+        if config.budget is not None:
+            max_budget_usd = config.budget.max_cost_usd
+
+        # --- SessionResolution → ProcessConfig fields ---
+        name: str | None = None
+        session_id: str | None = None
+        resume_session_id = config.resume_session_id
+        continue_session = False
+        fork_session = False
+        if config.session_resolution is not None:
+            name = config.session_resolution.name
+            session_id = config.session_resolution.session_id
+            if config.session_resolution.resume_session_id is not None:
+                resume_session_id = config.session_resolution.resume_session_id
+            continue_session = config.session_resolution.continue_last
+            fork_session = config.session_resolution.fork
+
+        # --- json_schema dict → json_schema_str ---
+        json_schema_str: str | None = None
+        if config.json_schema is not None:
+            import json
+            json_schema_str = json.dumps(config.json_schema)
+
+        # --- Profile → env vars ---
+        from claudewheel.profile import resolve_profile
+        merged_env: dict[str, str] = {}
+        merged_env.update(resolve_profile(config.profile))
+        merged_env.update(config.env or {})
+
+        return ProcessConfig(
+            binary=self._binary,
+            cwd=config.cwd,
+            model=config.model,
+            system_prompt=config.system_prompt,
+            permission_mode=None,  # not exposed via SessionConfig; sandbox handles it
+            allowed_tools=allowed_tools,
+            permission_prompt_tool=permission_prompt_tool,
+            resume_session_id=resume_session_id,
+            extra_args=list(config.extra_args or []),
+            env=merged_env or None,
+            # String value flags
+            effort=config.effort,
+            json_schema_str=json_schema_str,
+            fallback_model=config.fallback_model,
+            name=name,
+            setting_sources=config.setting_sources,
+            settings=config.settings,
+            debug_filter=debug_filter,
+            debug_file=debug_file,
+            agent=config.agent_name,
+            agents_json=config.agents_json,
+            session_id=session_id,
+            # List flags
+            betas=list(config.betas or []),
+            add_dirs=list(config.add_dirs or []),
+            builtin_tools=list(config.builtin_tools or []),
+            file_specs=list(config.file_specs or []),
+            mcp_config=mcp_config,
+            plugin_dirs=plugin_dirs,
+            plugin_urls=plugin_urls,
+            # Bool flags
+            bare=bare,
+            brief=config.brief,
+            continue_session=continue_session,
+            fork_session=fork_session,
+            no_session_persistence=config.no_persistence,
+            strict_mcp_config=strict_mcp_config,
+            include_hook_events=include_hook_events,
+            replay_user_messages=replay_user_messages,
+            exclude_dynamic_prompt_sections=exclude_dynamic_prompt_sections,
+            debug=debug_enabled,
+            verbose=verbose,
+            include_partial_messages=include_partial_messages,
+            dangerously_skip_permissions=dangerously_skip_permissions,
+            # Float
+            max_budget_usd=max_budget_usd,
+            # Process-level tuning
+            buffer_limit=buffer_limit,
+            shutdown_timeout=shutdown_timeout,
+            # Hooks
+            hooks=config.hooks or {},
+        )
 
     # --- Properties ---
 

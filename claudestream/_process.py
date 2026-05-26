@@ -141,6 +141,7 @@ _FLAG_REGISTRY: list[tuple[str, str, str]] = [
     ("tmux", "--tmux", "bool"),
     ("verbose", "--verbose", "bool"),
     ("include_partial_messages", "--include-partial-messages", "bool"),
+    ("dangerously_skip_permissions", "--dangerously-skip-permissions", "bool"),
 ]
 
 
@@ -207,6 +208,7 @@ class ProcessConfig(msgspec.Struct, frozen=True):
     # --- Currently hardcoded, now configurable ---
     verbose: bool = True  # --verbose (default True)
     include_partial_messages: bool = True  # --include-partial-messages (default True)
+    dangerously_skip_permissions: bool = False  # --dangerously-skip-permissions
 
     # --- Process-level tuning (not CLI flags, used by ProcessManager) ---
     buffer_limit: int = 16_777_216

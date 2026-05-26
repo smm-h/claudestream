@@ -27,14 +27,8 @@ class TestProcessConfigResume:
 
 class TestAsyncSessionResume:
     def test_async_session_accepts_resume(self):
-        with patch("claudestream._async_session.find_binary", return_value="/fake/claude"):
-            with patch("claudestream._async_session.sandbox_to_flags", return_value=[]):
-                with patch("claudewheel.profile.resolve_profile", return_value={}):
-                    session = AsyncSession(
-                        model="sonnet",
-                        profile="test",
-                        resume_session_id="sess-456",
-                    )
+        from tests.conftest import make_test_session
+        session = make_test_session(model="sonnet", resume_session_id="sess-456")
         assert session._process_mgr.config.resume_session_id == "sess-456"
 
 

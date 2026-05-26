@@ -219,59 +219,51 @@ class TestGenerateSchema:
 
 
 class TestSessionToolsParam:
-    @patch("claudestream._async_session.find_binary", return_value="/usr/bin/claude")
-    @patch("claudestream._async_session.check_version")
-    def test_async_session_accepts_tools(self, mock_version, mock_binary):
+    def test_async_session_accepts_tools(self):
         """AsyncSession constructor accepts tools parameter without error."""
-        with patch("claudewheel.profile.resolve_profile", return_value={}):
-            @tool()
-            def my_tool(x: str) -> str:
-                """A tool."""
-                return x
+        from tests.conftest import make_test_session
 
-            session = AsyncSession(
-                model="sonnet",
-                profile="test",
-                tools=[my_tool._tool],
-            )
-            assert len(session._user_tools) == 1
-            assert session._user_tools[0].name == "my_tool"
-            assert "claudestream" in session._tools_by_server
-            assert len(session._tools_by_server["claudestream"]) == 1
+        @tool()
+        def my_tool(x: str) -> str:
+            """A tool."""
+            return x
 
-    @patch("claudestream._async_session.find_binary", return_value="/usr/bin/claude")
-    @patch("claudestream._async_session.check_version")
-    def test_async_session_tools_grouped_by_server(self, mock_version, mock_binary):
+        session = make_test_session(model="sonnet", tools=[my_tool._tool])
+        assert len(session._user_tools) == 1
+        assert session._user_tools[0].name == "my_tool"
+        assert "claudestream" in session._tools_by_server
+        assert len(session._tools_by_server["claudestream"]) == 1
+
+    def test_async_session_tools_grouped_by_server(self):
         """Tools are grouped by server name."""
-        with patch("claudewheel.profile.resolve_profile", return_value={}):
-            @tool("server_a")
-            def tool_a(x: str) -> str:
-                """Tool A."""
-                return x
+        from tests.conftest import make_test_session
 
-            @tool("server_b")
-            def tool_b(y: int) -> int:
-                """Tool B."""
-                return y
+        @tool("server_a")
+        def tool_a(x: str) -> str:
+            """Tool A."""
+            return x
 
-            @tool("server_a")
-            def tool_a2(z: bool) -> bool:
-                """Tool A2."""
-                return z
+        @tool("server_b")
+        def tool_b(y: int) -> int:
+            """Tool B."""
+            return y
 
-            session = AsyncSession(
-                model="sonnet",
-                profile="test",
-                tools=[tool_a._tool, tool_b._tool, tool_a2._tool],
-            )
-            assert len(session._tools_by_server["server_a"]) == 2
-            assert len(session._tools_by_server["server_b"]) == 1
+        @tool("server_a")
+        def tool_a2(z: bool) -> bool:
+            """Tool A2."""
+            return z
 
-    @patch("claudestream._async_session.find_binary", return_value="/usr/bin/claude")
-    @patch("claudestream._async_session.check_version")
-    def test_async_session_no_tools_default(self, mock_version, mock_binary):
+        session = make_test_session(
+            model="sonnet",
+            tools=[tool_a._tool, tool_b._tool, tool_a2._tool],
+        )
+        assert len(session._tools_by_server["server_a"]) == 2
+        assert len(session._tools_by_server["server_b"]) == 1
+
+    def test_async_session_no_tools_default(self):
         """AsyncSession with no tools parameter has empty tool lists."""
-        with patch("claudewheel.profile.resolve_profile", return_value={}):
-            session = AsyncSession(model="sonnet", profile="test")
-            assert session._user_tools == []
-            assert session._tools_by_server == {}
+        from tests.conftest import make_test_session
+
+        session = make_test_session(model="sonnet")
+        assert session._user_tools == []
+        assert session._tools_by_server == {}

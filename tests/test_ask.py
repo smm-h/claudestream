@@ -63,11 +63,8 @@ def _build_ndjson(events: list[dict]) -> bytes:
 
 
 def _make_async_session() -> AsyncSession:
-    with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
-         patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
-         patch("claudewheel.profile.resolve_profile", return_value={}):
-        session = AsyncSession(model="haiku", profile="test", binary="/fake/claude")
-    return session
+    from tests.conftest import make_test_session
+    return make_test_session()
 
 
 def _wire_ndjson(session: AsyncSession, data: bytes) -> None:

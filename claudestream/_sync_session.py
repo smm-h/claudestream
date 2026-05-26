@@ -11,6 +11,7 @@ from typing import Any, Callable
 
 from claudestream.events import AskResult, Event, Result
 from claudestream._async_session import AsyncSession, ClaudeStreamError
+from claudestream._options import SessionConfig
 from claudestream.policy import Sandbox
 from claudestream._tools import Tool
 
@@ -88,7 +89,8 @@ class SyncSession:
 
     def __enter__(self) -> SyncSession:
         loop = self._ensure_loop()
-        self._async_session = AsyncSession(**self._kwargs)
+        config = SessionConfig(**self._kwargs)
+        self._async_session = AsyncSession(config)
         self._run_coro(self._async_session._start())
         self._started = True
         return self
