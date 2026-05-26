@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.7.3
+
+### Features
+
+- **Agent discovery from custom paths and packages.** `discover_agents()` now accepts `paths=` for custom directories and `packages=` for Python package resources via `importlib.resources`. Deduplicates by name with warnings on conflicts. `load_agent()` gains a `cwd` parameter for consistent bare name resolution.
+
 ## 0.7.2
 
 ### Features
