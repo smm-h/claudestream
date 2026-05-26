@@ -149,33 +149,12 @@ __all__ = [
 ]
 
 
-def print_prompt(
-    prompt: str,
-    model: str,
-    profile: str,
-    *,
-    cwd: str | None = None,
-    binary: str | None = None,
-    sandbox: Sandbox | None = None,
-    system_prompt: str | None = None,
-    extra_args: list[str] | None = None,
-    env: dict[str, str] | None = None,
-) -> str:
+def print_prompt(prompt: str, config: SessionConfig) -> str:
     """One-shot convenience: send a prompt and return the full response text.
 
     Creates a SyncSession, sends one message, collects AssistantText events,
     and returns the concatenated text. For claudewheel integration.
     """
-    config = SessionConfig(
-        model=model,
-        profile=profile,
-        cwd=cwd,
-        binary=binary,
-        sandbox=sandbox,
-        system_prompt=system_prompt,
-        extra_args=extra_args,
-        env=env,
-    )
     with SyncSession(config) as session:
         result = session.ask(prompt)
     return result.text

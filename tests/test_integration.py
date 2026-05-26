@@ -367,6 +367,7 @@ class TestAgentDefinition:
         path.write_text(json.dumps(defn))
 
         agent = load_agent(str(path))
-        with invoke_agent_sync(agent, PROFILE, variables={"greeting": "howdy"}) as session:
+        agent_config = SessionConfig(model=MODEL, profile=PROFILE)
+        with invoke_agent_sync(agent, agent_config, variables={"greeting": "howdy"}) as session:
             result = session.ask("Say hi")
             assert result.text  # Should get a response

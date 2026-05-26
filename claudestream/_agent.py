@@ -114,12 +114,16 @@ def _build_tools(
     return tools or None
 
 
-def _resolve_model(model: str | None, definition: AgentDefinition) -> str:
-    """Return the effective model, raising if neither source provides one."""
-    effective = model or definition.model
+def _resolve_model(config: SessionConfig, definition: AgentDefinition) -> str:
+    """Return the effective model: definition wins if set, then config.
+
+    Raises:
+        ValueError: If neither source provides a model.
+    """
+    effective = definition.model or config.model
     if not effective:
         raise ValueError(
-            "model must be specified either in the agent definition or as an argument"
+            "model must be specified either in the agent definition or in the config"
         )
     return effective
 
@@ -140,87 +144,128 @@ def _build_session_resolution(definition: AgentDefinition) -> SessionResolution 
 @asynccontextmanager
 async def invoke_agent(
     definition: AgentDefinition,
-    profile: str,
+    config: SessionConfig,
     *,
     variables: dict[str, str] | None = None,
-    model: str | None = None,
     tool_handlers: dict[str, Any] | None = None,
-    cwd: str | None = None,
-    env: dict[str, str] | None = None,
 ):
     """Create and manage an AsyncSession from an AgentDefinition.
 
-    Resolves the prompt template, builds sandbox and tools from the definition,
-    and yields a ready-to-use AsyncSession.
+    Uses ``config`` as the base configuration. Definition fields (model,
+    sandbox, mcp, stream, system_prompt) override the config where set.
 
     Raises:
-        ValueError: If model is not specified in the definition or as an argument.
+        ValueError: If model is not specified in the definition or config.
         ValueError: If prompt template has unresolved variables.
     """
     from claudestream._async_session import AsyncSession
 
     prompt = resolve_prompt(definition.prompt_template, variables or {})
-    effective_model = _resolve_model(model, definition)
+    effective_model = _resolve_model(config, definition)
     tools = _build_tools(definition, tool_handlers)
 
     if definition.description:
         log.info("Agent: %s - %s", definition.name, definition.description)
 
-    config = SessionConfig(
+    merged = SessionConfig(
         model=effective_model,
-        profile=profile,
-        sandbox=definition.sandbox,
+        profile=config.profile,
+        sandbox=definition.sandbox if definition.sandbox is not None else config.sandbox,
         tools=tools,
         system_prompt=prompt,
-        cwd=cwd,
-        env=env,
-        mcp=definition.mcp,
-        stream=definition.stream,
+        cwd=config.cwd,
+        binary=config.binary,
+        extra_args=config.extra_args,
+        env=config.env,
+        resume_session_id=config.resume_session_id,
+        mcp=definition.mcp if definition.mcp is not None else config.mcp,
+        stream=definition.stream if definition.stream is not None else config.stream,
         session_resolution=_build_session_resolution(definition),
+        debug=config.debug,
+        plugins=config.plugins,
+        process_limits=config.process_limits,
+        budget=definition.budget if definition.budget is not None else config.budget,
+        poll_timeout=config.poll_timeout,
+        join_timeout=config.join_timeout,
+        effort=config.effort,
+        json_schema=config.json_schema,
+        fallback_model=config.fallback_model,
+        betas=config.betas,
+        add_dirs=config.add_dirs,
+        builtin_tools=config.builtin_tools,
+        brief=config.brief,
+        settings=config.settings,
+        setting_sources=config.setting_sources,
+        file_specs=config.file_specs,
+        agent_name=config.agent_name,
+        agents_json=config.agents_json,
+        hooks=config.hooks,
+        no_persistence=config.no_persistence,
     )
-    async with AsyncSession(config) as session:
+    async with AsyncSession(merged) as session:
         yield session
 
 
 @contextmanager
 def invoke_agent_sync(
     definition: AgentDefinition,
-    profile: str,
+    config: SessionConfig,
     *,
     variables: dict[str, str] | None = None,
-    model: str | None = None,
     tool_handlers: dict[str, Any] | None = None,
-    cwd: str | None = None,
-    env: dict[str, str] | None = None,
 ):
     """Create and manage a SyncSession from an AgentDefinition.
 
-    Sync version of invoke_agent.
+    Sync version of invoke_agent. Uses ``config`` as the base configuration.
+    Definition fields override the config where set.
 
     Raises:
-        ValueError: If model is not specified in the definition or as an argument.
+        ValueError: If model is not specified in the definition or config.
         ValueError: If prompt template has unresolved variables.
     """
     from claudestream._sync_session import SyncSession
 
     prompt = resolve_prompt(definition.prompt_template, variables or {})
-    effective_model = _resolve_model(model, definition)
+    effective_model = _resolve_model(config, definition)
     tools = _build_tools(definition, tool_handlers)
 
     if definition.description:
         log.info("Agent: %s - %s", definition.name, definition.description)
 
-    config = SessionConfig(
+    merged = SessionConfig(
         model=effective_model,
-        profile=profile,
-        sandbox=definition.sandbox,
+        profile=config.profile,
+        sandbox=definition.sandbox if definition.sandbox is not None else config.sandbox,
         tools=tools,
         system_prompt=prompt,
-        cwd=cwd,
-        env=env,
-        mcp=definition.mcp,
-        stream=definition.stream,
+        cwd=config.cwd,
+        binary=config.binary,
+        extra_args=config.extra_args,
+        env=config.env,
+        resume_session_id=config.resume_session_id,
+        mcp=definition.mcp if definition.mcp is not None else config.mcp,
+        stream=definition.stream if definition.stream is not None else config.stream,
         session_resolution=_build_session_resolution(definition),
+        debug=config.debug,
+        plugins=config.plugins,
+        process_limits=config.process_limits,
+        budget=definition.budget if definition.budget is not None else config.budget,
+        poll_timeout=config.poll_timeout,
+        join_timeout=config.join_timeout,
+        effort=config.effort,
+        json_schema=config.json_schema,
+        fallback_model=config.fallback_model,
+        betas=config.betas,
+        add_dirs=config.add_dirs,
+        builtin_tools=config.builtin_tools,
+        brief=config.brief,
+        settings=config.settings,
+        setting_sources=config.setting_sources,
+        file_specs=config.file_specs,
+        agent_name=config.agent_name,
+        agents_json=config.agents_json,
+        hooks=config.hooks,
+        no_persistence=config.no_persistence,
     )
-    with SyncSession(config) as session:
+    with SyncSession(merged) as session:
         yield session

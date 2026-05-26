@@ -403,7 +403,8 @@ class TestPrintPromptUsesAsk:
             MockSyncSession.return_value = mock_instance
 
             from claudestream import print_prompt
-            text = print_prompt("hi", model="test", profile="test")
+            config = SessionConfig(model="test", profile="test")
+            text = print_prompt("hi", config)
 
             assert text == "prompt response"
             mock_instance.ask.assert_called_once_with("hi")

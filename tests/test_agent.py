@@ -212,23 +212,27 @@ class TestLoadAgent:
 
 
 class TestResolveModel:
-    def test_arg_overrides_definition(self):
+    def test_definition_overrides_config(self):
+        cfg = SessionConfig(model="sonnet", profile="p")
         ad = AgentDefinition(name="a", prompt_template="p", version="1.0", model="haiku")
-        assert _resolve_model("opus", ad) == "opus"
+        assert _resolve_model(cfg, ad) == "haiku"
 
-    def test_definition_model_used(self):
-        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", model="haiku")
-        assert _resolve_model(None, ad) == "haiku"
+    def test_config_model_used(self):
+        cfg = SessionConfig(model="opus", profile="p")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
+        assert _resolve_model(cfg, ad) == "opus"
 
     def test_no_model_raises(self):
+        cfg = SessionConfig(model="", profile="p")
         ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
         with pytest.raises(ValueError, match="model must be specified"):
-            _resolve_model(None, ad)
+            _resolve_model(cfg, ad)
 
-    def test_empty_string_model_raises(self):
-        ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
+    def test_empty_string_both_raises(self):
+        cfg = SessionConfig(model="", profile="p")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", model="")
         with pytest.raises(ValueError, match="model must be specified"):
-            _resolve_model("", ad)
+            _resolve_model(cfg, ad)
 
 
 class TestBuildTools:
@@ -286,13 +290,14 @@ class TestInvokeAgent:
             version="1.0",
             model="sonnet",
         )
+        base_config = SessionConfig(model="ignored", profile="test-profile")
         mock_session = AsyncMock()
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         async def run():
             with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
-                async with invoke_agent(ad, "test-profile", variables={"name": "Alice"}) as session:
+                async with invoke_agent(ad, base_config, variables={"name": "Alice"}) as session:
                     assert session is mock_session
                 mock_cls.assert_called_once()
                 config = mock_cls.call_args.args[0]
@@ -316,13 +321,14 @@ class TestInvokeAgent:
             model="sonnet",
             sandbox=sc,
         )
+        base_config = SessionConfig(model="sonnet", profile="profile")
         mock_session = AsyncMock()
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         async def run():
             with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
-                async with invoke_agent(ad, "profile") as session:
+                async with invoke_agent(ad, base_config) as session:
                     pass
                 config = mock_cls.call_args.args[0]
                 assert isinstance(config, SessionConfig)
@@ -334,27 +340,29 @@ class TestInvokeAgent:
 
     def test_requires_model(self):
         ad = AgentDefinition(name="test", prompt_template="p", version="1.0")
+        base_config = SessionConfig(model="", profile="profile")
 
         async def run():
             with pytest.raises(ValueError, match="model must be specified"):
-                async with invoke_agent(ad, "profile"):
+                async with invoke_agent(ad, base_config):
                     pass
 
         asyncio.run(run())
 
-    def test_model_override(self):
+    def test_definition_model_overrides_config(self):
         ad = AgentDefinition(name="test", prompt_template="p", version="1.0", model="haiku")
+        base_config = SessionConfig(model="opus", profile="profile")
         mock_session = AsyncMock()
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         async def run():
             with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
-                async with invoke_agent(ad, "profile", model="opus") as session:
+                async with invoke_agent(ad, base_config) as session:
                     pass
                 config = mock_cls.call_args.args[0]
                 assert isinstance(config, SessionConfig)
-                assert config.model == "opus"
+                assert config.model == "haiku"
 
         asyncio.run(run())
 
@@ -367,12 +375,13 @@ class TestInvokeAgentSync:
             version="1.0",
             model="sonnet",
         )
+        base_config = SessionConfig(model="ignored", profile="test-profile")
         mock_session = MagicMock()
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
 
         with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
-            with invoke_agent_sync(ad, "test-profile", variables={"name": "Bob"}) as session:
+            with invoke_agent_sync(ad, base_config, variables={"name": "Bob"}) as session:
                 assert session is mock_session
             mock_cls.assert_called_once()
             config = mock_cls.call_args.args[0]
@@ -387,33 +396,34 @@ class TestInvokeAgentSync:
 
     def test_requires_model(self):
         ad = AgentDefinition(name="test", prompt_template="p", version="1.0")
+        base_config = SessionConfig(model="", profile="profile")
         with pytest.raises(ValueError, match="model must be specified"):
-            with invoke_agent_sync(ad, "profile"):
+            with invoke_agent_sync(ad, base_config):
                 pass
 
-    def test_model_override(self):
+    def test_definition_model_overrides_config(self):
         ad = AgentDefinition(name="test", prompt_template="p", version="1.0", model="haiku")
+        base_config = SessionConfig(model="opus", profile="profile")
         mock_session = MagicMock()
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
 
         with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
-            with invoke_agent_sync(ad, "profile", model="opus") as session:
+            with invoke_agent_sync(ad, base_config) as session:
                 pass
             config = mock_cls.call_args.args[0]
             assert isinstance(config, SessionConfig)
-            assert config.model == "opus"
+            assert config.model == "haiku"
 
-    def test_passes_cwd_and_env(self):
+    def test_passes_cwd_and_env_from_config(self):
         ad = AgentDefinition(name="test", prompt_template="p", version="1.0", model="sonnet")
+        base_config = SessionConfig(model="sonnet", profile="profile", cwd="/work", env={"KEY": "val"})
         mock_session = MagicMock()
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
 
         with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
-            with invoke_agent_sync(
-                ad, "profile", cwd="/work", env={"KEY": "val"}
-            ) as session:
+            with invoke_agent_sync(ad, base_config) as session:
                 pass
             config = mock_cls.call_args.args[0]
             assert isinstance(config, SessionConfig)
@@ -427,12 +437,13 @@ class TestInvokeAgentSync:
             version="1.0",
             model="sonnet",
         )
+        base_config = SessionConfig(model="sonnet", profile="profile")
         mock_session = MagicMock()
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
 
         with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
-            with invoke_agent_sync(ad, "profile") as session:
+            with invoke_agent_sync(ad, base_config) as session:
                 pass
             config = mock_cls.call_args.args[0]
             assert config.session_resolution is not None
@@ -446,13 +457,14 @@ class TestInvokeAgentSync:
             model="sonnet",
             description="A helpful agent",
         )
+        base_config = SessionConfig(model="sonnet", profile="profile")
         mock_session = MagicMock()
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
 
         with caplog.at_level(logging.INFO, logger="claudestream"):
             with patch("claudestream._sync_session.SyncSession", return_value=mock_session):
-                with invoke_agent_sync(ad, "profile") as session:
+                with invoke_agent_sync(ad, base_config) as session:
                     pass
         assert "Agent: my-agent - A helpful agent" in caplog.text
 
@@ -463,13 +475,14 @@ class TestInvokeAgentSync:
             version="1.0",
             model="sonnet",
         )
+        base_config = SessionConfig(model="sonnet", profile="profile")
         mock_session = MagicMock()
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
 
         with caplog.at_level(logging.INFO, logger="claudestream"):
             with patch("claudestream._sync_session.SyncSession", return_value=mock_session):
-                with invoke_agent_sync(ad, "profile") as session:
+                with invoke_agent_sync(ad, base_config) as session:
                     pass
         assert "Agent:" not in caplog.text
 

@@ -376,13 +376,17 @@ def cmd_agent_run(
         print("Error: no model specified. Use --model or set 'model' in the agent definition.", file=sys.stderr)
         return 1
 
+    base_config = SessionConfig(
+        model=model or agent_def.model or "",
+        profile=profile,
+        cwd=cwd or None,
+    )
+
     try:
         with invoke_agent_sync(
             agent_def,
-            profile,
+            base_config,
             variables=variables or None,
-            model=model or None,
-            cwd=cwd or None,
         ) as session:
             _stream_events(session, prompt, footer, color)
     except ValueError as e:
