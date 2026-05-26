@@ -64,6 +64,7 @@ from claudestream._options import (
 from claudestream._process import ProcessConfig, ProcessManager
 from claudestream._agent import (
     AgentDefinition,
+    discover_agents,
     invoke_agent,
     invoke_agent_sync,
     load_agent,
@@ -138,6 +139,7 @@ __all__ = [
     "ProcessManager",
     # Agent definitions
     "AgentDefinition",
+    "discover_agents",
     "invoke_agent",
     "invoke_agent_sync",
     "load_agent",

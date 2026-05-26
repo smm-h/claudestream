@@ -1,9 +1,11 @@
-"""Tests for AgentDefinition, Budget, ToolSchema, .agent.json loader, and invoke_agent."""
+"""Tests for AgentDefinition, Budget, ToolSchema, .agent.json loader, invoke_agent, discover_agents, and bare name resolution."""
 
 from __future__ import annotations
 
 import asyncio
 import json
+import logging
+import os
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import msgspec
@@ -14,13 +16,15 @@ from claudestream._agent import (
     Budget,
     ToolSchema,
     _build_tools,
+    _build_session_resolution,
     _resolve_model,
+    discover_agents,
     invoke_agent,
     invoke_agent_sync,
     load_agent,
     resolve_prompt,
 )
-from claudestream._options import SessionConfig
+from claudestream._options import SessionConfig, SessionResolution
 from claudestream.policy import Sandbox
 from claudestream._tools import Tool
 
@@ -415,3 +419,165 @@ class TestInvokeAgentSync:
             assert isinstance(config, SessionConfig)
             assert config.cwd == "/work"
             assert config.env == {"KEY": "val"}
+
+    def test_name_wired_to_session_resolution(self):
+        ad = AgentDefinition(
+            name="my-agent",
+            prompt_template="p",
+            version="1.0",
+            model="sonnet",
+        )
+        mock_session = MagicMock()
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
+
+        with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
+            with invoke_agent_sync(ad, "profile") as session:
+                pass
+            config = mock_cls.call_args.args[0]
+            assert config.session_resolution is not None
+            assert config.session_resolution.name == "my-agent"
+
+    def test_description_logged(self, caplog):
+        ad = AgentDefinition(
+            name="my-agent",
+            prompt_template="p",
+            version="1.0",
+            model="sonnet",
+            description="A helpful agent",
+        )
+        mock_session = MagicMock()
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
+
+        with caplog.at_level(logging.INFO, logger="claudestream"):
+            with patch("claudestream._sync_session.SyncSession", return_value=mock_session):
+                with invoke_agent_sync(ad, "profile") as session:
+                    pass
+        assert "Agent: my-agent - A helpful agent" in caplog.text
+
+    def test_no_description_not_logged(self, caplog):
+        ad = AgentDefinition(
+            name="my-agent",
+            prompt_template="p",
+            version="1.0",
+            model="sonnet",
+        )
+        mock_session = MagicMock()
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
+
+        with caplog.at_level(logging.INFO, logger="claudestream"):
+            with patch("claudestream._sync_session.SyncSession", return_value=mock_session):
+                with invoke_agent_sync(ad, "profile") as session:
+                    pass
+        assert "Agent:" not in caplog.text
+
+
+class TestBuildSessionResolution:
+    def test_with_name(self):
+        ad = AgentDefinition(name="test-agent", prompt_template="p", version="1.0")
+        sr = _build_session_resolution(ad)
+        assert sr is not None
+        assert sr.name == "test-agent"
+        assert sr.session_id is None
+        assert sr.resume_session_id is None
+        assert sr.continue_last is False
+        assert sr.fork is False
+
+    def test_empty_name_returns_none(self):
+        ad = AgentDefinition(name="", prompt_template="p", version="1.0")
+        assert _build_session_resolution(ad) is None
+
+
+class TestLoadAgentBareName:
+    def test_bare_name_resolution(self, tmp_path, monkeypatch):
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        data = {"name": "mybot", "prompt_template": "Hello.", "version": "1.0"}
+        (agents_dir / "mybot.agent.json").write_text(json.dumps(data))
+
+        monkeypatch.chdir(tmp_path)
+        ad = load_agent("mybot")
+        assert ad.name == "mybot"
+        assert ad.version == "1.0"
+
+    def test_bare_name_not_found(self, tmp_path, monkeypatch):
+        monkeypatch.chdir(tmp_path)
+        with pytest.raises(FileNotFoundError, match="Agent 'nonexistent' not found"):
+            load_agent("nonexistent")
+
+    def test_file_path_still_works(self, tmp_path):
+        data = {"name": "bot", "prompt_template": "Hi.", "version": "2.0"}
+        path = tmp_path / "bot.agent.json"
+        path.write_text(json.dumps(data))
+
+        ad = load_agent(str(path))
+        assert ad.name == "bot"
+        assert ad.version == "2.0"
+
+    def test_json_extension_treated_as_path(self, tmp_path):
+        data = {"name": "bot", "prompt_template": "Hi.", "version": "1.0"}
+        path = tmp_path / "custom.json"
+        path.write_text(json.dumps(data))
+
+        ad = load_agent(str(path))
+        assert ad.name == "bot"
+
+    def test_path_with_separator_treated_as_path(self, tmp_path):
+        subdir = tmp_path / "agents"
+        subdir.mkdir()
+        data = {"name": "bot", "prompt_template": "Hi.", "version": "1.0"}
+        path = subdir / "bot.agent.json"
+        path.write_text(json.dumps(data))
+
+        ad = load_agent(str(path))
+        assert ad.name == "bot"
+
+
+class TestDiscoverAgents:
+    def test_discover_agents(self, tmp_path):
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        for name, ver in [("beta", "2.0"), ("alpha", "1.0"), ("gamma", "3.0")]:
+            data = {"name": name, "prompt_template": "p", "version": ver}
+            (agents_dir / f"{name}.agent.json").write_text(json.dumps(data))
+
+        agents = discover_agents(str(tmp_path))
+        assert len(agents) == 3
+        assert [a.name for a in agents] == ["alpha", "beta", "gamma"]
+
+    def test_discover_agents_empty_dir(self, tmp_path):
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        agents = discover_agents(str(tmp_path))
+        assert agents == []
+
+    def test_discover_agents_no_dir(self, tmp_path):
+        agents = discover_agents(str(tmp_path))
+        assert agents == []
+
+    def test_discover_agents_ignores_non_agent_json(self, tmp_path):
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        # This should be picked up
+        data = {"name": "bot", "prompt_template": "p", "version": "1.0"}
+        (agents_dir / "bot.agent.json").write_text(json.dumps(data))
+        # These should be ignored
+        (agents_dir / "readme.md").write_text("docs")
+        (agents_dir / "config.json").write_text("{}")
+
+        agents = discover_agents(str(tmp_path))
+        assert len(agents) == 1
+        assert agents[0].name == "bot"
+
+    def test_discover_agents_uses_cwd_when_none(self, tmp_path, monkeypatch):
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        data = {"name": "bot", "prompt_template": "p", "version": "1.0"}
+        (agents_dir / "bot.agent.json").write_text(json.dumps(data))
+
+        monkeypatch.chdir(tmp_path)
+        agents = discover_agents(None)
+        assert len(agents) == 1
+        assert agents[0].name == "bot"

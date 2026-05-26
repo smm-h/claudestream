@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import os
 import re
 from contextlib import asynccontextmanager, contextmanager
 from pathlib import Path
@@ -9,8 +11,10 @@ from typing import Any
 
 import msgspec
 
-from claudestream._options import Budget, McpOptions, SessionConfig, StreamOptions, ToolSchema
+from claudestream._options import Budget, McpOptions, SessionConfig, SessionResolution, StreamOptions, ToolSchema
 from claudestream.policy import Sandbox
+
+log = logging.getLogger("claudestream")
 
 
 class AgentDefinition(msgspec.Struct, frozen=True):
@@ -44,9 +48,43 @@ def resolve_prompt(template: str, variables: dict[str, str]) -> str:
 
 
 def load_agent(path: str | Path) -> AgentDefinition:
-    """Load an AgentDefinition from a .agent.json file."""
-    data = Path(path).read_bytes()
+    """Load an AgentDefinition from a .agent.json file or by bare name.
+
+    If ``path`` has no path separators and doesn't end with ``.json``, it is
+    treated as a bare agent name.  The loader looks for
+    ``.claudestream/agents/<name>.agent.json`` relative to the current working
+    directory.
+    """
+    p = str(path)
+    if os.sep not in p and (os.altsep is None or os.altsep not in p) and not p.endswith(".json"):
+        # Bare name resolution
+        expected = Path.cwd() / ".claudestream" / "agents" / f"{p}.agent.json"
+        if not expected.exists():
+            raise FileNotFoundError(
+                f"Agent '{p}' not found at {expected}"
+            )
+        data = expected.read_bytes()
+    else:
+        data = Path(path).read_bytes()
     return msgspec.json.decode(data, type=AgentDefinition)
+
+
+def discover_agents(cwd: str | None = None) -> list[AgentDefinition]:
+    """Discover agent definitions in ``.claudestream/agents/``.
+
+    Finds all ``*.agent.json`` files and returns a list of
+    :class:`AgentDefinition` sorted by name.  Returns an empty list if the
+    directory does not exist.
+    """
+    base = Path(cwd) if cwd else Path.cwd()
+    agents_dir = base / ".claudestream" / "agents"
+    if not agents_dir.is_dir():
+        return []
+    agents: list[AgentDefinition] = []
+    for f in sorted(agents_dir.glob("*.agent.json")):
+        agents.append(msgspec.json.decode(f.read_bytes(), type=AgentDefinition))
+    agents.sort(key=lambda a: a.name)
+    return agents
 
 
 def _build_tools(
@@ -86,6 +124,19 @@ def _resolve_model(model: str | None, definition: AgentDefinition) -> str:
     return effective
 
 
+def _build_session_resolution(definition: AgentDefinition) -> SessionResolution | None:
+    """Build a SessionResolution from the agent name, or None if no name."""
+    if not definition.name:
+        return None
+    return SessionResolution(
+        name=definition.name,
+        session_id=None,
+        resume_session_id=None,
+        continue_last=False,
+        fork=False,
+    )
+
+
 @asynccontextmanager
 async def invoke_agent(
     definition: AgentDefinition,
@@ -112,6 +163,9 @@ async def invoke_agent(
     effective_model = _resolve_model(model, definition)
     tools = _build_tools(definition, tool_handlers)
 
+    if definition.description:
+        log.info("Agent: %s - %s", definition.name, definition.description)
+
     config = SessionConfig(
         model=effective_model,
         profile=profile,
@@ -122,6 +176,7 @@ async def invoke_agent(
         env=env,
         mcp=definition.mcp,
         stream=definition.stream,
+        session_resolution=_build_session_resolution(definition),
     )
     async with AsyncSession(config) as session:
         yield session
@@ -152,6 +207,9 @@ def invoke_agent_sync(
     effective_model = _resolve_model(model, definition)
     tools = _build_tools(definition, tool_handlers)
 
+    if definition.description:
+        log.info("Agent: %s - %s", definition.name, definition.description)
+
     config = SessionConfig(
         model=effective_model,
         profile=profile,
@@ -162,6 +220,7 @@ def invoke_agent_sync(
         env=env,
         mcp=definition.mcp,
         stream=definition.stream,
+        session_resolution=_build_session_resolution(definition),
     )
     with SyncSession(config) as session:
         yield session
