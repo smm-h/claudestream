@@ -1,6 +1,6 @@
 {
   "name": "claudestream",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "help": "Stream Claude Code's JSON protocol",
   "env_prefix": null,
   "config": false,
@@ -502,6 +502,157 @@
       ],
       "args": [],
       "passthrough": false
+    },
+    "ask": {
+      "name": "ask",
+      "help": "Send a prompt and print the response text",
+      "flags": [
+        {
+          "name": "model",
+          "type": "str",
+          "help": "Model to use",
+          "short": "m",
+          "default": null,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "profile",
+          "type": "str",
+          "help": "claudewheel profile",
+          "short": null,
+          "default": null,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "cwd",
+          "type": "str",
+          "help": "Working directory",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "skip-permissions",
+          "type": "bool",
+          "help": "Skip all permission prompts",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "system-prompt",
+          "type": "str",
+          "help": "System prompt",
+          "short": "s",
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        },
+        {
+          "name": "stdin",
+          "type": "bool",
+          "help": "Read prompt from stdin",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "json-output",
+          "type": "bool",
+          "help": "Output AskResult as JSON",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        },
+        {
+          "name": "no-color",
+          "type": "bool",
+          "help": "Disable colored output",
+          "short": null,
+          "default": false,
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": true,
+          "hidden": false
+        }
+      ],
+      "args": [
+        {
+          "name": "prompt",
+          "help": "The prompt to send",
+          "required": false,
+          "variadic": false
+        }
+      ],
+      "passthrough": false
+    },
+    "doctor": {
+      "name": "doctor",
+      "help": "Check claudestream environment health",
+      "flags": [
+        {
+          "name": "profile",
+          "type": "str",
+          "help": "Profile to check",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        }
+      ],
+      "args": [],
+      "passthrough": false
+    },
+    "config": {
+      "name": "config",
+      "help": "Show resolved configuration",
+      "flags": [
+        {
+          "name": "profile",
+          "type": "str",
+          "help": "Profile to show",
+          "short": null,
+          "default": "",
+          "env": null,
+          "choices": null,
+          "repeatable": false,
+          "negatable": null,
+          "hidden": false
+        }
+      ],
+      "args": [],
+      "passthrough": false
     }
   },
   "groups": {
@@ -511,7 +662,7 @@
       "commands": {
         "run": {
           "name": "run",
-          "help": "Load an agent definition from a .agent.json file and run it with the given prompt. The definition file specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.",
+          "help": "Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.",
           "flags": [
             {
               "name": "var",
@@ -595,7 +746,55 @@
             },
             {
               "name": "definition",
-              "help": "Path to .agent.json file",
+              "help": "Agent name or path to .agent.json file",
+              "required": true,
+              "variadic": false
+            }
+          ],
+          "passthrough": false
+        },
+        "list": {
+          "name": "list",
+          "help": "List available agents from .claudestream/agents/",
+          "flags": [
+            {
+              "name": "cwd",
+              "type": "str",
+              "help": "Working directory",
+              "short": null,
+              "default": "",
+              "env": null,
+              "choices": null,
+              "repeatable": false,
+              "negatable": null,
+              "hidden": false
+            }
+          ],
+          "args": [],
+          "passthrough": false
+        },
+        "info": {
+          "name": "info",
+          "help": "Display agent definition details",
+          "flags": [],
+          "args": [
+            {
+              "name": "name",
+              "help": "Agent name or path",
+              "required": true,
+              "variadic": false
+            }
+          ],
+          "passthrough": false
+        },
+        "validate": {
+          "name": "validate",
+          "help": "Validate an agent definition",
+          "flags": [],
+          "args": [
+            {
+              "name": "name",
+              "help": "Agent name or path",
               "required": true,
               "variadic": false
             }

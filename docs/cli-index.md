@@ -12,7 +12,7 @@ order: 91
 
 Stream Claude Code's JSON protocol
 
-Version: 0.6.1
+Version: 0.6.2
 
 ## Commands
 
@@ -20,6 +20,9 @@ Version: 0.6.1
 - [stream](cli-stream.html) -- Stream a prompt with real-time token output
 - [events](cli-events.html) -- Debug: show all raw protocol events
 - [repl](cli-repl.html) -- Interactive multi-turn REPL
+- [ask](cli-ask.html) -- Send a prompt and print the response text
+- [doctor](cli-doctor.html) -- Check claudestream environment health
+- [config](cli-config.html) -- Show resolved configuration
 
 ## Command Groups
 

@@ -13,7 +13,7 @@ Manage and run agents defined in .agent.json files. Agent definitions declare a 
 
 ## agent run
 
-Load an agent definition from a .agent.json file and run it with the given prompt. The definition file specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.
+Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.
 
 ### Flags
 
@@ -31,4 +31,34 @@ Load an agent definition from a .agent.json file and run it with the given promp
 | Name | Required | Description |
 |------|----------|-------------|
 | `prompt` | yes | User message to send to the agent |
-| `definition` | yes | Path to .agent.json file |
+| `definition` | yes | Agent name or path to .agent.json file |
+
+## agent list
+
+List available agents from .claudestream/agents/
+
+### Flags
+
+| Name | Short | Type | Default | Env | Description |
+|------|-------|------|---------|-----|-------------|
+| `--cwd` |  | str |  |  | Working directory |
+
+## agent info
+
+Display agent definition details
+
+### Arguments
+
+| Name | Required | Description |
+|------|----------|-------------|
+| `name` | yes | Agent name or path |
+
+## agent validate
+
+Validate an agent definition
+
+### Arguments
+
+| Name | Required | Description |
+|------|----------|-------------|
+| `name` | yes | Agent name or path |
