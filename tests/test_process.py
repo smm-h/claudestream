@@ -61,6 +61,149 @@ class TestProcessConfig:
         assert "--permission-mode" not in argv
         assert "--allowedTools" not in argv
 
+    def test_new_fields_stored_correctly(self):
+        """New typed fields are stored when passed as keyword args."""
+        config = ProcessConfig(
+            binary="claude",
+            effort="high",
+            json_schema_str='{"type":"object"}',
+            fallback_model="sonnet",
+            name="my-session",
+            setting_sources="project",
+            settings="/tmp/settings.json",
+            debug_filter="transport",
+            debug_file="/tmp/debug.log",
+            agent="coder",
+            agents_json="/tmp/agents.json",
+            remote_control="rc-1",
+            remote_control_prefix="prefix-",
+            worktree="/home/user/repo",
+            from_pr="https://github.com/org/repo/pull/1",
+            session_id="sess-abc",
+            betas=["beta1", "beta2"],
+            add_dirs=["/extra/dir"],
+            builtin_tools=["Read", "Write"],
+            file_specs=["file1.py", "file2.py"],
+            mcp_config=["mcp.json"],
+            plugin_dirs=["/plugins"],
+            plugin_urls=["https://example.com/plugin"],
+            bare=True,
+            brief=True,
+            continue_session=True,
+            fork_session=True,
+            no_session_persistence=True,
+            strict_mcp_config=True,
+            include_hook_events=True,
+            replay_user_messages=True,
+            exclude_dynamic_prompt_sections=True,
+            disable_slash_commands=True,
+            chrome=True,
+            ide=True,
+            tmux=True,
+            debug=True,
+            max_budget_usd=10.5,
+            verbose=False,
+            include_partial_messages=False,
+            buffer_limit=8_000_000,
+            shutdown_timeout=10.0,
+            hooks={"on_start": "echo hi"},
+        )
+        assert config.effort == "high"
+        assert config.json_schema_str == '{"type":"object"}'
+        assert config.fallback_model == "sonnet"
+        assert config.name == "my-session"
+        assert config.setting_sources == "project"
+        assert config.settings == "/tmp/settings.json"
+        assert config.debug_filter == "transport"
+        assert config.debug_file == "/tmp/debug.log"
+        assert config.agent == "coder"
+        assert config.agents_json == "/tmp/agents.json"
+        assert config.remote_control == "rc-1"
+        assert config.remote_control_prefix == "prefix-"
+        assert config.worktree == "/home/user/repo"
+        assert config.from_pr == "https://github.com/org/repo/pull/1"
+        assert config.session_id == "sess-abc"
+        assert config.betas == ["beta1", "beta2"]
+        assert config.add_dirs == ["/extra/dir"]
+        assert config.builtin_tools == ["Read", "Write"]
+        assert config.file_specs == ["file1.py", "file2.py"]
+        assert config.mcp_config == ["mcp.json"]
+        assert config.plugin_dirs == ["/plugins"]
+        assert config.plugin_urls == ["https://example.com/plugin"]
+        assert config.bare is True
+        assert config.brief is True
+        assert config.continue_session is True
+        assert config.fork_session is True
+        assert config.no_session_persistence is True
+        assert config.strict_mcp_config is True
+        assert config.include_hook_events is True
+        assert config.replay_user_messages is True
+        assert config.exclude_dynamic_prompt_sections is True
+        assert config.disable_slash_commands is True
+        assert config.chrome is True
+        assert config.ide is True
+        assert config.tmux is True
+        assert config.debug is True
+        assert config.max_budget_usd == 10.5
+        assert config.verbose is False
+        assert config.include_partial_messages is False
+        assert config.buffer_limit == 8_000_000
+        assert config.shutdown_timeout == 10.0
+        assert config.hooks == {"on_start": "echo hi"}
+
+    def test_new_fields_default_values(self):
+        """All new fields have correct defaults when not specified."""
+        config = ProcessConfig()
+        # String fields default to None
+        assert config.effort is None
+        assert config.json_schema_str is None
+        assert config.fallback_model is None
+        assert config.name is None
+        assert config.setting_sources is None
+        assert config.settings is None
+        assert config.debug_filter is None
+        assert config.debug_file is None
+        assert config.agent is None
+        assert config.agents_json is None
+        assert config.remote_control is None
+        assert config.remote_control_prefix is None
+        assert config.worktree is None
+        assert config.from_pr is None
+        assert config.session_id is None
+        # List fields default to []
+        assert config.betas == []
+        assert config.add_dirs == []
+        assert config.builtin_tools == []
+        assert config.file_specs == []
+        assert config.mcp_config == []
+        assert config.plugin_dirs == []
+        assert config.plugin_urls == []
+        # Bool flags default to False
+        assert config.bare is False
+        assert config.brief is False
+        assert config.continue_session is False
+        assert config.fork_session is False
+        assert config.no_session_persistence is False
+        assert config.strict_mcp_config is False
+        assert config.include_hook_events is False
+        assert config.replay_user_messages is False
+        assert config.exclude_dynamic_prompt_sections is False
+        assert config.disable_slash_commands is False
+        assert config.chrome is False
+        assert config.ide is False
+        assert config.tmux is False
+        assert config.debug is False
+        # Float field defaults to None
+        assert config.max_budget_usd is None
+        # Hardcoded-now-configurable default to True
+        assert config.verbose is True
+        assert config.include_partial_messages is True
+        # Process-level tuning
+        assert config.buffer_limit == 16_777_216
+        assert config.shutdown_timeout == 5.0
+        # Hooks
+        assert config.hooks == {}
+
 
 class TestVersionLt:
     def test_less_than(self):

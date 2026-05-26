@@ -105,6 +105,62 @@ class ProcessConfig(msgspec.Struct, frozen=True):
     extra_args: list[str] = []
     env: dict[str, str] | None = None
 
+    # --- String value flags (--flag value) ---
+    effort: str | None = None
+    json_schema_str: str | None = None  # passed as --json-schema
+    fallback_model: str | None = None
+    name: str | None = None
+    setting_sources: str | None = None
+    settings: str | None = None
+    debug_filter: str | None = None  # --debug <filter_pattern>
+    debug_file: str | None = None
+    agent: str | None = None
+    agents_json: str | None = None  # --agents
+    remote_control: str | None = None
+    remote_control_prefix: str | None = None  # --remote-control-session-name-prefix
+    worktree: str | None = None
+    from_pr: str | None = None
+    session_id: str | None = None
+
+    # --- List flags (--flag value, repeatable) ---
+    betas: list[str] = []
+    add_dirs: list[str] = []  # --add-dir
+    builtin_tools: list[str] = []  # --tools
+    file_specs: list[str] = []  # --file
+    mcp_config: list[str] = []  # --mcp-config
+    plugin_dirs: list[str] = []  # --plugin-dir
+    plugin_urls: list[str] = []  # --plugin-url
+
+    # --- Bool flags ---
+    bare: bool = False
+    brief: bool = False
+    continue_session: bool = False  # --continue
+    fork_session: bool = False
+    no_session_persistence: bool = False
+    strict_mcp_config: bool = False
+    include_hook_events: bool = False
+    replay_user_messages: bool = False
+    exclude_dynamic_prompt_sections: bool = False  # --exclude-dynamic-system-prompt-sections
+    disable_slash_commands: bool = False
+    chrome: bool = False
+    ide: bool = False
+    tmux: bool = False
+    debug: bool = False  # --debug (bool component; True means pass --debug)
+
+    # --- Float flag ---
+    max_budget_usd: float | None = None
+
+    # --- Currently hardcoded, now configurable ---
+    verbose: bool = True  # --verbose (currently hardcoded True in build_argv)
+    include_partial_messages: bool = True  # --include-partial-messages (currently hardcoded True)
+
+    # --- Process-level tuning (not CLI flags, used by ProcessManager) ---
+    buffer_limit: int = 16_777_216
+    shutdown_timeout: float = 5.0
+
+    # --- Hooks (passed to InitializeRequest, not a CLI flag) ---
+    hooks: dict = {}
+
     def build_argv(self) -> list[str]:
         """Build the full command-line argument list."""
         argv = [
