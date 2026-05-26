@@ -22,6 +22,7 @@ from claudestream._agent import (
     load_agent,
     resolve_prompt,
 )
+from claudestream._options import SessionConfig
 from claudestream.policy import Sandbox
 from claudestream._tools import Tool
 
@@ -330,15 +331,16 @@ class TestInvokeAgent:
             with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
                 async with invoke_agent(ad, "test-profile", variables={"name": "Alice"}) as session:
                     assert session is mock_session
-                mock_cls.assert_called_once_with(
-                    "sonnet",
-                    "test-profile",
-                    sandbox=None,
-                    tools=None,
-                    system_prompt="Hello Alice!",
-                    cwd=None,
-                    env=None,
-                )
+                mock_cls.assert_called_once()
+                config = mock_cls.call_args.args[0]
+                assert isinstance(config, SessionConfig)
+                assert config.model == "sonnet"
+                assert config.profile == "test-profile"
+                assert config.sandbox is None
+                assert config.tools is None
+                assert config.system_prompt == "Hello Alice!"
+                assert config.cwd is None
+                assert config.env is None
 
         asyncio.run(run())
 
@@ -358,11 +360,11 @@ class TestInvokeAgent:
             with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
                 async with invoke_agent(ad, "profile") as session:
                     pass
-                call_kwargs = mock_cls.call_args
-                sandbox = call_kwargs.kwargs["sandbox"]
-                assert isinstance(sandbox, Sandbox)
-                assert sandbox.tools == ["Read"]
-                assert sandbox.bare is True
+                config = mock_cls.call_args.args[0]
+                assert isinstance(config, SessionConfig)
+                assert isinstance(config.sandbox, Sandbox)
+                assert config.sandbox.tools == ["Read"]
+                assert config.sandbox.bare is True
 
         asyncio.run(run())
 
@@ -386,7 +388,9 @@ class TestInvokeAgent:
             with patch("claudestream._async_session.AsyncSession", return_value=mock_session) as mock_cls:
                 async with invoke_agent(ad, "profile", model="opus") as session:
                     pass
-                assert mock_cls.call_args.args[0] == "opus"
+                config = mock_cls.call_args.args[0]
+                assert isinstance(config, SessionConfig)
+                assert config.model == "opus"
 
         asyncio.run(run())
 
@@ -405,15 +409,16 @@ class TestInvokeAgentSync:
         with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
             with invoke_agent_sync(ad, "test-profile", variables={"name": "Bob"}) as session:
                 assert session is mock_session
-            mock_cls.assert_called_once_with(
-                "sonnet",
-                "test-profile",
-                sandbox=None,
-                tools=None,
-                system_prompt="Hello Bob!",
-                cwd=None,
-                env=None,
-            )
+            mock_cls.assert_called_once()
+            config = mock_cls.call_args.args[0]
+            assert isinstance(config, SessionConfig)
+            assert config.model == "sonnet"
+            assert config.profile == "test-profile"
+            assert config.sandbox is None
+            assert config.tools is None
+            assert config.system_prompt == "Hello Bob!"
+            assert config.cwd is None
+            assert config.env is None
 
     def test_requires_model(self):
         ad = AgentDefinition(name="test", prompt_template="p")
@@ -430,7 +435,9 @@ class TestInvokeAgentSync:
         with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
             with invoke_agent_sync(ad, "profile", model="opus") as session:
                 pass
-            assert mock_cls.call_args.args[0] == "opus"
+            config = mock_cls.call_args.args[0]
+            assert isinstance(config, SessionConfig)
+            assert config.model == "opus"
 
     def test_passes_cwd_and_env(self):
         ad = AgentDefinition(name="test", prompt_template="p", model="sonnet")
@@ -443,6 +450,7 @@ class TestInvokeAgentSync:
                 ad, "profile", cwd="/work", env={"KEY": "val"}
             ) as session:
                 pass
-            call_kwargs = mock_cls.call_args
-            assert call_kwargs.kwargs["cwd"] == "/work"
-            assert call_kwargs.kwargs["env"] == {"KEY": "val"}
+            config = mock_cls.call_args.args[0]
+            assert isinstance(config, SessionConfig)
+            assert config.cwd == "/work"
+            assert config.env == {"KEY": "val"}

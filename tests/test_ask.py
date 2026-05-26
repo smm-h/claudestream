@@ -8,6 +8,7 @@ import pytest
 
 from claudestream._async_session import AsyncSession
 from claudestream._sync_session import SyncSession
+from claudestream._options import SessionConfig
 from claudestream.events import AskResult, AssistantText, Result, Usage
 
 
@@ -278,7 +279,7 @@ class TestSyncAsk:
         ]
         fake = _FakeAsyncSession(events=events)
 
-        session = SyncSession(model="test", profile="test")
+        session = SyncSession(SessionConfig(model="test", profile="test"))
         session._async_session = fake
         session._started = True
         session._ensure_loop()
@@ -291,7 +292,7 @@ class TestSyncAsk:
         session.close()
 
     def test_sync_ask_not_started(self):
-        session = SyncSession(model="test", profile="test")
+        session = SyncSession(SessionConfig(model="test", profile="test"))
         with pytest.raises(RuntimeError, match="Session not started"):
             session.ask("hi")
 

@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 
 from claudestream._sync_session import SyncSession, _SENTINEL
+from claudestream._options import SessionConfig
 from claudestream.events import AssistantText
 
 
@@ -39,7 +40,7 @@ def _make_session(**overrides):
     """Create a SyncSession with default kwargs, applying overrides."""
     kwargs = {"model": "test", "profile": "test"}
     kwargs.update(overrides)
-    return SyncSession(**kwargs)
+    return SyncSession(SessionConfig(**kwargs))
 
 
 class TestEventBasedStartup:
@@ -50,7 +51,7 @@ class TestEventBasedStartup:
         session = _make_session()
 
         with patch.object(
-            session, "_kwargs", session._kwargs
+            session, "_config", session._config
         ):
             # Manually wire up: start loop, inject fake async session
             session._async_session = fake

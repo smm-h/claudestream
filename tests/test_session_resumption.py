@@ -5,6 +5,7 @@ from unittest.mock import patch
 from claudestream._process import ProcessConfig
 from claudestream._async_session import AsyncSession
 from claudestream._sync_session import SyncSession
+from claudestream._options import SessionConfig
 
 
 class TestProcessConfigResume:
@@ -34,9 +35,9 @@ class TestAsyncSessionResume:
 
 class TestSyncSessionResume:
     def test_sync_session_accepts_resume(self):
-        session = SyncSession(
+        session = SyncSession(SessionConfig(
             model="sonnet",
             profile="test",
             resume_session_id="sess-789",
-        )
-        assert session._kwargs["resume_session_id"] == "sess-789"
+        ))
+        assert session._config.resume_session_id == "sess-789"

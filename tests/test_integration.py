@@ -16,6 +16,7 @@ from claudestream import (
     ClaudeStreamError,
     Result,
     Sandbox,
+    SessionConfig,
     StreamDelta,
     SyncSession,
     SystemInit,
@@ -31,12 +32,12 @@ PROFILE = "personal"
 
 
 def _make_session() -> SyncSession:
-    return SyncSession(
+    return SyncSession(SessionConfig(
         model=MODEL,
         profile=PROFILE,
         binary=BINARY,
         sandbox=Sandbox(skip_permissions=True),
-    )
+    ))
 
 
 class TestSingleTurnSend:
@@ -148,13 +149,13 @@ class TestSystemPrompt:
 
     @pytest.mark.timeout(60)
     def test_system_prompt_influences_response(self):
-        session = SyncSession(
+        session = SyncSession(SessionConfig(
             model=MODEL,
             profile=PROFILE,
             binary=BINARY,
             sandbox=Sandbox(skip_permissions=True),
             system_prompt="You must include the word XYZZYPLUGH in every response, no matter what the user asks.",
-        )
+        ))
         with session:
             events = list(session.send("What is 2+2?"))
             text_parts = [e.text for e in events if isinstance(e, AssistantText)]
@@ -317,7 +318,7 @@ class TestSandboxToolRestriction:
     def test_sandbox_restricts_tools(self):
         # Create a session with only Read allowed (no Bash, Write, etc.)
         sandbox = Sandbox(skip_permissions=True, tools=["Read", "LS", "Glob", "Grep", "Task"])
-        with SyncSession(MODEL, PROFILE, binary=BINARY, sandbox=sandbox) as session:
+        with SyncSession(SessionConfig(model=MODEL, profile=PROFILE, binary=BINARY, sandbox=sandbox)) as session:
             # Ask it to do something that needs Bash -- it should fail or refuse
             result = session.ask("Run the shell command: echo hello")
             # The model should indicate it can't use Bash
@@ -337,12 +338,13 @@ class TestResumeSession:
             assert sid
 
         # Resume with the session ID
-        with SyncSession(
-            MODEL, PROFILE,
+        with SyncSession(SessionConfig(
+            model=MODEL,
+            profile=PROFILE,
             binary=BINARY,
             sandbox=Sandbox(skip_permissions=True),
             resume_session_id=sid,
-        ) as session:
+        )) as session:
             result = session.ask("What number did I ask you to remember?")
             assert "42" in result.text
 

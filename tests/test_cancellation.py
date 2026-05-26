@@ -8,6 +8,7 @@ import pytest
 
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._sync_session import SyncSession
+from claudestream._options import SessionConfig
 from claudestream.events import AssistantText
 
 from tests.conftest import make_test_session
@@ -134,7 +135,7 @@ class TestSyncSessionCancel:
         fake_async = MagicMock()
         fake_async.cancel = AsyncMock()
 
-        session = SyncSession(model="test", profile="test")
+        session = SyncSession(SessionConfig(model="test", profile="test"))
         loop = session._ensure_loop()
         session._async_session = fake_async
 
@@ -152,7 +153,7 @@ class TestSyncSessionCancel:
 
     def test_cancel_noop_without_async_session(self):
         """SyncSession.cancel() is a no-op if async session is None."""
-        session = SyncSession(model="test", profile="test")
+        session = SyncSession(SessionConfig(model="test", profile="test"))
         # Should not raise
         session.cancel(force=False)
         session.cancel(force=True)
