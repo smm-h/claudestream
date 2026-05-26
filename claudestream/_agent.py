@@ -9,7 +9,7 @@ from typing import Any
 
 import msgspec
 
-from claudestream._options import Budget, SessionConfig, ToolSchema
+from claudestream._options import Budget, McpOptions, SessionConfig, StreamOptions, ToolSchema
 from claudestream.policy import Sandbox
 
 
@@ -24,6 +24,8 @@ class AgentDefinition(msgspec.Struct, frozen=True):
     sandbox: Sandbox | None = None
     budget: Budget | None = None
     model: str | None = None
+    mcp: McpOptions | None = None
+    stream: StreamOptions | None = None
 
 
 def resolve_prompt(template: str, variables: dict[str, str]) -> str:
@@ -118,6 +120,8 @@ async def invoke_agent(
         system_prompt=prompt,
         cwd=cwd,
         env=env,
+        mcp=definition.mcp,
+        stream=definition.stream,
     )
     async with AsyncSession(config) as session:
         yield session
@@ -156,6 +160,8 @@ def invoke_agent_sync(
         system_prompt=prompt,
         cwd=cwd,
         env=env,
+        mcp=definition.mcp,
+        stream=definition.stream,
     )
     with SyncSession(config) as session:
         yield session
