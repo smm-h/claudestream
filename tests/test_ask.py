@@ -319,6 +319,71 @@ class TestSyncAsk:
             session.ask("hi")
 
 
+class TestMultimodalSend:
+    """send() and ask() accept list content for multimodal input."""
+
+    def test_send_with_list_content(self):
+        """send() accepts a list of content blocks."""
+        data = _build_ndjson([_SYSTEM_INIT, _ASSISTANT_HELLO, _RESULT_SUCCESS])
+        multimodal_prompt = [
+            {"type": "text", "text": "What is in this image?"},
+            {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": "abc123"}},
+        ]
+
+        async def run():
+            session = _make_async_session()
+            _wire_ndjson(session, data)
+            events = []
+            async for event in session.send(multimodal_prompt):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+        # Should have yielded events (SystemInit, AssistantText, Result)
+        assert len(events) >= 2
+        # Verify the message was written with the list content
+        stdin = session._process_mgr._process.stdin
+        written = stdin.write.call_args_list
+        assert len(written) >= 1
+        import json
+        msg = json.loads(written[0][0][0].decode("utf-8"))
+        assert msg["message"]["content"] == multimodal_prompt
+
+    def test_ask_with_list_content(self):
+        """ask() accepts a list of content blocks."""
+        data = _build_ndjson([_SYSTEM_INIT, _ASSISTANT_HELLO, _RESULT_SUCCESS])
+        multimodal_prompt = [
+            {"type": "text", "text": "Describe this."},
+        ]
+
+        async def run():
+            session = _make_async_session()
+            _wire_ndjson(session, data)
+            return await session.ask(multimodal_prompt)
+
+        result = asyncio.run(run())
+        assert result.text == "Hello"
+
+    def test_send_with_string_still_works(self):
+        """send() still works with plain string (backwards compatibility)."""
+        data = _build_ndjson([_SYSTEM_INIT, _ASSISTANT_HELLO, _RESULT_SUCCESS])
+
+        async def run():
+            session = _make_async_session()
+            _wire_ndjson(session, data)
+            events = []
+            async for event in session.send("hello"):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+        assert len(events) >= 2
+        stdin = session._process_mgr._process.stdin
+        import json
+        msg = json.loads(stdin.write.call_args_list[0][0][0].decode("utf-8"))
+        assert msg["message"]["content"] == "hello"
+
+
 class TestPrintPromptUsesAsk:
     """print_prompt returns correct text (via ask())."""
 

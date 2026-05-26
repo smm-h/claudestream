@@ -321,10 +321,11 @@ class AsyncSession:
 
         await self._process_mgr.start()
 
-        # Send InitializeRequest to register SDK MCP servers
-        if self._user_tools:
+        # Send InitializeRequest to register SDK MCP servers and/or hooks
+        hooks = self._config.hooks or {}
+        if self._user_tools or hooks:
             server_names = list(self._tools_by_server.keys())
-            init_req = InitializeRequest(sdk_mcp_servers=server_names)
+            init_req = InitializeRequest(sdk_mcp_servers=server_names, hooks=hooks)
             await write_message(self._process_mgr.stdin, init_req)
 
         # With --input-format stream-json, the Claude CLI does NOT send
@@ -354,11 +355,12 @@ class AsyncSession:
 
     # --- Sending messages ---
 
-    async def send(self, prompt: str, *, raw: bool = False) -> AsyncIterator[Event]:
+    async def send(self, prompt: str | list, *, raw: bool = False) -> AsyncIterator[Event]:
         """Send a message and yield events until the turn completes.
 
         Args:
-            prompt: The message to send.
+            prompt: The message to send. Can be a plain string or a list of
+                content blocks (dicts) for multimodal input.
             raw: If True, yield raw protocol events (AssistantMessage,
                  ToolResultMessage). If False (default), yield flattened
                  convenience events (AssistantText, ToolUse, etc.).
@@ -398,7 +400,7 @@ class AsyncSession:
         finally:
             self._active_turn = False
 
-    async def ask(self, prompt: str) -> AskResult:
+    async def ask(self, prompt: str | list) -> AskResult:
         """Send a prompt and return the complete response text with metadata."""
         parts: list[str] = []
         result_event: Result | None = None

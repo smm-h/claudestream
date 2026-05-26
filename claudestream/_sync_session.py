@@ -127,17 +127,18 @@ class SyncSession:
 
     # --- Sending messages ---
 
-    def ask(self, prompt: str) -> AskResult:
+    def ask(self, prompt: str | list) -> AskResult:
         """Send a prompt and return the complete response text with metadata."""
         if not self._async_session:
             raise RuntimeError("Session not started. Use 'with SyncSession() as session:'")
         return self._run_coro(self._async_session.ask(prompt))
 
-    def send(self, prompt: str, *, raw: bool = False) -> Iterator[Event]:
+    def send(self, prompt: str | list, *, raw: bool = False) -> Iterator[Event]:
         """Send a message and yield events until the turn completes.
 
         Args:
-            prompt: The message to send.
+            prompt: The message to send. Can be a plain string or a list of
+                content blocks (dicts) for multimodal input.
             raw: If True, yield raw protocol events. If False, yield flattened events.
 
         Yields:
