@@ -33,11 +33,20 @@ from claudestream._agent import discover_agents, invoke_agent_sync, load_agent
 from claudestream._color import Colorizer, should_color
 from claudestream._process import MINIMUM_CLAUDE_VERSION, find_binary, check_version, _version_lt
 
-from importlib.metadata import version as _pkg_version
+def _get_version() -> str:
+    """Read version from pyproject.toml (editable installs) or fall back to package metadata."""
+    import tomllib
+    from pathlib import Path
+    pyproject = Path(__file__).parent.parent / "pyproject.toml"
+    if pyproject.exists():
+        with open(pyproject, "rb") as f:
+            return tomllib.load(f)["project"]["version"]
+    from importlib.metadata import version
+    return version("claudestream")
 
 app = strictcli.App(
     name="claudestream",
-    version=_pkg_version("claudestream"),
+    version=_get_version(),
     help="Stream Claude Code's JSON protocol",
 )
 
