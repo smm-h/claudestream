@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.7.2
+
+### Features
+
+- **Tool context injection.** `@tool("server", inject=["ctx"])` explicitly declares parameters injected from `SessionConfig.tool_context`. Injected params are hidden from the model's schema. Hard error when context is required but missing.
+
 ## 0.7.1
 
 ### Features
