@@ -10,6 +10,7 @@ from claudestream.events import (
     CompactBoundary,
     ContentBlock,
     Event,
+    HookEvent,
     McpRequest,
     PermissionRequest,
     RateLimit,
@@ -91,6 +92,7 @@ __all__ = [
     "RateLimit",
     "PermissionRequest",
     "McpRequest",
+    "HookEvent",
     "UnknownEvent",
     # Content blocks
     "TextBlock",

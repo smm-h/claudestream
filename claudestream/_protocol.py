@@ -15,6 +15,7 @@ from claudestream.events import (
     CompactBoundary,
     ContentBlock,
     Event,
+    HookEvent,
     McpRequest,
     PermissionRequest,
     RateLimit,
@@ -232,7 +233,14 @@ def parse_event(raw: dict) -> Event:
                 server_name=request.get("server_name", ""),
                 message=request.get("message", {}),
             )
-        return UnknownEvent(type=event_type, session_id=session_id, uuid=uuid, raw=raw)
+        # Catch-all for hook lifecycle events and other sdk_control_request subtypes
+        return HookEvent(
+            type="sdk_control_request",
+            session_id=session_id,
+            uuid=uuid,
+            hook_name=subtype,
+            hook_data=request,
+        )
 
     # -- rate limit ----------------------------------------------------------
     if event_type in ("rate_limit", "rate_limit_event"):

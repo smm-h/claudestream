@@ -164,7 +164,7 @@ class TestInitializeRequest:
         assert "test_server" in req["sdk_mcp_servers"]
 
     def test_no_init_request_without_tools(self):
-        """No InitializeRequest when no tools are registered."""
+        """No InitializeRequest when no tools and no hooks are registered."""
         session = make_test_session()
 
         async def run():
@@ -176,6 +176,44 @@ class TestInitializeRequest:
         writes = asyncio.run(run())
         init_writes = [w for w in writes if w.get("type") == "control_request"]
         assert len(init_writes) == 0
+
+    def test_init_request_sent_with_hooks_only(self):
+        """InitializeRequest is sent when hooks are provided even without tools."""
+        hooks = {"PreToolUse": {"command": "echo hook"}}
+        session = make_test_session(hooks=hooks)
+
+        async def run():
+            _prepare_session(session, b"")
+            with patch.object(session._process_mgr, "start", new_callable=AsyncMock):
+                await session._start()
+            return _get_stdin_writes(session)
+
+        writes = asyncio.run(run())
+        init_writes = [w for w in writes if w.get("type") == "control_request"]
+        assert len(init_writes) == 1
+        req = init_writes[0]["request"]
+        assert req["subtype"] == "initialize"
+        assert req["hooks"] == hooks
+        assert req["sdk_mcp_servers"] == []
+
+    def test_init_request_includes_hooks_and_tools(self):
+        """InitializeRequest includes both hooks and tool server names."""
+        hooks = {"PostToolUse": {"command": "echo done"}}
+        tools = _make_tools()
+        session = make_test_session(tools=tools, hooks=hooks)
+
+        async def run():
+            _prepare_session(session, b"")
+            with patch.object(session._process_mgr, "start", new_callable=AsyncMock):
+                await session._start()
+            return _get_stdin_writes(session)
+
+        writes = asyncio.run(run())
+        init_writes = [w for w in writes if w.get("type") == "control_request"]
+        assert len(init_writes) == 1
+        req = init_writes[0]["request"]
+        assert req["hooks"] == hooks
+        assert "test_server" in req["sdk_mcp_servers"]
 
 
 class TestToolsList:

@@ -12,7 +12,7 @@ from claudestream.events import (
     AssistantMessage, AssistantText, ToolUse, Thinking,
     ToolResultMessage, ToolResult,
     Result, StreamDelta, RateLimit,
-    PermissionRequest, McpRequest, UnknownEvent,
+    PermissionRequest, McpRequest, HookEvent, UnknownEvent,
     TextBlock, ToolUseBlock, ThinkingBlock, ToolResultBlock,
     Usage,
 )
@@ -187,6 +187,43 @@ class TestParseEvent:
         event = parse_event(raw)
         assert isinstance(event, McpRequest)
         assert event.server_name == "calculator"
+
+    def test_hook_event_from_unknown_sdk_control_subtype(self):
+        """Unknown sdk_control_request subtypes produce HookEvent."""
+        raw = {
+            "type": "sdk_control_request",
+            "request": {
+                "subtype": "PreToolUse",
+                "request_id": "hook_1",
+                "tool_name": "Bash",
+                "hook_data": {"some": "data"},
+            },
+            "session_id": "abc",
+        }
+        event = parse_event(raw)
+        assert isinstance(event, HookEvent)
+        assert event.hook_name == "PreToolUse"
+        assert event.hook_data["subtype"] == "PreToolUse"
+        assert event.hook_data["request_id"] == "hook_1"
+
+    def test_hook_event_fields(self):
+        """HookEvent exposes hook_name and hook_data correctly."""
+        raw = {
+            "type": "sdk_control_request",
+            "request": {
+                "subtype": "PostToolUse",
+                "request_id": "hook_2",
+                "output": "tool completed",
+            },
+            "session_id": "s1",
+            "uuid": "u1",
+        }
+        event = parse_event(raw)
+        assert isinstance(event, HookEvent)
+        assert event.hook_name == "PostToolUse"
+        assert event.session_id == "s1"
+        assert event.uuid == "u1"
+        assert event.hook_data["output"] == "tool completed"
 
     def test_rate_limit(self):
         raw = {

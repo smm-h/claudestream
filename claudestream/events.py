@@ -28,6 +28,7 @@ __all__ = [
     "RateLimit",
     "PermissionRequest",
     "McpRequest",
+    "HookEvent",
     "UnknownEvent",
     "AskResult",
 ]
@@ -269,6 +270,13 @@ class McpRequest(Event, frozen=True):
     request_id: str = ""
     server_name: str = ""
     message: dict = {}
+
+
+class HookEvent(Event, frozen=True):
+    """Hook lifecycle event from Claude Code (emitted when include_hook_events is True)."""
+
+    hook_name: str = ""
+    hook_data: dict = {}
 
 
 class UnknownEvent(Event, frozen=True):
