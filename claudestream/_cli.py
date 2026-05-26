@@ -31,6 +31,7 @@ from claudestream import (
 )
 from claudestream._agent import discover_agents, invoke_agent_sync, load_agent
 from claudestream._color import Colorizer, should_color
+from claudestream._process import MINIMUM_CLAUDE_VERSION, find_binary, check_version, _version_lt
 
 from importlib.metadata import version as _pkg_version
 
@@ -477,6 +478,135 @@ def cmd_agent_validate(name: str) -> int | None:
                 print(f"error: tool '{t.name}' input_schema must be an object", file=sys.stderr)
                 return 1
     print(f"Valid: {agent.name} v{agent.version}")
+    return None
+
+
+# --- ask command ---
+
+@app.command("ask", help="Send a prompt and print the response text")
+@strictcli.arg("prompt", help="The prompt to send", required=False, default="")
+@strictcli.flag("model", type=str, short="m", help="Model to use")
+@strictcli.flag("profile", type=str, help="claudewheel profile")
+@strictcli.flag("cwd", type=str, default="", help="Working directory")
+@strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
+@strictcli.flag("system-prompt", type=str, default="", short="s", help="System prompt")
+@strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
+@strictcli.flag("json-output", type=bool, default=False, help="Output AskResult as JSON")
+@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+def cmd_ask(
+    prompt: str = "",
+    model: str = "",
+    profile: str = "",
+    cwd: str = "",
+    skip_permissions: bool = False,
+    system_prompt: str = "",
+    stdin: bool = False,
+    json_output: bool = False,
+    no_color: bool = False,
+) -> int | None:
+    color = Colorizer(should_color(no_color_flag=no_color))
+    resolved = _resolve_prompt(prompt, stdin, color)
+    if isinstance(resolved, int):
+        return resolved
+    prompt = resolved
+
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt)
+
+    try:
+        with SyncSession(config) as session:
+            result = session.ask(prompt)
+    except ClaudeStreamError as e:
+        print(color.red(f"error: {e}"), file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        return 1
+
+    if json_output:
+        print(json.dumps(msgspec.to_builtins(result)))
+    else:
+        print(result.text)
+    return None
+
+
+# --- doctor command ---
+
+@app.command("doctor", help="Check claudestream environment health")
+@strictcli.flag("profile", type=str, default="", help="Profile to check")
+def cmd_doctor(profile: str = "") -> int | None:
+    import asyncio
+
+    ok = True
+
+    # 1. Binary found
+    try:
+        binary = find_binary()
+        print(f"[ok] Binary found: {binary}")
+    except FileNotFoundError as e:
+        print(f"[FAIL] Binary not found: {e}")
+        ok = False
+        binary = None
+
+    # 2. Version check
+    if binary:
+        version = asyncio.run(check_version(binary))
+        if version:
+            msg = f"[ok] Version: {version}"
+            if _version_lt(version, MINIMUM_CLAUDE_VERSION):
+                msg += f" (WARNING: below minimum {MINIMUM_CLAUDE_VERSION})"
+                ok = False
+            print(msg)
+        else:
+            print("[FAIL] Could not determine version")
+            ok = False
+
+    # 3. Profile resolution
+    if profile:
+        try:
+            from claudewheel.profile import resolve_profile
+            env_vars = resolve_profile(profile)
+            print(f"[ok] Profile '{profile}': {len(env_vars)} env var(s) resolved")
+        except Exception as e:
+            print(f"[FAIL] Profile '{profile}': {e}")
+            ok = False
+
+    return 0 if ok else 1
+
+
+# --- config command ---
+
+@app.command("config", help="Show resolved configuration")
+@strictcli.flag("profile", type=str, default="", help="Profile to show")
+def cmd_config(profile: str = "") -> int | None:
+    import asyncio
+
+    # 1. Binary path
+    try:
+        binary = find_binary()
+        print(f"Binary: {binary}")
+    except FileNotFoundError as e:
+        print(f"Binary: not found ({e})")
+        binary = None
+
+    # 2. Version
+    if binary:
+        version = asyncio.run(check_version(binary))
+        print(f"Version: {version or 'unknown'}")
+
+    # 3. Minimum supported version
+    print(f"Minimum version: {MINIMUM_CLAUDE_VERSION}")
+
+    # 4. Profile
+    if profile:
+        try:
+            from claudewheel.profile import resolve_profile
+            env_vars = resolve_profile(profile)
+            print(f"Profile: {profile}")
+            for key, value in sorted(env_vars.items()):
+                print(f"  {key}={value}")
+        except Exception as e:
+            print(f"Profile: {profile} (error: {e})")
+
     return None
 
 
