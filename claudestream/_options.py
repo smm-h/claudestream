@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import msgspec
 
 from claudestream._tools import Tool
@@ -134,3 +136,6 @@ class SessionConfig(msgspec.Struct, frozen=True):
     hooks: dict | None = None
     no_persistence: bool = False
     from_pr: str | None = None
+
+    # Tool context injection
+    tool_context: Any = None

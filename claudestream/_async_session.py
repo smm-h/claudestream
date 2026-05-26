@@ -671,9 +671,11 @@ class AsyncSession:
 
             # Find the tool by name
             handler = None
+            matched_tool: Tool | None = None
             for t in tools:
                 if t.name == tool_name:
                     handler = t.handler
+                    matched_tool = t
                     break
 
             if handler is None:
@@ -684,6 +686,16 @@ class AsyncSession:
                 }
             else:
                 try:
+                    # Inject tool_context for params listed in tool.inject
+                    if matched_tool is not None and matched_tool.inject:
+                        tool_context = self._config.tool_context
+                        if tool_context is None:
+                            raise RuntimeError(
+                                f"Tool '{tool_name}' requires tool_context but none was provided in SessionConfig"
+                            )
+                        for inject_param in matched_tool.inject:
+                            arguments[inject_param] = tool_context
+
                     if asyncio.iscoroutinefunction(handler):
                         result = await handler(**arguments)
                     else:

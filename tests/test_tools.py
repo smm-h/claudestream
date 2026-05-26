@@ -513,6 +513,54 @@ class TestCollectTools:
         assert collect_tools(mod) == []
 
 
+class TestInjectParameter:
+    def test_inject_param_excluded_from_schema(self):
+        """@tool with inject=["ctx"] excludes ctx from the generated schema."""
+        @tool("srv", inject=["ctx"])
+        def search(query: str, ctx: Any = None) -> str:
+            """Search."""
+            return query
+
+        schema = search._tool.input_schema
+        assert "query" in schema["properties"]
+        assert "ctx" not in schema["properties"]
+        assert schema["required"] == ["query"]
+
+    def test_inject_param_validation(self):
+        """@tool with inject=["nonexistent"] raises ValueError."""
+        import pytest
+        with pytest.raises(ValueError, match="Inject parameter 'nonexistent' not found"):
+            @tool("srv", inject=["nonexistent"])
+            def fn(x: str) -> str:
+                """Do something."""
+                return x
+
+    def test_inject_empty_list(self):
+        """@tool with inject=[] works normally (no injection)."""
+        @tool("srv", inject=[])
+        def fn(x: str) -> str:
+            """Do something."""
+            return x
+
+        schema = fn._tool.input_schema
+        assert "x" in schema["properties"]
+        assert fn._tool.inject == []
+
+    def test_inject_with_other_params(self):
+        """Function with both model params and inject params -- only model params in schema."""
+        @tool("srv", inject=["ctx"])
+        def fn(name: str, count: int = 5, ctx: Any = None) -> str:
+            """Do something."""
+            return name
+
+        schema = fn._tool.input_schema
+        assert "name" in schema["properties"]
+        assert "count" in schema["properties"]
+        assert "ctx" not in schema["properties"]
+        assert schema["required"] == ["name"]
+        assert fn._tool.inject == ["ctx"]
+
+
 class TestJsonAwareResults:
     """Test that _handle_mcp_request serializes results appropriately."""
 

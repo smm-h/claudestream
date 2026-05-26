@@ -27,6 +27,7 @@ class Tool(msgspec.Struct, frozen=True):
     input_schema: dict
     handler: Any
     server: str
+    inject: list[str] = []
 
 
 # Type-hint to JSON Schema type mapping
@@ -131,10 +132,11 @@ def _parse_param_descriptions(fn: Callable) -> dict[str, str]:
     return descriptions
 
 
-def _generate_schema(fn: Callable) -> dict:
+def _generate_schema(fn: Callable, *, inject: list[str] | None = None) -> dict:
     """Generate a JSON Schema from a function's type hints and defaults."""
     sig = inspect.signature(fn)
     hints = _get_type_hints_safe(fn)
+    inject_set = set(inject) if inject else set()
 
     properties: dict[str, dict] = {}
     required: list[str] = []
@@ -142,6 +144,10 @@ def _generate_schema(fn: Callable) -> dict:
     for param_name, param in sig.parameters.items():
         # Skip self/cls and return annotation
         if param_name in ("self", "cls"):
+            continue
+
+        # Skip injected context parameters
+        if param_name in inject_set:
             continue
 
         annotation = hints.get(param_name, inspect.Parameter.empty)
@@ -184,6 +190,7 @@ def tool(
     *,
     name: str | None = None,
     description: str | None = None,
+    inject: list[str] | None = None,
 ) -> Callable:
     """Decorator factory that creates a Tool from a function's type hints and docstring.
 
@@ -197,18 +204,32 @@ def tool(
         @tool("my_server", name="custom_name")
         def greet(message: str) -> str:
             ...
+
+        @tool("my_server", inject=["ctx"])
+        def search(query: str, ctx: Any = None) -> str:
+            ...
     """
 
     def decorator(fn: Callable) -> Callable:
+        # Validate inject params exist in the function signature
+        if inject:
+            sig = inspect.signature(fn)
+            for param in inject:
+                if param not in sig.parameters:
+                    raise ValueError(
+                        f"Inject parameter '{param}' not found in function '{fn.__name__}' signature"
+                    )
+
         tool_name = name or fn.__name__
         tool_desc = description or (fn.__doc__ or "").strip().split("\n")[0] or tool_name
-        schema = _generate_schema(fn)
+        schema = _generate_schema(fn, inject=inject)
         t = Tool(
             name=tool_name,
             description=tool_desc,
             input_schema=schema,
             handler=fn,
             server=server,
+            inject=list(inject) if inject else [],
         )
         fn._tool = t  # type: ignore[attr-defined]
         return fn

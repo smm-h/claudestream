@@ -449,3 +449,141 @@ class TestToolsCall:
         writes = _get_stdin_writes(session)
         responses = [w for w in writes if w.get("type") == "control_response"]
         assert len(responses) == 0
+
+
+class TestToolContextInjection:
+    def test_tool_context_injected(self):
+        """tool_context is injected into handler params listed in inject."""
+        received_ctx = {}
+
+        def handler_with_ctx(x: str, ctx=None) -> str:
+            received_ctx["value"] = ctx
+            return f"got:{x}"
+
+        tools = [
+            Tool(
+                name="ctx_tool",
+                description="A tool with context",
+                input_schema={"type": "object", "properties": {"x": {"type": "string"}}, "required": ["x"]},
+                handler=handler_with_ctx,
+                server="test_server",
+                inject=["ctx"],
+            ),
+        ]
+        my_context = {"conn": "db_conn", "session_id": "s123"}
+        mcp_req = _mcp_request_raw("test_server", {
+            "jsonrpc": "2.0",
+            "id": 10,
+            "method": "tools/call",
+            "params": {"name": "ctx_tool", "arguments": {"x": "hello"}},
+        })
+        data = _build_ndjson([mcp_req, RESULT_RAW])
+
+        async def run():
+            session = make_test_session(tools=tools, tool_context=my_context)
+            _prepare_session(session, data)
+            events = []
+            async for event in session._read_turn(raw=False):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+
+        # Verify the handler received the context
+        assert received_ctx["value"] is my_context
+
+        # Verify the response was successful
+        writes = _get_stdin_writes(session)
+        responses = [w for w in writes if w.get("type") == "control_response"]
+        assert len(responses) == 1
+        mcp_resp = responses[0]["response"]["response"]["mcp_response"]
+        assert mcp_resp["result"]["content"][0]["text"] == "got:hello"
+
+    def test_tool_context_missing_raises(self):
+        """When tool has inject but no tool_context on SessionConfig, error response is sent."""
+        def handler_with_ctx(x: str, ctx=None) -> str:
+            return f"got:{x}"
+
+        tools = [
+            Tool(
+                name="ctx_tool",
+                description="A tool with context",
+                input_schema={"type": "object", "properties": {"x": {"type": "string"}}, "required": ["x"]},
+                handler=handler_with_ctx,
+                server="test_server",
+                inject=["ctx"],
+            ),
+        ]
+        mcp_req = _mcp_request_raw("test_server", {
+            "jsonrpc": "2.0",
+            "id": 11,
+            "method": "tools/call",
+            "params": {"name": "ctx_tool", "arguments": {"x": "hello"}},
+        })
+        data = _build_ndjson([mcp_req, RESULT_RAW])
+
+        async def run():
+            # No tool_context set (defaults to None)
+            session = make_test_session(tools=tools)
+            _prepare_session(session, data)
+            events = []
+            async for event in session._read_turn(raw=False):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+
+        # Should get an error response
+        writes = _get_stdin_writes(session)
+        responses = [w for w in writes if w.get("type") == "control_response"]
+        assert len(responses) == 1
+        mcp_resp = responses[0]["response"]["response"]["mcp_response"]
+        assert "error" in mcp_resp
+        assert "tool_context" in mcp_resp["error"]["message"]
+
+    def test_tool_context_with_async_handler(self):
+        """tool_context is injected into async handler params listed in inject."""
+        received_ctx = {}
+
+        async def async_handler_with_ctx(x: str, ctx=None) -> str:
+            received_ctx["value"] = ctx
+            return f"async_got:{x}"
+
+        tools = [
+            Tool(
+                name="async_ctx_tool",
+                description="An async tool with context",
+                input_schema={"type": "object", "properties": {"x": {"type": "string"}}, "required": ["x"]},
+                handler=async_handler_with_ctx,
+                server="test_server",
+                inject=["ctx"],
+            ),
+        ]
+        my_context = {"tenant": "t1"}
+        mcp_req = _mcp_request_raw("test_server", {
+            "jsonrpc": "2.0",
+            "id": 12,
+            "method": "tools/call",
+            "params": {"name": "async_ctx_tool", "arguments": {"x": "world"}},
+        })
+        data = _build_ndjson([mcp_req, RESULT_RAW])
+
+        async def run():
+            session = make_test_session(tools=tools, tool_context=my_context)
+            _prepare_session(session, data)
+            events = []
+            async for event in session._read_turn(raw=False):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+
+        # Verify the async handler received the context
+        assert received_ctx["value"] is my_context
+
+        # Verify the response was successful
+        writes = _get_stdin_writes(session)
+        responses = [w for w in writes if w.get("type") == "control_response"]
+        assert len(responses) == 1
+        mcp_resp = responses[0]["response"]["response"]["mcp_response"]
+        assert mcp_resp["result"]["content"][0]["text"] == "async_got:world"
