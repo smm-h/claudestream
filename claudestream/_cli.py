@@ -29,7 +29,7 @@ from claudestream import (
     SystemInit,
     UnknownEvent,
 )
-from claudestream._agent import invoke_agent_sync, load_agent
+from claudestream._agent import discover_agents, invoke_agent_sync, load_agent
 from claudestream._color import Colorizer, should_color
 
 from importlib.metadata import version as _pkg_version
@@ -335,8 +335,8 @@ def cmd_repl(
 agent_group = app.group("agent", help="Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata.")
 
 
-@agent_group.command("run", help="Load an agent definition from a .agent.json file and run it with the given prompt. The definition file specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.")
-@strictcli.arg("definition", help="Path to .agent.json file")
+@agent_group.command("run", help="Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.")
+@strictcli.arg("definition", help="Agent name or path to .agent.json file")
 @strictcli.arg("prompt", help="User message to send to the agent")
 @strictcli.flag("var", type=str, help="Variable in key=value format (repeatable)", default=[], repeatable=True)
 @strictcli.flag("model", type=str, help="Model override", short="m", default="")
@@ -393,6 +393,91 @@ def cmd_agent_run(
     except KeyboardInterrupt:
         print("\nInterrupted.", file=sys.stderr)
         return 1
+
+
+@agent_group.command("list", help="List available agents from .claudestream/agents/")
+@strictcli.flag("cwd", type=str, default="", help="Working directory")
+def cmd_agent_list(cwd: str = "") -> int | None:
+    agents = discover_agents(cwd or None)
+    if not agents:
+        print("No agents found in .claudestream/agents/")
+        return None
+    # Determine column widths
+    name_w = max(len(a.name) for a in agents)
+    ver_w = max(len(a.version) for a in agents)
+    # Print header
+    print(f"{'NAME':<{name_w}}  {'VERSION':<{ver_w}}  DESCRIPTION")
+    for a in agents:
+        desc = a.description or ""
+        print(f"{a.name:<{name_w}}  {a.version:<{ver_w}}  {desc}")
+    return None
+
+
+@agent_group.command("info", help="Display agent definition details")
+@strictcli.arg("name", help="Agent name or path")
+def cmd_agent_info(name: str) -> int | None:
+    try:
+        agent = load_agent(name)
+    except (FileNotFoundError, Exception) as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    print(f"Name:        {agent.name}")
+    print(f"Version:     {agent.version}")
+    if agent.description:
+        print(f"Description: {agent.description}")
+    if agent.model:
+        print(f"Model:       {agent.model}")
+    if agent.budget:
+        parts = []
+        if agent.budget.max_cost_usd is not None:
+            parts.append(f"max_cost_usd={agent.budget.max_cost_usd}")
+        if agent.budget.max_turns is not None:
+            parts.append(f"max_turns={agent.budget.max_turns}")
+        if agent.budget.max_tokens is not None:
+            parts.append(f"max_tokens={agent.budget.max_tokens}")
+        if parts:
+            print(f"Budget:      {', '.join(parts)}")
+    if agent.sandbox:
+        print(f"Sandbox:     tools={agent.sandbox.tools}")
+    if agent.tools:
+        print("Tools:")
+        for t in agent.tools:
+            print(f"  - {t.name}: {t.description}")
+    if agent.mcp:
+        print(f"MCP:         config_files={agent.mcp.config_files}")
+    if agent.stream:
+        print(f"Stream:      verbose={agent.stream.verbose}")
+    return None
+
+
+@agent_group.command("validate", help="Validate an agent definition")
+@strictcli.arg("name", help="Agent name or path")
+def cmd_agent_validate(name: str) -> int | None:
+    try:
+        agent = load_agent(name)
+    except (FileNotFoundError, Exception) as e:
+        print(f"error: {e}", file=sys.stderr)
+        return 1
+    # Validate budget values are non-negative
+    if agent.budget:
+        if agent.budget.max_cost_usd is not None and agent.budget.max_cost_usd < 0:
+            print("error: budget.max_cost_usd must be non-negative", file=sys.stderr)
+            return 1
+        if agent.budget.max_turns is not None and agent.budget.max_turns < 0:
+            print("error: budget.max_turns must be non-negative", file=sys.stderr)
+            return 1
+        if agent.budget.max_tokens is not None and agent.budget.max_tokens < 0:
+            print("error: budget.max_tokens must be non-negative", file=sys.stderr)
+            return 1
+    # Basic tool schema validation
+    if agent.tools:
+        for t in agent.tools:
+            schema = t.input_schema
+            if not isinstance(schema, dict):
+                print(f"error: tool '{t.name}' input_schema must be an object", file=sys.stderr)
+                return 1
+    print(f"Valid: {agent.name} v{agent.version}")
+    return None
 
 
 # --- Helpers ---
