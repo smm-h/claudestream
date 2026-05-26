@@ -115,7 +115,7 @@ def print_prompt(
     Creates a SyncSession, sends one message, collects AssistantText events,
     and returns the concatenated text. For claudewheel integration.
     """
-    with SyncSession(
+    config = SessionConfig(
         model=model,
         profile=profile,
         cwd=cwd,
@@ -124,6 +124,7 @@ def print_prompt(
         system_prompt=system_prompt,
         extra_args=extra_args,
         env=env,
-    ) as session:
+    )
+    with SyncSession(config) as session:
         result = session.ask(prompt)
     return result.text

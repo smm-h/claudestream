@@ -18,6 +18,7 @@ from claudestream import (
     RateLimit,
     Result,
     Sandbox,
+    SessionConfig,
     StreamDelta,
     SyncSession,
     Thinking,
@@ -83,14 +84,15 @@ def cmd_send(
     sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     try:
         printer = EventPrinter(footer=footer, color=color)
-        with SyncSession(
+        config = SessionConfig(
             model=model,
             cwd=cwd or None,
             sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
             resume_session_id=resume or None,
-        ) as session:
+        )
+        with SyncSession(config) as session:
             for event in session.send(prompt, raw=raw):
                 if json_output:
                     _print_json(event)
@@ -144,14 +146,15 @@ def cmd_stream(
     sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     try:
         streamed_text = ""
-        with SyncSession(
+        config = SessionConfig(
             model=model,
             cwd=cwd or None,
             sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
             resume_session_id=resume or None,
-        ) as session:
+        )
+        with SyncSession(config) as session:
             for event in session.send(prompt):
                 if isinstance(event, StreamDelta) and event.text:
                     streamed_text += event.text
@@ -228,14 +231,15 @@ def cmd_events(
         return 1
     sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     try:
-        with SyncSession(
+        config = SessionConfig(
             model=model,
             cwd=cwd or None,
             sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
             resume_session_id=resume or None,
-        ) as session:
+        )
+        with SyncSession(config) as session:
             for event in session.send(prompt, raw=True):
                 _print_json(event)
                 if footer and isinstance(event, Result):
@@ -272,14 +276,15 @@ def cmd_repl(
     color = Colorizer(should_color(no_color_flag=no_color))
     sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     try:
-        with SyncSession(
+        config = SessionConfig(
             model=model,
             cwd=cwd or None,
             sandbox=sandbox,
             profile=profile,
             system_prompt=system_prompt or None,
             resume_session_id=resume or None,
-        ) as session:
+        )
+        with SyncSession(config) as session:
             print("claudestream repl")
             print("Type your prompts. Ctrl-D to exit.\n")
             model_shown = False

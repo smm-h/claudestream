@@ -9,7 +9,7 @@ from typing import Any
 
 import msgspec
 
-from claudestream._options import Budget, ToolSchema
+from claudestream._options import Budget, SessionConfig, ToolSchema
 
 
 class SandboxConfig(msgspec.Struct, frozen=True):
@@ -130,15 +130,16 @@ async def invoke_agent(
     sandbox = _build_sandbox(definition)
     tools = _build_tools(definition, tool_handlers)
 
-    async with AsyncSession(
-        effective_model,
-        profile,
+    config = SessionConfig(
+        model=effective_model,
+        profile=profile,
         sandbox=sandbox,
         tools=tools,
         system_prompt=prompt,
         cwd=cwd,
         env=env,
-    ) as session:
+    )
+    async with AsyncSession(config) as session:
         yield session
 
 
@@ -168,13 +169,14 @@ def invoke_agent_sync(
     sandbox = _build_sandbox(definition)
     tools = _build_tools(definition, tool_handlers)
 
-    with SyncSession(
-        effective_model,
-        profile,
+    config = SessionConfig(
+        model=effective_model,
+        profile=profile,
         sandbox=sandbox,
         tools=tools,
         system_prompt=prompt,
         cwd=cwd,
         env=env,
-    ) as session:
+    )
+    with SyncSession(config) as session:
         yield session

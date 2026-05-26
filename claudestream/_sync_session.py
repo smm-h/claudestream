@@ -12,8 +12,6 @@ from typing import Any, Callable
 from claudestream.events import AskResult, Event, Result
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._options import SessionConfig
-from claudestream.policy import Sandbox
-from claudestream._tools import Tool
 
 log = logging.getLogger("claudestream")
 
@@ -27,37 +25,14 @@ class SyncSession:
 
     Usage::
 
-        with SyncSession(model="sonnet") as session:
+        config = SessionConfig(model="sonnet", profile="default")
+        with SyncSession(config) as session:
             for event in session.send("hello"):
                 print(event)
     """
 
-    def __init__(
-        self,
-        model: str,
-        profile: str,
-        *,
-        cwd: str | None = None,
-        binary: str | None = None,
-        sandbox: Sandbox | None = None,
-        system_prompt: str | None = None,
-        extra_args: list[str] | None = None,
-        env: dict[str, str] | None = None,
-        tools: list[Tool] | None = None,
-        resume_session_id: str | None = None,
-    ):
-        self._kwargs = {
-            "model": model,
-            "profile": profile,
-            "cwd": cwd,
-            "binary": binary,
-            "sandbox": sandbox,
-            "system_prompt": system_prompt,
-            "extra_args": extra_args,
-            "env": env,
-            "tools": tools,
-            "resume_session_id": resume_session_id,
-        }
+    def __init__(self, config: SessionConfig):
+        self._config = config
         self._loop: asyncio.AbstractEventLoop | None = None
         self._thread: threading.Thread | None = None
         self._async_session: AsyncSession | None = None
@@ -89,8 +64,7 @@ class SyncSession:
 
     def __enter__(self) -> SyncSession:
         loop = self._ensure_loop()
-        config = SessionConfig(**self._kwargs)
-        self._async_session = AsyncSession(config)
+        self._async_session = AsyncSession(self._config)
         self._run_coro(self._async_session._start())
         self._started = True
         return self
