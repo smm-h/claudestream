@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -10,19 +10,12 @@ from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._sync_session import SyncSession
 from claudestream.events import AssistantText
 
+from tests.conftest import make_test_session
+
 
 def _build_ndjson(events: list[dict]) -> bytes:
     """Encode a list of raw event dicts as NDJSON bytes."""
     return "".join(json.dumps(e) + "\n" for e in events).encode("utf-8")
-
-
-def _make_session() -> AsyncSession:
-    """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
-    with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
-         patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
-         patch("claudewheel.profile.resolve_profile", return_value={}):
-        session = AsyncSession(model="haiku", profile="test", binary="/fake/claude")
-    return session
 
 
 def _prepare_session(session: AsyncSession, data: bytes) -> None:
@@ -64,7 +57,7 @@ class TestAsyncSessionGracefulCancel:
         data = _build_ndjson(_NORMAL_EVENTS)
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             _prepare_session(session, data)
             session._cancelled = True
             events = []
@@ -78,7 +71,7 @@ class TestAsyncSessionGracefulCancel:
     def test_graceful_cancel_closes_stdin(self):
         """cancel(force=False) sets flag and closes stdin."""
         async def run():
-            session = _make_session()
+            session = make_test_session()
             session._process_mgr._process = MagicMock()
             session._process_mgr._process.returncode = None
             mock_stdin = MagicMock()
@@ -94,7 +87,7 @@ class TestAsyncSessionGracefulCancel:
     def test_force_cancel_calls_process_mgr_close(self):
         """cancel(force=True) sets flag and calls ProcessManager.close()."""
         async def run():
-            session = _make_session()
+            session = make_test_session()
             session._process_mgr.close = AsyncMock()
 
             await session.cancel(force=True)
@@ -111,7 +104,7 @@ class TestAsyncSessionCancelledReuse:
         data = _build_ndjson(_NORMAL_EVENTS)
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             _prepare_session(session, data)
             session._cancelled = True
 

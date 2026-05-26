@@ -2,10 +2,11 @@
 
 import asyncio
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 from claudestream._protocol import parse_event, flatten_event, parse_content_block, parse_usage
-from claudestream._async_session import AsyncSession
+
+from tests.conftest import make_test_session
 from claudestream.events import (
     SystemInit, ApiRetry, CompactBoundary,
     AssistantMessage, AssistantText, ToolUse, Thinking,
@@ -345,14 +346,6 @@ class TestSystemInitLazyCapture:
         """Encode a list of raw event dicts as NDJSON bytes."""
         return "".join(json.dumps(e) + "\n" for e in events).encode("utf-8")
 
-    def _make_session(self) -> AsyncSession:
-        """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
-        with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
-             patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
-             patch("claudewheel.profile.resolve_profile", return_value={}):
-            session = AsyncSession(model="haiku", profile="test", binary="/fake/claude")
-        return session
-
     def test_system_init_yielded(self):
         """SystemInit events should be captured internally AND yielded to the consumer."""
         raw_events = [
@@ -401,7 +394,7 @@ class TestSystemInitLazyCapture:
         data = self._build_ndjson(raw_events)
 
         async def run():
-            session = self._make_session()
+            session = make_test_session()
             # Mock the process manager so _read_turn thinks the process is alive
             session._process_mgr._process = MagicMock()
             session._process_mgr._process.returncode = None
@@ -458,7 +451,7 @@ class TestSystemInitLazyCapture:
         data = self._build_ndjson(raw_events)
 
         async def run():
-            session = self._make_session()
+            session = make_test_session()
 
             # Before any turn, metadata should be unset
             assert session.session_id is None
@@ -528,7 +521,7 @@ class TestSystemInitLazyCapture:
         data = self._build_ndjson(raw_events)
 
         async def run():
-            session = self._make_session()
+            session = make_test_session()
             session._process_mgr._process = MagicMock()
             session._process_mgr._process.returncode = None
 
@@ -555,20 +548,12 @@ class TestSystemInitLazyCapture:
 class TestHealthProbe:
     """Test that the startup health probe fires a warning when no events arrive."""
 
-    def _make_session(self) -> AsyncSession:
-        """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
-        with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
-             patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
-             patch("claudewheel.profile.resolve_profile", return_value={}):
-            session = AsyncSession(model="haiku", profile="test", binary="/fake/claude")
-        return session
-
     def test_health_probe_fires_on_no_events(self, caplog):
         """Health probe should log a warning when no events arrive within the timeout."""
         import logging
 
         async def run():
-            session = self._make_session()
+            session = make_test_session()
             session._process_mgr._process = MagicMock()
             session._process_mgr._process.returncode = None
 

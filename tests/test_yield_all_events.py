@@ -2,7 +2,7 @@
 
 import asyncio
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 from claudestream._async_session import AsyncSession
 from claudestream.events import (
@@ -13,19 +13,12 @@ from claudestream.events import (
 )
 from claudestream.policy import Sandbox
 
+from tests.conftest import make_test_session
+
 
 def _build_ndjson(events: list[dict]) -> bytes:
     """Encode a list of raw event dicts as NDJSON bytes."""
     return "".join(json.dumps(e) + "\n" for e in events).encode("utf-8")
-
-
-def _make_session(**kwargs) -> AsyncSession:
-    """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
-    with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
-         patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
-         patch("claudewheel.profile.resolve_profile", return_value={}):
-        session = AsyncSession(model="haiku", profile="test", binary="/fake/claude", **kwargs)
-    return session
 
 
 def _prepare_session(session: AsyncSession, data: bytes) -> None:
@@ -96,7 +89,7 @@ class TestSystemInitYielded:
         data = _build_ndjson([SYSTEM_INIT_RAW, RESULT_RAW])
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -115,7 +108,7 @@ class TestSystemInitYielded:
         data = _build_ndjson([SYSTEM_INIT_RAW, RESULT_RAW])
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             assert session.session_id is None
             assert session.model_name is None
             assert session.tools == []
@@ -140,7 +133,7 @@ class TestPermissionRequestYieldedWhenHandled:
         data = _build_ndjson([PERMISSION_REQUEST_RAW, RESULT_RAW])
 
         async def run():
-            session = _make_session(sandbox=Sandbox(skip_permissions=True))
+            session = make_test_session(sandbox=Sandbox(skip_permissions=True))
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -157,7 +150,7 @@ class TestPermissionRequestYieldedWhenHandled:
         data = _build_ndjson([PERMISSION_REQUEST_RAW, RESULT_RAW])
 
         async def run():
-            session = _make_session(sandbox=Sandbox(skip_permissions=True))
+            session = make_test_session(sandbox=Sandbox(skip_permissions=True))
             _prepare_session(session, data)
 
             events = []

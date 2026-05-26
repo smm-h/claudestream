@@ -10,19 +10,12 @@ from claudestream._async_session import AsyncSession
 from claudestream._tools import Tool
 from claudestream.events import McpRequest, Result
 
+from tests.conftest import make_test_session
+
 
 def _build_ndjson(events: list[dict]) -> bytes:
     """Encode a list of raw event dicts as NDJSON bytes."""
     return "".join(json.dumps(e) + "\n" for e in events).encode("utf-8")
-
-
-def _make_session(**kwargs) -> AsyncSession:
-    """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
-    with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
-         patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
-         patch("claudewheel.profile.resolve_profile", return_value={}):
-        session = AsyncSession(model="haiku", profile="test", binary="/fake/claude", **kwargs)
-    return session
 
 
 def _prepare_session(session: AsyncSession, data: bytes) -> None:
@@ -108,7 +101,7 @@ class TestMcpWildcardsInAllowedTools:
     def test_mcp_wildcards_added(self):
         """MCP wildcard patterns are added to ProcessConfig.allowed_tools."""
         tools = _make_tools()
-        session = _make_session(tools=tools)
+        session = make_test_session(tools=tools)
         assert "mcp__test_server__*" in session._process_mgr.config.allowed_tools
 
     def test_mcp_wildcards_multiple_servers(self):
@@ -122,14 +115,14 @@ class TestMcpWildcardsInAllowedTools:
                 server="other_server",
             ),
         ]
-        session = _make_session(tools=tools)
+        session = make_test_session(tools=tools)
         allowed = session._process_mgr.config.allowed_tools
         assert "mcp__test_server__*" in allowed
         assert "mcp__other_server__*" in allowed
 
     def test_no_tools_no_wildcards(self):
         """No MCP wildcards when no tools are registered."""
-        session = _make_session()
+        session = make_test_session()
         assert session._process_mgr.config.allowed_tools == []
 
     def test_wildcards_merged_with_sandbox_tools(self):
@@ -137,7 +130,7 @@ class TestMcpWildcardsInAllowedTools:
         from claudestream.policy import Sandbox
         sandbox = Sandbox(tools=["Bash", "Read"])
         tools = _make_tools()
-        session = _make_session(sandbox=sandbox, tools=tools)
+        session = make_test_session(sandbox=sandbox, tools=tools)
         allowed = session._process_mgr.config.allowed_tools
         assert "Bash" in allowed
         assert "Read" in allowed
@@ -148,7 +141,7 @@ class TestInitializeRequest:
     def test_init_request_sent_on_start(self):
         """InitializeRequest is written to stdin when tools are registered."""
         tools = _make_tools()
-        session = _make_session(tools=tools)
+        session = make_test_session(tools=tools)
 
         async def run():
             # Mock start() to do nothing (skip real subprocess), then call our _start
@@ -172,7 +165,7 @@ class TestInitializeRequest:
 
     def test_no_init_request_without_tools(self):
         """No InitializeRequest when no tools are registered."""
-        session = _make_session()
+        session = make_test_session()
 
         async def run():
             _prepare_session(session, b"")
@@ -197,7 +190,7 @@ class TestToolsList:
         data = _build_ndjson([mcp_req, RESULT_RAW])
 
         async def run():
-            session = _make_session(tools=tools)
+            session = make_test_session(tools=tools)
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -236,7 +229,7 @@ class TestToolsList:
         data = _build_ndjson([mcp_req, RESULT_RAW])
 
         async def run():
-            session = _make_session(tools=tools)
+            session = make_test_session(tools=tools)
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -262,7 +255,7 @@ class TestToolsCall:
         data = _build_ndjson([mcp_req, RESULT_RAW])
 
         async def run():
-            session = _make_session(tools=tools)
+            session = make_test_session(tools=tools)
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -303,7 +296,7 @@ class TestToolsCall:
         data = _build_ndjson([mcp_req, RESULT_RAW])
 
         async def run():
-            session = _make_session(tools=tools)
+            session = make_test_session(tools=tools)
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -341,7 +334,7 @@ class TestToolsCall:
         data = _build_ndjson([mcp_req, RESULT_RAW])
 
         async def run():
-            session = _make_session(tools=tools)
+            session = make_test_session(tools=tools)
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -376,7 +369,7 @@ class TestToolsCall:
         data = _build_ndjson([mcp_req, RESULT_RAW])
 
         async def run():
-            session = _make_session(tools=tools)
+            session = make_test_session(tools=tools)
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -404,7 +397,7 @@ class TestToolsCall:
         data = _build_ndjson([mcp_req, RESULT_RAW])
 
         async def run():
-            session = _make_session(tools=tools)
+            session = make_test_session(tools=tools)
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):

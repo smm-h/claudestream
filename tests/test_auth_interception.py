@@ -2,26 +2,19 @@
 
 import asyncio
 import json
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream.events import AssistantText, Result
 
+from tests.conftest import make_test_session
+
 
 def _build_ndjson(events: list[dict]) -> bytes:
     """Encode a list of raw event dicts as NDJSON bytes."""
     return "".join(json.dumps(e) + "\n" for e in events).encode("utf-8")
-
-
-def _make_session() -> AsyncSession:
-    """Create an AsyncSession with a mocked ProcessManager (no real subprocess)."""
-    with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
-         patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
-         patch("claudewheel.profile.resolve_profile", return_value={}):
-        session = AsyncSession(model="haiku", profile="test", binary="/fake/claude")
-    return session
 
 
 def _prepare_session(session: AsyncSession, data: bytes) -> None:
@@ -60,7 +53,7 @@ class TestAuthInterception:
         data = _build_ndjson(raw_events)
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -99,7 +92,7 @@ class TestAuthInterception:
         data = _build_ndjson(raw_events)
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -133,7 +126,7 @@ class TestAuthInterception:
         data = _build_ndjson(raw_events)
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -170,7 +163,7 @@ class TestAuthInterception:
         data = _build_ndjson(raw_events)
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
@@ -206,7 +199,7 @@ class TestAuthInterception:
         data = _build_ndjson(raw_events)
 
         async def run():
-            session = _make_session()
+            session = make_test_session()
             _prepare_session(session, data)
             events = []
             async for event in session._read_turn(raw=False):
