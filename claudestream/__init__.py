@@ -48,7 +48,7 @@ from claudestream.policy import (
     Sandbox,
     create_sandbox,
 )
-from claudestream._tools import Tool, tool
+from claudestream._tools import Tool, collect_tools, tool
 from claudestream._options import (
     Budget,
     DebugOptions,
@@ -119,6 +119,7 @@ __all__ = [
     "create_sandbox",
     # Tools
     "Tool",
+    "collect_tools",
     "tool",
     # Options
     "Budget",

@@ -652,11 +652,18 @@ class AsyncSession:
                         result = await handler(**arguments)
                     else:
                         result = handler(**arguments)
+                    if isinstance(result, (dict, list)):
+                        import json
+                        result_text = json.dumps(result)
+                    elif isinstance(result, str):
+                        result_text = result
+                    else:
+                        result_text = str(result)
                     response = {
                         "jsonrpc": "2.0",
                         "id": rpc_id,
                         "result": {
-                            "content": [{"type": "text", "text": str(result)}],
+                            "content": [{"type": "text", "text": result_text}],
                         },
                     }
                 except Exception as e:
