@@ -90,6 +90,60 @@ async def check_version(binary: str) -> str | None:
         return None
 
 
+# Declarative flag registry: (field_name, cli_flag, style)
+# Styles: "value" emits [--flag, str(val)], "bool" emits [--flag], "list" emits [--flag, ",".join(val)]
+# debug/debug_filter handled specially outside this registry.
+_FLAG_REGISTRY: list[tuple[str, str, str]] = [
+    # Value flags
+    ("model", "--model", "value"),
+    ("system_prompt", "--system-prompt", "value"),
+    ("permission_mode", "--permission-mode", "value"),
+    ("permission_prompt_tool", "--permission-prompt-tool", "value"),
+    ("resume_session_id", "--resume", "value"),
+    ("effort", "--effort", "value"),
+    ("json_schema_str", "--json-schema", "value"),
+    ("max_budget_usd", "--max-budget-usd", "value"),
+    ("fallback_model", "--fallback-model", "value"),
+    ("name", "--name", "value"),
+    ("setting_sources", "--setting-sources", "value"),
+    ("settings", "--settings", "value"),
+    ("debug_file", "--debug-file", "value"),
+    ("agent", "--agent", "value"),
+    ("agents_json", "--agents", "value"),
+    ("remote_control", "--remote-control", "value"),
+    ("remote_control_prefix", "--remote-control-session-name-prefix", "value"),
+    ("worktree", "--worktree", "value"),
+    ("from_pr", "--from-pr", "value"),
+    ("session_id", "--session-id", "value"),
+    # List flags
+    ("allowed_tools", "--allowedTools", "list"),
+    ("disallowed_tools", "--disallowedTools", "list"),
+    ("betas", "--betas", "list"),
+    ("add_dirs", "--add-dir", "list"),
+    ("builtin_tools", "--tools", "list"),
+    ("file_specs", "--file", "list"),
+    ("mcp_config", "--mcp-config", "list"),
+    ("plugin_dirs", "--plugin-dir", "list"),
+    ("plugin_urls", "--plugin-url", "list"),
+    # Bool flags
+    ("bare", "--bare", "bool"),
+    ("brief", "--brief", "bool"),
+    ("continue_session", "--continue", "bool"),
+    ("fork_session", "--fork-session", "bool"),
+    ("no_session_persistence", "--no-session-persistence", "bool"),
+    ("strict_mcp_config", "--strict-mcp-config", "bool"),
+    ("include_hook_events", "--include-hook-events", "bool"),
+    ("replay_user_messages", "--replay-user-messages", "bool"),
+    ("exclude_dynamic_prompt_sections", "--exclude-dynamic-system-prompt-sections", "bool"),
+    ("disable_slash_commands", "--disable-slash-commands", "bool"),
+    ("chrome", "--chrome", "bool"),
+    ("ide", "--ide", "bool"),
+    ("tmux", "--tmux", "bool"),
+    ("verbose", "--verbose", "bool"),
+    ("include_partial_messages", "--include-partial-messages", "bool"),
+]
+
+
 class ProcessConfig(msgspec.Struct, frozen=True):
     """Configuration for spawning a Claude Code subprocess."""
 
@@ -151,8 +205,8 @@ class ProcessConfig(msgspec.Struct, frozen=True):
     max_budget_usd: float | None = None
 
     # --- Currently hardcoded, now configurable ---
-    verbose: bool = True  # --verbose (currently hardcoded True in build_argv)
-    include_partial_messages: bool = True  # --include-partial-messages (currently hardcoded True)
+    verbose: bool = True  # --verbose (default True)
+    include_partial_messages: bool = True  # --include-partial-messages (default True)
 
     # --- Process-level tuning (not CLI flags, used by ProcessManager) ---
     buffer_limit: int = 16_777_216
@@ -162,30 +216,25 @@ class ProcessConfig(msgspec.Struct, frozen=True):
     hooks: dict = {}
 
     def build_argv(self) -> list[str]:
-        """Build the full command-line argument list."""
-        argv = [
-            self.binary,
-            "--output-format",
-            "stream-json",
-            "--input-format",
-            "stream-json",
-            "--verbose",
-            "--include-partial-messages",
-        ]
-        if self.model:
-            argv.extend(["--model", self.model])
-        if self.system_prompt is not None:
-            argv.extend(["--append-system-prompt", self.system_prompt])
-        if self.permission_mode:
-            argv.extend(["--permission-mode", self.permission_mode])
-        if self.allowed_tools:
-            argv.extend(["--allowedTools", ",".join(self.allowed_tools)])
-        if self.disallowed_tools:
-            argv.extend(["--disallowedTools", ",".join(self.disallowed_tools)])
-        if self.permission_prompt_tool:
-            argv.extend(["--permission-prompt-tool", self.permission_prompt_tool])
-        if self.resume_session_id:
-            argv.extend(["--resume", self.resume_session_id])
+        """Build the full command-line argument list from the flag registry."""
+        argv = [self.binary, "--output-format", "stream-json", "--input-format", "stream-json"]
+        for field_name, flag, style in _FLAG_REGISTRY:
+            value = getattr(self, field_name)
+            if style == "value" and value:
+                argv.extend([flag, str(value)])
+            elif style == "bool" and value:
+                argv.append(flag)
+            elif style == "list" and value:
+                argv.extend([flag, ",".join(value)])
+        # Special case: --debug can be a bare flag or take a filter argument.
+        # debug_filter is not in the registry; handled here to avoid duplicate --debug.
+        if self.debug and self.debug_filter:
+            argv.extend(["--debug", self.debug_filter])
+        elif self.debug:
+            argv.append("--debug")
+        elif self.debug_filter:
+            # Filter set without debug=True: emit --debug <filter> anyway
+            argv.extend(["--debug", self.debug_filter])
         argv.extend(self.extra_args)
         return argv
 

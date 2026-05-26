@@ -24,10 +24,10 @@ class TestProcessConfig:
         assert argv[idx + 1] == "opus"
 
     def test_system_prompt_flag(self):
-        config = ProcessConfig(binary="claude", system_prompt="")
+        config = ProcessConfig(binary="claude", system_prompt="You are helpful.")
         argv = config.build_argv()
-        idx = argv.index("--append-system-prompt")
-        assert argv[idx + 1] == ""
+        idx = argv.index("--system-prompt")
+        assert argv[idx + 1] == "You are helpful."
 
     def test_allowed_tools_comma_joined(self):
         config = ProcessConfig(binary="claude", allowed_tools=["Read", "Write", "Bash"])
@@ -51,15 +51,98 @@ class TestProcessConfig:
         config = ProcessConfig(binary="claude", system_prompt="You are a game agent.")
         argv = config.build_argv()
         assert "--bare" not in argv
-        assert "--append-system-prompt" in argv
+        assert "--system-prompt" in argv
 
     def test_no_optional_flags_when_unset(self):
         config = ProcessConfig(binary="claude")
         argv = config.build_argv()
         assert "--model" not in argv
-        assert "--append-system-prompt" not in argv
+        assert "--system-prompt" not in argv
         assert "--permission-mode" not in argv
         assert "--allowedTools" not in argv
+
+    def test_effort_flag(self):
+        config = ProcessConfig(binary="claude", effort="high")
+        argv = config.build_argv()
+        idx = argv.index("--effort")
+        assert argv[idx + 1] == "high"
+
+    def test_json_schema_flag(self):
+        config = ProcessConfig(binary="claude", json_schema_str='{"type":"object"}')
+        argv = config.build_argv()
+        idx = argv.index("--json-schema")
+        assert argv[idx + 1] == '{"type":"object"}'
+
+    def test_max_budget_usd_flag(self):
+        config = ProcessConfig(binary="claude", max_budget_usd=10.5)
+        argv = config.build_argv()
+        idx = argv.index("--max-budget-usd")
+        assert argv[idx + 1] == "10.5"
+
+    def test_bare_flag(self):
+        config = ProcessConfig(binary="claude", bare=True)
+        argv = config.build_argv()
+        assert "--bare" in argv
+
+    def test_bare_flag_absent_when_false(self):
+        config = ProcessConfig(binary="claude", bare=False)
+        argv = config.build_argv()
+        assert "--bare" not in argv
+
+    def test_mcp_config_flag(self):
+        config = ProcessConfig(binary="claude", mcp_config=["mcp1.json", "mcp2.json"])
+        argv = config.build_argv()
+        idx = argv.index("--mcp-config")
+        assert argv[idx + 1] == "mcp1.json,mcp2.json"
+
+    def test_betas_flag(self):
+        config = ProcessConfig(binary="claude", betas=["beta1", "beta2"])
+        argv = config.build_argv()
+        idx = argv.index("--betas")
+        assert argv[idx + 1] == "beta1,beta2"
+
+    def test_verbose_true_includes_flag(self):
+        config = ProcessConfig(binary="claude", verbose=True)
+        argv = config.build_argv()
+        assert "--verbose" in argv
+
+    def test_verbose_false_omits_flag(self):
+        config = ProcessConfig(binary="claude", verbose=False)
+        argv = config.build_argv()
+        assert "--verbose" not in argv
+
+    def test_include_partial_messages_true_includes_flag(self):
+        config = ProcessConfig(binary="claude", include_partial_messages=True)
+        argv = config.build_argv()
+        assert "--include-partial-messages" in argv
+
+    def test_include_partial_messages_false_omits_flag(self):
+        config = ProcessConfig(binary="claude", include_partial_messages=False)
+        argv = config.build_argv()
+        assert "--include-partial-messages" not in argv
+
+    def test_debug_bool_only(self):
+        config = ProcessConfig(binary="claude", debug=True)
+        argv = config.build_argv()
+        assert "--debug" in argv
+
+    def test_debug_with_filter(self):
+        config = ProcessConfig(binary="claude", debug=True, debug_filter="transport")
+        argv = config.build_argv()
+        idx = argv.index("--debug")
+        assert argv[idx + 1] == "transport"
+
+    def test_debug_filter_without_debug_bool(self):
+        """debug_filter set but debug=False still emits --debug <filter>."""
+        config = ProcessConfig(binary="claude", debug=False, debug_filter="transport")
+        argv = config.build_argv()
+        idx = argv.index("--debug")
+        assert argv[idx + 1] == "transport"
+
+    def test_debug_false_no_filter_omits_flag(self):
+        config = ProcessConfig(binary="claude", debug=False)
+        argv = config.build_argv()
+        assert "--debug" not in argv
 
     def test_new_fields_stored_correctly(self):
         """New typed fields are stored when passed as keyword args."""
