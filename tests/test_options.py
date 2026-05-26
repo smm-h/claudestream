@@ -168,18 +168,18 @@ class TestBudget:
 
 class TestToolSchema:
     def test_construction(self):
-        t = ToolSchema(name="my_tool", description="Does stuff", input_schema={"type": "object"})
+        t = ToolSchema(name="my_tool", description="Does stuff", input_schema={"type": "object"}, server="my_server")
         assert t.name == "my_tool"
         assert t.description == "Does stuff"
         assert t.input_schema == {"type": "object"}
-        assert t.server == "claudestream"
+        assert t.server == "my_server"
 
     def test_missing_field(self):
         with pytest.raises(TypeError):
             ToolSchema(name="x")  # type: ignore[call-arg]
 
     def test_frozen(self):
-        t = ToolSchema(name="x", description="y", input_schema={})
+        t = ToolSchema(name="x", description="y", input_schema={}, server="s")
         with pytest.raises(AttributeError):
             t.name = "z"  # type: ignore[misc]
 

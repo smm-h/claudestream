@@ -85,7 +85,7 @@ class ToolSchema(msgspec.Struct, frozen=True):
     name: str
     description: str
     input_schema: dict
-    server: str = "claudestream"
+    server: str
 
 
 class SessionConfig(msgspec.Struct, frozen=True):

@@ -47,11 +47,12 @@ class TestToolSchema:
             name="search",
             description="Search the web",
             input_schema={"type": "object", "properties": {"query": {"type": "string"}}},
+            server="my_server",
         )
         assert ts.name == "search"
         assert ts.description == "Search the web"
         assert ts.input_schema["properties"]["query"]["type"] == "string"
-        assert ts.server == "claudestream"
+        assert ts.server == "my_server"
 
     def test_tool_schema_custom_server(self):
         ts = ToolSchema(
@@ -80,7 +81,7 @@ class TestSandboxConfig:
 
 class TestAgentDefinition:
     def test_agent_definition_minimal(self):
-        ad = AgentDefinition(name="assistant", prompt_template="You are helpful.")
+        ad = AgentDefinition(name="assistant", prompt_template="You are helpful.", version="1.0")
         assert ad.name == "assistant"
         assert ad.prompt_template == "You are helpful."
         assert ad.version == "1.0"
@@ -91,7 +92,7 @@ class TestAgentDefinition:
         assert ad.model is None
 
     def test_agent_definition_full(self):
-        ts = ToolSchema(name="t", description="d", input_schema={"type": "object"})
+        ts = ToolSchema(name="t", description="d", input_schema={"type": "object"}, server="test")
         sc = SandboxConfig(tools=["Read"], bare=True)
         b = Budget(max_cost_usd=1.0, max_turns=5, max_tokens=50_000)
         ad = AgentDefinition(
@@ -114,7 +115,7 @@ class TestAgentDefinition:
         assert ad.model == "opus"
 
     def test_agent_definition_frozen(self):
-        ad = AgentDefinition(name="a", prompt_template="p")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
         with pytest.raises(AttributeError):
             ad.name = "other"  # type: ignore[misc]
 
@@ -146,7 +147,7 @@ class TestResolvePrompt:
 
 class TestLoadAgent:
     def test_load_agent_minimal(self, tmp_path):
-        data = {"name": "bot", "prompt_template": "Be helpful."}
+        data = {"name": "bot", "prompt_template": "Be helpful.", "version": "1.0"}
         path = tmp_path / "bot.agent.json"
         path.write_text(json.dumps(data))
 
@@ -209,12 +210,13 @@ class TestLoadAgent:
             load_agent(path)
 
     def test_roundtrip(self):
-        ts = ToolSchema(name="t", description="d", input_schema={"type": "object"})
+        ts = ToolSchema(name="t", description="d", input_schema={"type": "object"}, server="test")
         sc = SandboxConfig(tools=["Read"])
         b = Budget(max_cost_usd=1.0)
         ad = AgentDefinition(
             name="roundtrip",
             prompt_template="test",
+            version="1.0",
             tools=[ts],
             sandbox=sc,
             budget=b,
@@ -227,32 +229,32 @@ class TestLoadAgent:
 
 class TestResolveModel:
     def test_arg_overrides_definition(self):
-        ad = AgentDefinition(name="a", prompt_template="p", model="haiku")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", model="haiku")
         assert _resolve_model("opus", ad) == "opus"
 
     def test_definition_model_used(self):
-        ad = AgentDefinition(name="a", prompt_template="p", model="haiku")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", model="haiku")
         assert _resolve_model(None, ad) == "haiku"
 
     def test_no_model_raises(self):
-        ad = AgentDefinition(name="a", prompt_template="p")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
         with pytest.raises(ValueError, match="model must be specified"):
             _resolve_model(None, ad)
 
     def test_empty_string_model_raises(self):
-        ad = AgentDefinition(name="a", prompt_template="p")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
         with pytest.raises(ValueError, match="model must be specified"):
             _resolve_model("", ad)
 
 
 class TestBuildSandbox:
     def test_no_sandbox_config(self):
-        ad = AgentDefinition(name="a", prompt_template="p")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
         assert _build_sandbox(ad) is None
 
     def test_sandbox_from_config(self):
         sc = SandboxConfig(tools=["Read", "Write"], bare=True, write_paths=["/tmp"])
-        ad = AgentDefinition(name="a", prompt_template="p", sandbox=sc)
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", sandbox=sc)
         sandbox = _build_sandbox(ad)
         assert isinstance(sandbox, Sandbox)
         assert sandbox.tools == ["Read", "Write"]
@@ -261,7 +263,7 @@ class TestBuildSandbox:
 
     def test_sandbox_defaults(self):
         sc = SandboxConfig()
-        ad = AgentDefinition(name="a", prompt_template="p", sandbox=sc)
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", sandbox=sc)
         sandbox = _build_sandbox(ad)
         assert isinstance(sandbox, Sandbox)
         assert sandbox.tools is None
@@ -271,12 +273,12 @@ class TestBuildSandbox:
 
 class TestBuildTools:
     def test_no_tools_in_definition(self):
-        ad = AgentDefinition(name="a", prompt_template="p")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
         assert _build_tools(ad, {"search": lambda: None}) is None
 
     def test_no_handlers(self):
-        ts = ToolSchema(name="search", description="s", input_schema={})
-        ad = AgentDefinition(name="a", prompt_template="p", tools=[ts])
+        ts = ToolSchema(name="search", description="s", input_schema={}, server="test")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", tools=[ts])
         with pytest.raises(ValueError, match="Missing handlers for tools: search"):
             _build_tools(ad, None)
 
@@ -287,7 +289,7 @@ class TestBuildTools:
             input_schema={"type": "object"},
             server="my-server",
         )
-        ad = AgentDefinition(name="a", prompt_template="p", tools=[ts])
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", tools=[ts])
 
         def handler(): pass
         tools = _build_tools(ad, {"search": handler})
@@ -301,17 +303,17 @@ class TestBuildTools:
         assert tools[0].server == "my-server"
 
     def test_missing_handler_raises(self):
-        ts1 = ToolSchema(name="a", description="d", input_schema={})
-        ts2 = ToolSchema(name="b", description="d", input_schema={})
-        ad = AgentDefinition(name="a", prompt_template="p", tools=[ts1, ts2])
+        ts1 = ToolSchema(name="a", description="d", input_schema={}, server="test")
+        ts2 = ToolSchema(name="b", description="d", input_schema={}, server="test")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", tools=[ts1, ts2])
 
         def handler_a(): pass
         with pytest.raises(ValueError, match="Missing handlers for tools: b"):
             _build_tools(ad, {"a": handler_a})
 
     def test_all_handlers_missing_raises(self):
-        ts = ToolSchema(name="a", description="d", input_schema={})
-        ad = AgentDefinition(name="a", prompt_template="p", tools=[ts])
+        ts = ToolSchema(name="a", description="d", input_schema={}, server="test")
+        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", tools=[ts])
         with pytest.raises(ValueError, match="Missing handlers for tools: a"):
             _build_tools(ad, {"nonexistent": lambda: None})
 
@@ -321,6 +323,7 @@ class TestInvokeAgent:
         ad = AgentDefinition(
             name="test",
             prompt_template="Hello {name}!",
+            version="1.0",
             model="sonnet",
         )
         mock_session = AsyncMock()
@@ -349,6 +352,7 @@ class TestInvokeAgent:
         ad = AgentDefinition(
             name="test",
             prompt_template="p",
+            version="1.0",
             model="sonnet",
             sandbox=sc,
         )
@@ -369,7 +373,7 @@ class TestInvokeAgent:
         asyncio.run(run())
 
     def test_requires_model(self):
-        ad = AgentDefinition(name="test", prompt_template="p")
+        ad = AgentDefinition(name="test", prompt_template="p", version="1.0")
 
         async def run():
             with pytest.raises(ValueError, match="model must be specified"):
@@ -379,7 +383,7 @@ class TestInvokeAgent:
         asyncio.run(run())
 
     def test_model_override(self):
-        ad = AgentDefinition(name="test", prompt_template="p", model="haiku")
+        ad = AgentDefinition(name="test", prompt_template="p", version="1.0", model="haiku")
         mock_session = AsyncMock()
         mock_session.__aenter__ = AsyncMock(return_value=mock_session)
         mock_session.__aexit__ = AsyncMock(return_value=False)
@@ -400,6 +404,7 @@ class TestInvokeAgentSync:
         ad = AgentDefinition(
             name="test",
             prompt_template="Hello {name}!",
+            version="1.0",
             model="sonnet",
         )
         mock_session = MagicMock()
@@ -421,13 +426,13 @@ class TestInvokeAgentSync:
             assert config.env is None
 
     def test_requires_model(self):
-        ad = AgentDefinition(name="test", prompt_template="p")
+        ad = AgentDefinition(name="test", prompt_template="p", version="1.0")
         with pytest.raises(ValueError, match="model must be specified"):
             with invoke_agent_sync(ad, "profile"):
                 pass
 
     def test_model_override(self):
-        ad = AgentDefinition(name="test", prompt_template="p", model="haiku")
+        ad = AgentDefinition(name="test", prompt_template="p", version="1.0", model="haiku")
         mock_session = MagicMock()
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)
@@ -440,7 +445,7 @@ class TestInvokeAgentSync:
             assert config.model == "opus"
 
     def test_passes_cwd_and_env(self):
-        ad = AgentDefinition(name="test", prompt_template="p", model="sonnet")
+        ad = AgentDefinition(name="test", prompt_template="p", version="1.0", model="sonnet")
         mock_session = MagicMock()
         mock_session.__enter__ = MagicMock(return_value=mock_session)
         mock_session.__exit__ = MagicMock(return_value=False)

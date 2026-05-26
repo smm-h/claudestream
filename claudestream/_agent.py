@@ -25,7 +25,7 @@ class AgentDefinition(msgspec.Struct, frozen=True):
 
     name: str
     prompt_template: str
-    version: str = "1.0"
+    version: str
     description: str = ""
     tools: list[ToolSchema] | None = None
     sandbox: SandboxConfig | None = None
