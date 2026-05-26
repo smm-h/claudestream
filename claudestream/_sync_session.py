@@ -110,6 +110,10 @@ class SyncSession:
     def last_result(self) -> Result | None:
         return self._async_session.last_result if self._async_session else None
 
+    @property
+    def stderr_lines(self) -> list[str]:
+        return self._async_session.stderr_lines if self._async_session else []
+
     # --- Cancel ---
 
     def cancel(self, force: bool = False) -> None:
