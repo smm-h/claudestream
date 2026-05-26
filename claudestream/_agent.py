@@ -36,15 +36,24 @@ class AgentDefinition(msgspec.Struct, frozen=True):
 def resolve_prompt(template: str, variables: dict[str, str]) -> str:
     """Resolve {variable} placeholders in a prompt template.
 
+    Only placeholders present in the *original* template are considered
+    template variables.  Curly-brace patterns introduced by substituted
+    values (e.g. ``{rects}`` inside a TypeScript API reference) are left
+    as-is and do not trigger validation errors.
+
     Raises:
-        ValueError: If any placeholders remain after substitution.
+        ValueError: If any original template placeholders remain after
+            substitution (i.e. the caller forgot to supply a variable).
     """
+    # Identify which placeholders exist in the original template
+    template_vars = set(re.findall(r"\{(\w+)\}", template))
     result = template
     for key, value in variables.items():
         result = result.replace("{" + key + "}", value)
-    unresolved = re.findall(r"\{(\w+)\}", result)
+    # Only flag placeholders that were in the original template and not resolved
+    unresolved = template_vars - set(variables.keys())
     if unresolved:
-        raise ValueError(f"Unresolved template variables: {', '.join(unresolved)}")
+        raise ValueError(f"Unresolved template variables: {', '.join(sorted(unresolved))}")
     return result
 
 
