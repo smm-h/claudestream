@@ -360,6 +360,7 @@ class TestAgentDefinition:
         defn = {
             "name": "test-agent",
             "prompt_template": "You are a helpful assistant. Always respond with exactly: {greeting}",
+            "version": "1.0",
             "model": MODEL,
         }
         path = tmp_path / "test.agent.json"

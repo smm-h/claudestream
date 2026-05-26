@@ -1,4 +1,4 @@
-"""Tests for AgentDefinition, Budget, ToolSchema, SandboxConfig, .agent.json loader, and invoke_agent."""
+"""Tests for AgentDefinition, Budget, ToolSchema, .agent.json loader, and invoke_agent."""
 
 from __future__ import annotations
 
@@ -12,9 +12,7 @@ import pytest
 from claudestream._agent import (
     AgentDefinition,
     Budget,
-    SandboxConfig,
     ToolSchema,
-    _build_sandbox,
     _build_tools,
     _resolve_model,
     invoke_agent,
@@ -61,24 +59,6 @@ class TestToolSchema:
         assert ts.server == "custom"
 
 
-class TestSandboxConfig:
-    def test_sandbox_config_construction(self):
-        sc = SandboxConfig(
-            tools=["Read", "Write"],
-            bare=True,
-            write_paths=["/tmp"],
-        )
-        assert sc.tools == ["Read", "Write"]
-        assert sc.bare is True
-        assert sc.write_paths == ["/tmp"]
-
-    def test_sandbox_config_defaults(self):
-        sc = SandboxConfig()
-        assert sc.tools is None
-        assert sc.bare is False
-        assert sc.write_paths is None
-
-
 class TestAgentDefinition:
     def test_agent_definition_minimal(self):
         ad = AgentDefinition(name="assistant", prompt_template="You are helpful.", version="1.0")
@@ -93,7 +73,7 @@ class TestAgentDefinition:
 
     def test_agent_definition_full(self):
         ts = ToolSchema(name="t", description="d", input_schema={"type": "object"}, server="test")
-        sc = SandboxConfig(tools=["Read"], bare=True)
+        sc = Sandbox(tools=["Read"], bare=True)
         b = Budget(max_cost_usd=1.0, max_turns=5, max_tokens=50_000)
         ad = AgentDefinition(
             name="shop-assistant",
@@ -211,7 +191,7 @@ class TestLoadAgent:
 
     def test_roundtrip(self):
         ts = ToolSchema(name="t", description="d", input_schema={"type": "object"}, server="test")
-        sc = SandboxConfig(tools=["Read"])
+        sc = Sandbox(tools=["Read"])
         b = Budget(max_cost_usd=1.0)
         ad = AgentDefinition(
             name="roundtrip",
@@ -245,30 +225,6 @@ class TestResolveModel:
         ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
         with pytest.raises(ValueError, match="model must be specified"):
             _resolve_model("", ad)
-
-
-class TestBuildSandbox:
-    def test_no_sandbox_config(self):
-        ad = AgentDefinition(name="a", prompt_template="p", version="1.0")
-        assert _build_sandbox(ad) is None
-
-    def test_sandbox_from_config(self):
-        sc = SandboxConfig(tools=["Read", "Write"], bare=True, write_paths=["/tmp"])
-        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", sandbox=sc)
-        sandbox = _build_sandbox(ad)
-        assert isinstance(sandbox, Sandbox)
-        assert sandbox.tools == ["Read", "Write"]
-        assert sandbox.bare is True
-        assert sandbox.write_paths == ["/tmp"]
-
-    def test_sandbox_defaults(self):
-        sc = SandboxConfig()
-        ad = AgentDefinition(name="a", prompt_template="p", version="1.0", sandbox=sc)
-        sandbox = _build_sandbox(ad)
-        assert isinstance(sandbox, Sandbox)
-        assert sandbox.tools is None
-        assert sandbox.bare is False
-        assert sandbox.write_paths is None
 
 
 class TestBuildTools:
@@ -347,8 +303,8 @@ class TestInvokeAgent:
 
         asyncio.run(run())
 
-    def test_builds_sandbox(self):
-        sc = SandboxConfig(tools=["Read"], bare=True)
+    def test_passes_sandbox(self):
+        sc = Sandbox(tools=["Read"], bare=True)
         ad = AgentDefinition(
             name="test",
             prompt_template="p",

@@ -10,14 +10,7 @@ from typing import Any
 import msgspec
 
 from claudestream._options import Budget, SessionConfig, ToolSchema
-
-
-class SandboxConfig(msgspec.Struct, frozen=True):
-    """Sandbox configuration for agent definitions (no runtime-only fields)."""
-
-    tools: list[str] | None = None
-    bare: bool = False
-    write_paths: list[str] | None = None
+from claudestream.policy import Sandbox
 
 
 class AgentDefinition(msgspec.Struct, frozen=True):
@@ -28,7 +21,7 @@ class AgentDefinition(msgspec.Struct, frozen=True):
     version: str
     description: str = ""
     tools: list[ToolSchema] | None = None
-    sandbox: SandboxConfig | None = None
+    sandbox: Sandbox | None = None
     budget: Budget | None = None
     model: str | None = None
 
@@ -52,18 +45,6 @@ def load_agent(path: str | Path) -> AgentDefinition:
     """Load an AgentDefinition from a .agent.json file."""
     data = Path(path).read_bytes()
     return msgspec.json.decode(data, type=AgentDefinition)
-
-
-def _build_sandbox(definition: AgentDefinition):
-    """Build a Sandbox from an AgentDefinition's SandboxConfig, or None."""
-    if definition.sandbox is None:
-        return None
-    from claudestream.policy import Sandbox
-    return Sandbox(
-        tools=definition.sandbox.tools,
-        bare=definition.sandbox.bare,
-        write_paths=definition.sandbox.write_paths,
-    )
 
 
 def _build_tools(
@@ -127,13 +108,12 @@ async def invoke_agent(
 
     prompt = resolve_prompt(definition.prompt_template, variables or {})
     effective_model = _resolve_model(model, definition)
-    sandbox = _build_sandbox(definition)
     tools = _build_tools(definition, tool_handlers)
 
     config = SessionConfig(
         model=effective_model,
         profile=profile,
-        sandbox=sandbox,
+        sandbox=definition.sandbox,
         tools=tools,
         system_prompt=prompt,
         cwd=cwd,
@@ -166,13 +146,12 @@ def invoke_agent_sync(
 
     prompt = resolve_prompt(definition.prompt_template, variables or {})
     effective_model = _resolve_model(model, definition)
-    sandbox = _build_sandbox(definition)
     tools = _build_tools(definition, tool_handlers)
 
     config = SessionConfig(
         model=effective_model,
         profile=profile,
-        sandbox=sandbox,
+        sandbox=definition.sandbox,
         tools=tools,
         system_prompt=prompt,
         cwd=cwd,
