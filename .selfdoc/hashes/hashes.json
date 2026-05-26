@@ -4,11 +4,11 @@
     "description": "448cb117d26e31d27b070b3e4493d368e74b958ec92c5d131b3ae80154b4bbd3"
   },
   "claudestream-_async_session.md": {
-    "content": "3a8b026dd63703b213a512c9ac02feefe191b84cbaa29742dc40f3882cd9ab76",
+    "content": "4509542e331efa7e0bb9048e92034efd4fe69e6fccef93a3c729306e859f0be5",
     "description": "eb7292da18c96240dd1e11507331026261fd5c6567f9f786aa480ac0a8acadb8"
   },
   "claudestream-_cli.md": {
-    "content": "4fd1f0d5381d372d5a462bb9061352334bb0678653996219858d33407ef308e2",
+    "content": "9dae5da18d6fdf78712f361d93c8f0ec20bcb8907f4447a4a5e7df2886564f4a",
     "description": "23545c3179ca6230f161364ace3426ed96a2b257ab608c59082a591af088c1ea"
   },
   "claudestream-_color.md": {
@@ -24,11 +24,11 @@
     "description": "500483b85ccd6f9317310de5bc70af5f37848904f43a01984915ee19f48d41b4"
   },
   "claudestream-_protocol.md": {
-    "content": "745de72a75dede909748e99dfa96245823e431e31c0a38d5e64af0729a06ff42",
+    "content": "426e29ccfaaf0bdb1106db893f77f157b6099381ef95c4eb1940947cf9ef47e2",
     "description": "413dc8559243c1deb1cf0e6861cb1f6578c079ef224dadf0ea4c260eca2c8f68"
   },
   "claudestream-_sync_session.md": {
-    "content": "6e1e498f6d32e54bf2bd53dec9f8b6d3daec785cc3459abb8a80b77fb1674114",
+    "content": "16bef25723e1121ee286abf126f1690fb08d5f2c7f232ce460b4e72c323ae8dd",
     "description": "e36a2c64066eae5739ce8bb583c5362b4c34db941c154665334db2cd5f5e3a87"
   },
   "claudestream-_tools.md": {
@@ -36,7 +36,7 @@
     "description": "74c78248ef2b1cbdf16a0dcd3b59cc732a3b323e09f177c7f9923c33a0a614a5"
   },
   "claudestream-events.md": {
-    "content": "a672cb88021ea157ff9880581db834c8ab7c29096e387b94a47391a323f18dd4",
+    "content": "6936a88a16e8da06b3adb9b01072bf327c611e4aab93c70af571716ced77ca17",
     "description": "7f97513fb5ce08f7fc07d06685cb8bdb519d3ff59626540543e191c7f3514f26"
   },
   "claudestream-messages.md": {
@@ -72,7 +72,7 @@
     "description": "8e6085392b28c54a07787fbbf23748a2a910624cc38b30858395a647bf828c9c"
   },
   "cli-index.md": {
-    "content": "0dff2ffc8b19ac6c4a08b7e945ada2e0efd81e91676835448eb28f17b03ebc67",
+    "content": "dbecb19c7656b765e09005f30cfafce12cc8588afe23257d8ceb7f01a5351845",
     "description": "160dac3a666212f735378ede9e70b41f7bf7fa869de54000440ae80cc6347e6c"
   },
   "cli-repl.md": {
