@@ -60,6 +60,8 @@ class AsyncSession:
         self._active_turn = False
         self._last_result: Result | None = None
         self._cancelled = False
+        self._turn_count: int = 0
+        self._total_tokens: int = 0
 
         # User-defined tools, grouped by server name for MCP handling
         self._user_tools: list[Tool] = list(config.tools or [])
@@ -249,6 +251,14 @@ class AsyncSession:
         return self._last_result
 
     @property
+    def turn_count(self) -> int:
+        return self._turn_count
+
+    @property
+    def total_tokens(self) -> int:
+        return self._total_tokens
+
+    @property
     def stderr_lines(self) -> list[str]:
         return self._process_mgr.stderr_lines
 
@@ -323,6 +333,14 @@ class AsyncSession:
                 "Cannot send while a previous turn is active. "
                 "Drain the event iterator or wait for the Result event."
             )
+
+        # Budget enforcement: check limits before starting a new turn
+        budget = self._config.budget
+        if budget is not None:
+            if budget.max_turns is not None and self._turn_count >= budget.max_turns:
+                raise ClaudeStreamError("Budget exceeded: max_turns limit reached")
+            if budget.max_tokens is not None and self._total_tokens >= budget.max_tokens:
+                raise ClaudeStreamError("Budget exceeded: max_tokens limit reached")
 
         self._active_turn = True
         self._last_result = None
@@ -487,6 +505,9 @@ class AsyncSession:
                 # Turn completes on Result
                 if isinstance(event, Result):
                     self._last_result = event
+                    self._turn_count += 1
+                    if event.usage is not None:
+                        self._total_tokens += event.usage.input_tokens + event.usage.output_tokens
                     return
 
             # stdout closed without a Result event
