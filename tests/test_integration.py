@@ -13,7 +13,10 @@ import pytest
 from claudestream import (
     AskResult,
     AssistantText,
+    Budget,
     ClaudeStreamError,
+    FileEdit,
+    FileWrite,
     Result,
     Sandbox,
     SessionConfig,
@@ -371,3 +374,103 @@ class TestAgentDefinition:
         with invoke_agent_sync(agent, agent_config, variables={"greeting": "howdy"}) as session:
             result = session.ask("Say hi")
             assert result.text  # Should get a response
+
+
+class TestSessionConfig:
+    """Verify SessionConfig options flow through end-to-end."""
+
+    @pytest.mark.timeout(60)
+    def test_session_config_with_effort(self):
+        config = SessionConfig(
+            model=MODEL,
+            profile=PROFILE,
+            binary=BINARY,
+            sandbox=Sandbox(skip_permissions=True),
+            effort="low",
+        )
+        with SyncSession(config) as session:
+            result = session.ask("Reply: ok")
+            assert result.text
+
+
+class TestFileTracking:
+    """Verify FileWrite/FileEdit events are emitted for file-modifying tools."""
+
+    @pytest.mark.timeout(90)
+    def test_file_write_tracking(self, tmp_path):
+        config = SessionConfig(
+            model=MODEL,
+            profile=PROFILE,
+            binary=BINARY,
+            sandbox=Sandbox(skip_permissions=True),
+            cwd=str(tmp_path),
+        )
+        with SyncSession(config) as session:
+            found_file_write = False
+            for event in session.send("Write the text 'hello' to a file called test.txt"):
+                if isinstance(event, FileWrite):
+                    assert "test.txt" in event.path
+                    found_file_write = True
+                    break
+            assert found_file_write, "Expected a FileWrite event but none was emitted"
+            assert session.files_modified, "Expected files_modified to be non-empty"
+
+
+class TestBudgetEnforcement:
+    """Verify budget limits are enforced."""
+
+    @pytest.mark.timeout(90)
+    def test_max_turns_enforced(self):
+        config = SessionConfig(
+            model=MODEL,
+            profile=PROFILE,
+            binary=BINARY,
+            sandbox=Sandbox(skip_permissions=True),
+            budget=Budget(max_cost_usd=None, max_turns=1, max_tokens=None),
+        )
+        with SyncSession(config) as session:
+            result = session.ask("Reply: ok")
+            assert result.text
+            # Second turn should raise because max_turns=1
+            with pytest.raises(ClaudeStreamError, match="max_turns"):
+                session.ask("Reply: ok again")
+
+
+class TestLifecycleHooks:
+    """Verify lifecycle hooks fire correctly."""
+
+    @pytest.mark.timeout(60)
+    def test_on_turn_complete_fires(self):
+        results = []
+        config = SessionConfig(
+            model=MODEL,
+            profile=PROFILE,
+            binary=BINARY,
+            sandbox=Sandbox(skip_permissions=True),
+        )
+        with SyncSession(config) as session:
+            session.on_turn_complete(lambda sess, result: results.append(result))
+            session.ask("Reply: ok")
+        assert len(results) == 1
+
+
+class TestObservabilityProperties:
+    """Verify session observability properties are populated after a turn."""
+
+    @pytest.mark.timeout(60)
+    def test_session_properties(self):
+        config = SessionConfig(
+            model=MODEL,
+            profile=PROFILE,
+            binary=BINARY,
+            sandbox=Sandbox(skip_permissions=True),
+        )
+        with SyncSession(config) as session:
+            session.ask("Reply: ok")
+            async_sess = session._async_session
+            assert async_sess.is_alive
+            assert session.model_name
+            assert async_sess.cwd
+            assert async_sess.turn_count == 1
+            assert async_sess.total_tokens > 0
+            assert session.files_modified == set()  # no writes in this turn
