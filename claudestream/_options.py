@@ -1,16 +1,22 @@
-"""Option structs for configuring claudestream sessions, covering session resolution, debug, MCP, plugins, stream output, and process limits."""
+"""Option structs for configuring claudestream sessions, covering session resolution, debug, MCP, plugins, stream output, process limits, budget, tool schema, and the unified SessionConfig."""
 
 from __future__ import annotations
 
 import msgspec
 
+from claudestream._tools import Tool
+from claudestream.policy import Sandbox
+
 __all__ = [
+    "Budget",
+    "ToolSchema",
     "SessionResolution",
     "DebugOptions",
     "McpOptions",
     "PluginOptions",
     "StreamOptions",
     "ProcessLimits",
+    "SessionConfig",
 ]
 
 
@@ -63,3 +69,63 @@ class ProcessLimits(msgspec.Struct, frozen=True):
     shutdown_timeout: float
     version_check_timeout: float
     health_timeout: float
+
+
+class Budget(msgspec.Struct, frozen=True):
+    """Cost/turn/token limits for a session."""
+
+    max_cost_usd: float | None = None
+    max_turns: int | None = None
+    max_tokens: int | None = None
+
+
+class ToolSchema(msgspec.Struct, frozen=True):
+    """Tool schema without handler -- for JSON-serializable agent definitions."""
+
+    name: str
+    description: str
+    input_schema: dict
+    server: str = "claudestream"
+
+
+class SessionConfig(msgspec.Struct, frozen=True):
+    """Unified configuration object for AsyncSession, SyncSession, print_prompt, and invoke_agent."""
+
+    # Required
+    model: str
+    profile: str
+
+    # Existing session params (with defaults)
+    cwd: str | None = None
+    binary: str | None = None
+    sandbox: Sandbox | None = None
+    system_prompt: str | None = None
+    tools: list[Tool] | None = None
+    extra_args: list[str] | None = None
+    env: dict[str, str] | None = None
+    resume_session_id: str | None = None
+
+    # Option struct params
+    session_resolution: SessionResolution | None = None
+    debug: DebugOptions | None = None
+    mcp: McpOptions | None = None
+    plugins: PluginOptions | None = None
+    stream: StreamOptions | None = None
+    process_limits: ProcessLimits | None = None
+    budget: Budget | None = None
+
+    # Flat Claude CLI flag params
+    effort: str | None = None
+    json_schema: dict | None = None
+    fallback_model: str | None = None
+    betas: list[str] | None = None
+    add_dirs: list[str] | None = None
+    builtin_tools: list[str] | None = None
+    brief: bool = False
+    settings: str | None = None
+    setting_sources: str | None = None
+    file_specs: list[str] | None = None
+    agent_name: str | None = None
+    agents_json: str | None = None
+    hooks: dict | None = None
+    no_persistence: bool = False

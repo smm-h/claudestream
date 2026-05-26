@@ -9,22 +9,7 @@ from typing import Any
 
 import msgspec
 
-
-class Budget(msgspec.Struct, frozen=True):
-    """Cost/turn/token limits for a session."""
-
-    max_cost_usd: float | None = None
-    max_turns: int | None = None
-    max_tokens: int | None = None
-
-
-class ToolSchema(msgspec.Struct, frozen=True):
-    """Tool schema without handler -- for JSON-serializable agent definitions."""
-
-    name: str
-    description: str
-    input_schema: dict
-    server: str = "claudestream"
+from claudestream._options import Budget, ToolSchema
 
 
 class SandboxConfig(msgspec.Struct, frozen=True):

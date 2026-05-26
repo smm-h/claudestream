@@ -34,11 +34,10 @@ from claudestream.policy import (
     create_sandbox,
 )
 from claudestream._tools import Tool, tool
+from claudestream._options import Budget, SessionConfig, ToolSchema
 from claudestream._agent import (
     AgentDefinition,
-    Budget,
     SandboxConfig,
-    ToolSchema,
     invoke_agent,
     invoke_agent_sync,
     load_agent,
@@ -92,6 +91,8 @@ __all__ = [
     "invoke_agent_sync",
     "load_agent",
     "resolve_prompt",
+    # Options
+    "SessionConfig",
     # Convenience
     "print_prompt",
 ]

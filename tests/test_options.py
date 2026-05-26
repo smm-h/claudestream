@@ -3,12 +3,15 @@
 import pytest
 
 from claudestream._options import (
+    Budget,
+    ToolSchema,
     SessionResolution,
     DebugOptions,
     McpOptions,
     PluginOptions,
     StreamOptions,
     ProcessLimits,
+    SessionConfig,
 )
 
 
@@ -142,3 +145,112 @@ class TestProcessLimits:
         )
         with pytest.raises(AttributeError):
             p.buffer_limit = 2048  # type: ignore[misc]
+
+
+class TestBudget:
+    def test_all_defaults(self):
+        b = Budget()
+        assert b.max_cost_usd is None
+        assert b.max_turns is None
+        assert b.max_tokens is None
+
+    def test_construction(self):
+        b = Budget(max_cost_usd=1.5, max_turns=10, max_tokens=4096)
+        assert b.max_cost_usd == 1.5
+        assert b.max_turns == 10
+        assert b.max_tokens == 4096
+
+    def test_frozen(self):
+        b = Budget()
+        with pytest.raises(AttributeError):
+            b.max_cost_usd = 2.0  # type: ignore[misc]
+
+
+class TestToolSchema:
+    def test_construction(self):
+        t = ToolSchema(name="my_tool", description="Does stuff", input_schema={"type": "object"})
+        assert t.name == "my_tool"
+        assert t.description == "Does stuff"
+        assert t.input_schema == {"type": "object"}
+        assert t.server == "claudestream"
+
+    def test_missing_field(self):
+        with pytest.raises(TypeError):
+            ToolSchema(name="x")  # type: ignore[call-arg]
+
+    def test_frozen(self):
+        t = ToolSchema(name="x", description="y", input_schema={})
+        with pytest.raises(AttributeError):
+            t.name = "z"  # type: ignore[misc]
+
+
+class TestSessionConfig:
+    def test_defaults(self):
+        c = SessionConfig(model="sonnet", profile="work")
+        assert c.model == "sonnet"
+        assert c.profile == "work"
+        assert c.cwd is None
+        assert c.binary is None
+        assert c.sandbox is None
+        assert c.system_prompt is None
+        assert c.tools is None
+        assert c.extra_args is None
+        assert c.env is None
+        assert c.resume_session_id is None
+        assert c.session_resolution is None
+        assert c.debug is None
+        assert c.mcp is None
+        assert c.plugins is None
+        assert c.stream is None
+        assert c.process_limits is None
+        assert c.budget is None
+        assert c.effort is None
+        assert c.json_schema is None
+        assert c.fallback_model is None
+        assert c.betas is None
+        assert c.add_dirs is None
+        assert c.builtin_tools is None
+        assert c.brief is False
+        assert c.settings is None
+        assert c.setting_sources is None
+        assert c.file_specs is None
+        assert c.agent_name is None
+        assert c.agents_json is None
+        assert c.hooks is None
+        assert c.no_persistence is False
+
+    def test_missing_required(self):
+        with pytest.raises(TypeError):
+            SessionConfig()  # type: ignore[call-arg]
+
+    def test_missing_profile(self):
+        with pytest.raises(TypeError):
+            SessionConfig(model="sonnet")  # type: ignore[call-arg]
+
+    def test_effort(self):
+        c = SessionConfig(model="sonnet", profile="work", effort="high")
+        assert c.effort == "high"
+
+    def test_debug_option(self):
+        c = SessionConfig(
+            model="sonnet",
+            profile="work",
+            debug=DebugOptions(enabled=True, filter=None, file=None),
+        )
+        assert c.debug is not None
+        assert c.debug.enabled is True
+        assert c.debug.filter is None
+
+    def test_budget_option(self):
+        c = SessionConfig(
+            model="sonnet",
+            profile="work",
+            budget=Budget(max_turns=5),
+        )
+        assert c.budget is not None
+        assert c.budget.max_turns == 5
+
+    def test_frozen(self):
+        c = SessionConfig(model="sonnet", profile="work")
+        with pytest.raises(AttributeError):
+            c.model = "opus"  # type: ignore[misc]
