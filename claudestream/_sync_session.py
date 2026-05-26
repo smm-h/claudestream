@@ -111,6 +111,11 @@ class SyncSession:
         return self._async_session.last_result if self._async_session else None
 
     @property
+    def files_modified(self) -> set[str]:
+        """All files written or edited during this session (absolute paths, deduplicated)."""
+        return self._async_session.files_modified if self._async_session else set()
+
+    @property
     def stderr_lines(self) -> list[str]:
         return self._async_session.stderr_lines if self._async_session else []
 

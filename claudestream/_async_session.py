@@ -13,6 +13,8 @@ from claudestream.events import (
     AssistantMessage,
     AssistantText,
     Event,
+    FileEdit,
+    FileWrite,
     McpRequest,
     PermissionRequest,
     RateLimit,
@@ -62,6 +64,7 @@ class AsyncSession:
         self._cancelled = False
         self._turn_count: int = 0
         self._total_tokens: int = 0
+        self._files_modified: set[str] = set()
 
         # User-defined tools, grouped by server name for MCP handling
         self._user_tools: list[Tool] = list(config.tools or [])
@@ -290,6 +293,15 @@ class AsyncSession:
     @property
     def cancelled(self) -> bool:
         return self._cancelled
+
+    @property
+    def files_modified(self) -> set[str]:
+        """All files written or edited during this session (absolute paths, deduplicated).
+
+        Note: Only tracks files modified via Write, Edit, and MultiEdit tools.
+        Files modified via Bash tool calls are not tracked.
+        """
+        return set(self._files_modified)
 
     @property
     def process_pid(self) -> int | None:
@@ -552,7 +564,7 @@ class AsyncSession:
                 if raw:
                     events_to_yield = [event]
                 else:
-                    events_to_yield = flatten_event(event)
+                    events_to_yield = flatten_event(event, cwd=self._cwd or None)
 
                 for evt in events_to_yield:
                     # Log flattened events
@@ -560,6 +572,11 @@ class AsyncSession:
                         log.info("event: ToolUse (%s)", evt.name)
                     elif isinstance(evt, ToolResult):
                         log.info("event: ToolResult (%d chars)", len(str(evt.content)))
+
+                    # Accumulate file-tracking events
+                    if isinstance(evt, (FileWrite, FileEdit)):
+                        if evt.path:
+                            self._files_modified.add(evt.path)
 
                     # Fire callbacks before yielding
                     for cb in self._callbacks.get(type(evt), []):

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import os
 from collections.abc import AsyncIterator
 from typing import Union
 
@@ -15,6 +16,8 @@ from claudestream.events import (
     CompactBoundary,
     ContentBlock,
     Event,
+    FileEdit,
+    FileWrite,
     HookEvent,
     McpRequest,
     PermissionRequest,
@@ -264,8 +267,83 @@ def parse_event(raw: dict) -> Event:
 # ---------------------------------------------------------------------------
 
 
-def flatten_event(event: Event) -> list[Event]:
-    """Expand an event into convenience events (one per content block)."""
+def _resolve_path(path: str, cwd: str | None) -> str:
+    """Resolve a file path to absolute, using cwd if the path is relative."""
+    if not path:
+        return path
+    if os.path.isabs(path):
+        return os.path.normpath(path)
+    if cwd:
+        return os.path.normpath(os.path.join(cwd, path))
+    return path
+
+
+def _derive_file_events(block: ToolUseBlock, event: AssistantMessage, cwd: str | None) -> list[Event]:
+    """Derive FileWrite/FileEdit events from a file-modifying ToolUseBlock."""
+    derived: list[Event] = []
+    inp = block.input
+
+    if block.name == "Write":
+        path = _resolve_path(inp.get("file_path", ""), cwd)
+        derived.append(
+            FileWrite(
+                type="file_write",
+                session_id=event.session_id,
+                uuid=event.uuid,
+                path=path,
+                content_length=len(inp.get("content", "")),
+            )
+        )
+    elif block.name == "Edit":
+        path = _resolve_path(inp.get("file_path", ""), cwd)
+        derived.append(
+            FileEdit(
+                type="file_edit",
+                session_id=event.session_id,
+                uuid=event.uuid,
+                path=path,
+            )
+        )
+    elif block.name == "MultiEdit":
+        # MultiEdit may have a top-level file_path and/or per-edit file_path entries
+        seen_paths: set[str] = set()
+        edits = inp.get("edits", [])
+        for edit in edits:
+            edit_path = edit.get("file_path", "") or inp.get("file_path", "")
+            resolved = _resolve_path(edit_path, cwd)
+            if resolved and resolved not in seen_paths:
+                seen_paths.add(resolved)
+                derived.append(
+                    FileEdit(
+                        type="file_edit",
+                        session_id=event.session_id,
+                        uuid=event.uuid,
+                        path=resolved,
+                    )
+                )
+        # If no edits array but there's a top-level file_path, emit one event
+        if not edits and inp.get("file_path"):
+            path = _resolve_path(inp.get("file_path", ""), cwd)
+            if path:
+                derived.append(
+                    FileEdit(
+                        type="file_edit",
+                        session_id=event.session_id,
+                        uuid=event.uuid,
+                        path=path,
+                    )
+                )
+
+    return derived
+
+
+def flatten_event(event: Event, cwd: str | None = None) -> list[Event]:
+    """Expand an event into convenience events (one per content block).
+
+    Args:
+        event: The event to flatten.
+        cwd: Working directory for resolving relative paths in file-tracking events.
+    """
     if isinstance(event, AssistantMessage):
         results: list[Event] = []
         for block in event.content:
@@ -291,6 +369,8 @@ def flatten_event(event: Event) -> list[Event]:
                         parent_tool_use_id=event.parent_tool_use_id,
                     )
                 )
+                # Derive file-tracking events after the ToolUse event
+                results.extend(_derive_file_events(block, event, cwd))
             elif isinstance(block, ThinkingBlock):
                 results.append(
                     Thinking(

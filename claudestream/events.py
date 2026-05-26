@@ -23,6 +23,8 @@ __all__ = [
     "ToolUse",
     "Thinking",
     "ToolResult",
+    "FileWrite",
+    "FileEdit",
     "StreamDelta",
     "Result",
     "RateLimit",
@@ -189,6 +191,24 @@ class ToolResult(Event, frozen=True):
     tool_use_id: str = ""
     content: str | list[Any] = ""
     parent_tool_use_id: str | None = None
+
+
+# ---------------------------------------------------------------------------
+# Derived file-tracking events (emitted alongside ToolUse for file-modifying tools)
+# ---------------------------------------------------------------------------
+
+
+class FileWrite(Event, frozen=True):
+    """Derived event emitted when a Write tool succeeds. Contains absolute path and content length."""
+
+    path: str = ""
+    content_length: int = 0
+
+
+class FileEdit(Event, frozen=True):
+    """Derived event emitted when an Edit or MultiEdit tool succeeds. Contains absolute path."""
+
+    path: str = ""
 
 
 # ---------------------------------------------------------------------------
