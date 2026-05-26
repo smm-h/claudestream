@@ -15,6 +15,7 @@ order: 90
 - [claudestream._async_session](claudestream-_async_session.html)
 - [claudestream._cli](claudestream-_cli.html)
 - [claudestream._color](claudestream-_color.html)
+- [claudestream._options](claudestream-_options.html)
 - [claudestream._process](claudestream-_process.html)
 - [claudestream._protocol](claudestream-_protocol.html)
 - [claudestream._sync_session](claudestream-_sync_session.html)
