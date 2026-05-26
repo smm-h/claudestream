@@ -1,0 +1,2 @@
+{"commits":["dc2b884ade861fa1150b0648c0732709f835b490"],"user_facing":true,"description":"**Tool context injection.** `@tool(\"server\", inject=[\"ctx\"])` explicitly declares parameters injected from `SessionConfig.tool_context`. Injected params are hidden from the model's schema. Hard error when context is required but missing.","type":"feature"}
+{"commits":["626e8f401d52027cc1e4887e3061e010ded3142e"],"user_facing":false}
