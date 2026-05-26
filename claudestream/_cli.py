@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sys
+from typing import Any
 
 import msgspec
 import strictcli
@@ -40,6 +41,98 @@ app = strictcli.App(
 )
 
 
+# --- Shared helpers ---
+
+
+def _resolve_prompt(prompt: str, stdin: bool, color: Colorizer) -> str | int:
+    """Resolve prompt from argument or stdin. Returns the prompt string, or 1 on error."""
+    if stdin:
+        if prompt:
+            print(color.red("error: cannot use both prompt argument and --stdin"), file=sys.stderr)
+            return 1
+        prompt = sys.stdin.read().strip()
+        if not prompt:
+            print(color.red("error: --stdin provided but stdin is empty"), file=sys.stderr)
+            return 1
+    elif not prompt:
+        print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
+        return 1
+    return prompt
+
+
+def _build_config(
+    model: str,
+    profile: str,
+    cwd: str = "",
+    skip_permissions: bool = False,
+    system_prompt: str = "",
+    resume: str = "",
+) -> SessionConfig:
+    """Build a SessionConfig from common CLI flags."""
+    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
+    return SessionConfig(
+        model=model,
+        cwd=cwd or None,
+        sandbox=sandbox,
+        profile=profile,
+        system_prompt=system_prompt or None,
+        resume_session_id=resume or None,
+    )
+
+
+
+def _run_with_session(
+    config: SessionConfig,
+    handler: Any,
+    color: Colorizer,
+) -> int | None:
+    """Run handler(session) inside a SyncSession context with standard error handling."""
+    try:
+        with SyncSession(config) as session:
+            handler(session)
+    except ClaudeStreamError as e:
+        print(color.red(f"error: {e}"), file=sys.stderr)
+        return 1
+    except KeyboardInterrupt:
+        print("\nInterrupted.", file=sys.stderr)
+        return 1
+    return None
+
+
+def _stream_events(session: SyncSession, prompt: str, footer: bool, color: Colorizer) -> None:
+    """Shared streaming event loop used by cmd_stream and cmd_agent_run."""
+    streamed_text = ""
+    for event in session.send(prompt):
+        if isinstance(event, StreamDelta) and event.text:
+            streamed_text += event.text
+            sys.stdout.write(event.text)
+            sys.stdout.flush()
+        elif isinstance(event, AssistantText):
+            if event.text != streamed_text:
+                sys.stdout.write(event.text)
+                sys.stdout.flush()
+        elif isinstance(event, Result):
+            sys.stdout.write("\n")
+            sys.stdout.flush()
+            if footer:
+                print(color.cyan(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
+            streamed_text = ""
+        elif isinstance(event, Thinking):
+            print(color.dim("[thinking...]"), file=sys.stderr)
+        elif isinstance(event, ToolUse):
+            print(f"[tool: {color.bold(event.name)}]", file=sys.stderr)
+        elif isinstance(event, ToolResult):
+            print("[result]", file=sys.stderr)
+        elif isinstance(event, ApiRetry):
+            print(color.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
+        elif isinstance(event, RateLimit):
+            print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
+        elif isinstance(event, PermissionRequest):
+            print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
+        elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
+            pass
+
+
 # --- send command ---
 
 @app.command("send", help="Send a prompt and display the response")
@@ -70,40 +163,22 @@ def cmd_send(
     resume: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
-    if stdin:
-        if prompt:
-            print(color.red("error: cannot use both prompt argument and --stdin"), file=sys.stderr)
-            return 1
-        prompt = sys.stdin.read().strip()
-        if not prompt:
-            print(color.red("error: --stdin provided but stdin is empty"), file=sys.stderr)
-            return 1
-    elif not prompt:
-        print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
-        return 1
-    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
-    try:
-        printer = EventPrinter(footer=footer, color=color)
-        config = SessionConfig(
-            model=model,
-            cwd=cwd or None,
-            sandbox=sandbox,
-            profile=profile,
-            system_prompt=system_prompt or None,
-            resume_session_id=resume or None,
-        )
-        with SyncSession(config) as session:
-            for event in session.send(prompt, raw=raw):
-                if json_output:
-                    _print_json(event)
-                else:
-                    printer.print_event(event)
-    except ClaudeStreamError as e:
-        print(color.red(f"error: {e}"), file=sys.stderr)
-        return 1
-    except KeyboardInterrupt:
-        print("\nInterrupted.", file=sys.stderr)
-        return 1
+    resolved = _resolve_prompt(prompt, stdin, color)
+    if isinstance(resolved, int):
+        return resolved
+    prompt = resolved
+
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume)
+    printer = EventPrinter(footer=footer, color=color)
+
+    def handler(session: SyncSession) -> None:
+        for event in session.send(prompt, raw=raw):
+            if json_output:
+                _print_json(event)
+            else:
+                printer.print_event(event)
+
+    return _run_with_session(config, handler, color)
 
 
 # --- stream command ---
@@ -132,64 +207,17 @@ def cmd_stream(
     resume: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
-    if stdin:
-        if prompt:
-            print(color.red("error: cannot use both prompt argument and --stdin"), file=sys.stderr)
-            return 1
-        prompt = sys.stdin.read().strip()
-        if not prompt:
-            print(color.red("error: --stdin provided but stdin is empty"), file=sys.stderr)
-            return 1
-    elif not prompt:
-        print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
-        return 1
-    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
-    try:
-        streamed_text = ""
-        config = SessionConfig(
-            model=model,
-            cwd=cwd or None,
-            sandbox=sandbox,
-            profile=profile,
-            system_prompt=system_prompt or None,
-            resume_session_id=resume or None,
-        )
-        with SyncSession(config) as session:
-            for event in session.send(prompt):
-                if isinstance(event, StreamDelta) and event.text:
-                    streamed_text += event.text
-                    sys.stdout.write(event.text)
-                    sys.stdout.flush()
-                elif isinstance(event, AssistantText):
-                    if event.text != streamed_text:
-                        sys.stdout.write(event.text)
-                        sys.stdout.flush()
-                elif isinstance(event, Result):
-                    sys.stdout.write("\n")
-                    sys.stdout.flush()
-                    if footer:
-                        print(color.cyan(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
-                    streamed_text = ""
-                elif isinstance(event, Thinking):
-                    print(color.dim("[thinking...]"), file=sys.stderr)
-                elif isinstance(event, ToolUse):
-                    print(f"[tool: {color.bold(event.name)}]", file=sys.stderr)
-                elif isinstance(event, ToolResult):
-                    print("[result]", file=sys.stderr)
-                elif isinstance(event, ApiRetry):
-                    print(color.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
-                elif isinstance(event, RateLimit):
-                    print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
-                elif isinstance(event, PermissionRequest):
-                    print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
-                elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
-                    pass
-    except ClaudeStreamError as e:
-        print(color.red(f"error: {e}"), file=sys.stderr)
-        return 1
-    except KeyboardInterrupt:
-        print("\nInterrupted.", file=sys.stderr)
-        return 1
+    resolved = _resolve_prompt(prompt, stdin, color)
+    if isinstance(resolved, int):
+        return resolved
+    prompt = resolved
+
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume)
+
+    def handler(session: SyncSession) -> None:
+        _stream_events(session, prompt, footer, color)
+
+    return _run_with_session(config, handler, color)
 
 
 # --- events command ---
@@ -218,38 +246,20 @@ def cmd_events(
     resume: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
-    if stdin:
-        if prompt:
-            print(color.red("error: cannot use both prompt argument and --stdin"), file=sys.stderr)
-            return 1
-        prompt = sys.stdin.read().strip()
-        if not prompt:
-            print(color.red("error: --stdin provided but stdin is empty"), file=sys.stderr)
-            return 1
-    elif not prompt:
-        print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
-        return 1
-    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
-    try:
-        config = SessionConfig(
-            model=model,
-            cwd=cwd or None,
-            sandbox=sandbox,
-            profile=profile,
-            system_prompt=system_prompt or None,
-            resume_session_id=resume or None,
-        )
-        with SyncSession(config) as session:
-            for event in session.send(prompt, raw=True):
-                _print_json(event)
-                if footer and isinstance(event, Result):
-                    print(color.cyan(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
-    except ClaudeStreamError as e:
-        print(color.red(f"error: {e}"), file=sys.stderr)
-        return 1
-    except KeyboardInterrupt:
-        print("\nInterrupted.", file=sys.stderr)
-        return 1
+    resolved = _resolve_prompt(prompt, stdin, color)
+    if isinstance(resolved, int):
+        return resolved
+    prompt = resolved
+
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume)
+
+    def handler(session: SyncSession) -> None:
+        for event in session.send(prompt, raw=True):
+            _print_json(event)
+            if footer and isinstance(event, Result):
+                print(color.cyan(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
+
+    return _run_with_session(config, handler, color)
 
 
 # --- repl command ---
@@ -274,62 +284,50 @@ def cmd_repl(
     resume: str = "",
 ) -> None:
     color = Colorizer(should_color(no_color_flag=no_color))
-    sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
-    try:
-        config = SessionConfig(
-            model=model,
-            cwd=cwd or None,
-            sandbox=sandbox,
-            profile=profile,
-            system_prompt=system_prompt or None,
-            resume_session_id=resume or None,
-        )
-        with SyncSession(config) as session:
-            print("claudestream repl")
-            print("Type your prompts. Ctrl-D to exit.\n")
-            model_shown = False
-            while True:
-                try:
-                    prompt = input("> ")
-                except EOFError:
-                    print("\nBye.")
-                    break
-                if not prompt.strip():
-                    continue
-                for event in session.send(prompt):
-                    if isinstance(event, AssistantText):
-                        sys.stdout.write(event.text)
-                        sys.stdout.flush()
-                    elif isinstance(event, ToolUse):
-                        print(f"\n[tool: {color.bold(event.name)}]")
-                    elif isinstance(event, ToolResult):
-                        content = event.content if isinstance(event.content, str) else str(event.content)
-                        if len(content) > 500:
-                            content = content[:500] + "..."
-                        print(f"[result: {content}]")
-                    elif isinstance(event, Result):
-                        if footer:
-                            print(color.cyan(f"\n[cost: ${event.total_cost_usd:.4f}]"), file=sys.stderr)
-                    elif isinstance(event, Thinking):
-                        print(color.dim("[thinking...]"), file=sys.stderr)
-                    elif isinstance(event, ApiRetry):
-                        print(color.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
-                    elif isinstance(event, RateLimit):
-                        print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
-                    elif isinstance(event, PermissionRequest):
-                        print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
-                    elif isinstance(event, (StreamDelta, SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
-                        pass
-                if not model_shown and session.model_name:
-                    print(color.dim(f"Connected: {session.model_name}"), file=sys.stderr)
-                    model_shown = True
-                print()
-    except ClaudeStreamError as e:
-        print(color.red(f"error: {e}"), file=sys.stderr)
-        return 1
-    except KeyboardInterrupt:
-        print("\nInterrupted.", file=sys.stderr)
-        return 1
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume)
+
+    def handler(session: SyncSession) -> None:
+        print("claudestream repl")
+        print("Type your prompts. Ctrl-D to exit.\n")
+        model_shown = False
+        while True:
+            try:
+                prompt = input("> ")
+            except EOFError:
+                print("\nBye.")
+                break
+            if not prompt.strip():
+                continue
+            for event in session.send(prompt):
+                if isinstance(event, AssistantText):
+                    sys.stdout.write(event.text)
+                    sys.stdout.flush()
+                elif isinstance(event, ToolUse):
+                    print(f"\n[tool: {color.bold(event.name)}]")
+                elif isinstance(event, ToolResult):
+                    content = event.content if isinstance(event.content, str) else str(event.content)
+                    if len(content) > 500:
+                        content = content[:500] + "..."
+                    print(f"[result: {content}]")
+                elif isinstance(event, Result):
+                    if footer:
+                        print(color.cyan(f"\n[cost: ${event.total_cost_usd:.4f}]"), file=sys.stderr)
+                elif isinstance(event, Thinking):
+                    print(color.dim("[thinking...]"), file=sys.stderr)
+                elif isinstance(event, ApiRetry):
+                    print(color.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
+                elif isinstance(event, RateLimit):
+                    print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
+                elif isinstance(event, PermissionRequest):
+                    print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
+                elif isinstance(event, (StreamDelta, SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
+                    pass
+            if not model_shown and session.model_name:
+                print(color.dim(f"Connected: {session.model_name}"), file=sys.stderr)
+                model_shown = True
+            print()
+
+    return _run_with_session(config, handler, color)
 
 
 # --- agent group ---
@@ -378,7 +376,6 @@ def cmd_agent_run(
         return 1
 
     try:
-        streamed_text = ""
         with invoke_agent_sync(
             agent_def,
             profile,
@@ -386,35 +383,7 @@ def cmd_agent_run(
             model=model or None,
             cwd=cwd or None,
         ) as session:
-            for event in session.send(prompt):
-                if isinstance(event, StreamDelta) and event.text:
-                    streamed_text += event.text
-                    sys.stdout.write(event.text)
-                    sys.stdout.flush()
-                elif isinstance(event, AssistantText):
-                    if event.text != streamed_text:
-                        sys.stdout.write(event.text)
-                        sys.stdout.flush()
-                elif isinstance(event, Result):
-                    sys.stdout.write("\n")
-                    sys.stdout.flush()
-                    if footer:
-                        print(color.cyan(f"--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)
-                    streamed_text = ""
-                elif isinstance(event, Thinking):
-                    print(color.dim("[thinking...]"), file=sys.stderr)
-                elif isinstance(event, ToolUse):
-                    print(f"[tool: {color.bold(event.name)}]", file=sys.stderr)
-                elif isinstance(event, ToolResult):
-                    print("[result]", file=sys.stderr)
-                elif isinstance(event, ApiRetry):
-                    print(color.yellow(f"[retry {event.attempt}/{event.max_retries}: {event.error}]"), file=sys.stderr)
-                elif isinstance(event, RateLimit):
-                    print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
-                elif isinstance(event, PermissionRequest):
-                    print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
-                elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
-                    pass
+            _stream_events(session, prompt, footer, color)
     except ValueError as e:
         print(color.red(f"error: {e}"), file=sys.stderr)
         return 1
