@@ -314,15 +314,15 @@ class TestFindBinary:
 
 
 class TestProcessManagerBufferLimit:
-    """Test that ProcessManager.start() passes a 16MB buffer limit.
+    """Test that ProcessManager.start() passes the configured buffer limit.
 
-    Bug fix: extended thinking produces huge NDJSON lines that exceed asyncio's
-    default 64KB buffer. The fix passes limit=16*1024*1024 to
+    Extended thinking produces huge NDJSON lines that exceed asyncio's
+    default 64KB buffer. The fix passes config.buffer_limit to
     create_subprocess_exec.
     """
 
-    def test_start_passes_16mb_limit(self):
-        """Verify create_subprocess_exec receives limit=16*1024*1024."""
+    def test_start_passes_default_16mb_limit(self):
+        """Verify create_subprocess_exec receives the default 16MB limit."""
         config = ProcessConfig(binary="/fake/claude")
         manager = ProcessManager(config)
 
@@ -351,6 +351,33 @@ class TestProcessManagerBufferLimit:
             f"Expected limit={expected_limit}, got limit={captured_kwargs['limit']}"
         )
 
+    def test_start_passes_custom_buffer_limit(self):
+        """Verify create_subprocess_exec uses a custom buffer_limit from config."""
+        custom_limit = 8_000_000
+        config = ProcessConfig(binary="/fake/claude", buffer_limit=custom_limit)
+        manager = ProcessManager(config)
+
+        captured_kwargs = {}
+
+        async def run():
+            stderr_reader = asyncio.StreamReader()
+            stderr_reader.feed_eof()
+
+            mock_process = MagicMock()
+            mock_process.pid = 12345
+            mock_process.stderr = stderr_reader
+
+            async def fake_create_subprocess_exec(*args, **kwargs):
+                captured_kwargs.update(kwargs)
+                return mock_process
+
+            with patch("asyncio.create_subprocess_exec", side_effect=fake_create_subprocess_exec):
+                await manager.start()
+
+        asyncio.run(run())
+
+        assert captured_kwargs["limit"] == custom_limit
+
     def test_start_uses_pipe_for_stdio(self):
         """Verify create_subprocess_exec uses PIPE for stdin, stdout, and stderr."""
         config = ProcessConfig(binary="/fake/claude")
@@ -378,6 +405,143 @@ class TestProcessManagerBufferLimit:
         assert captured_kwargs["stdin"] == asyncio.subprocess.PIPE
         assert captured_kwargs["stdout"] == asyncio.subprocess.PIPE
         assert captured_kwargs["stderr"] == asyncio.subprocess.PIPE
+
+
+class TestProcessManagerShutdownTimeout:
+    """Test that ProcessManager.close() uses config.shutdown_timeout."""
+
+    def test_close_uses_default_shutdown_timeout(self):
+        """Verify close() passes the default 5.0s timeout to asyncio.wait_for."""
+        config = ProcessConfig(binary="/fake/claude")
+        manager = ProcessManager(config)
+
+        captured_timeouts = []
+
+        async def run():
+            mock_process = MagicMock()
+            mock_process.pid = 33333
+            mock_process.returncode = None
+            mock_process.stdin = None
+
+            wait_calls = [0]
+
+            async def fake_wait():
+                wait_calls[0] += 1
+                if wait_calls[0] >= 2:
+                    mock_process.returncode = 0
+                return 0
+
+            mock_process.wait = fake_wait
+            mock_process.send_signal = MagicMock()
+            mock_process.kill = MagicMock()
+
+            manager._process = mock_process
+
+            original_wait_for = asyncio.wait_for
+
+            async def tracking_wait_for(coro, *, timeout=None):
+                captured_timeouts.append(timeout)
+                return await original_wait_for(coro, timeout=timeout)
+
+            with patch("claudestream._process.asyncio.wait_for", side_effect=tracking_wait_for):
+                await manager.close()
+
+        asyncio.run(run())
+
+        # Both wait_for calls should use the default 5.0
+        assert all(t == 5.0 for t in captured_timeouts)
+
+    def test_close_uses_custom_shutdown_timeout(self):
+        """Verify close() passes a custom shutdown_timeout to asyncio.wait_for."""
+        config = ProcessConfig(binary="/fake/claude", shutdown_timeout=2.0)
+        manager = ProcessManager(config)
+
+        captured_timeouts = []
+
+        async def run():
+            mock_process = MagicMock()
+            mock_process.pid = 44444
+            mock_process.returncode = None
+            mock_process.stdin = None
+
+            wait_calls = [0]
+
+            async def fake_wait():
+                wait_calls[0] += 1
+                if wait_calls[0] >= 2:
+                    mock_process.returncode = 0
+                return 0
+
+            mock_process.wait = fake_wait
+            mock_process.send_signal = MagicMock()
+            mock_process.kill = MagicMock()
+
+            manager._process = mock_process
+
+            original_wait_for = asyncio.wait_for
+
+            async def tracking_wait_for(coro, *, timeout=None):
+                captured_timeouts.append(timeout)
+                return await original_wait_for(coro, timeout=timeout)
+
+            with patch("claudestream._process.asyncio.wait_for", side_effect=tracking_wait_for):
+                await manager.close()
+
+        asyncio.run(run())
+
+        assert all(t == 2.0 for t in captured_timeouts)
+
+
+class TestCheckVersionTimeout:
+    """Test that check_version uses the timeout parameter."""
+
+    def test_default_timeout(self):
+        """Verify check_version uses 2.0s by default."""
+        captured_timeouts = []
+
+        async def run():
+            mock_process = MagicMock()
+            mock_process.communicate = AsyncMock(return_value=(b"2.1.0\n", b""))
+
+            original_wait_for = asyncio.wait_for
+
+            async def tracking_wait_for(coro, *, timeout=None):
+                captured_timeouts.append(timeout)
+                return await original_wait_for(coro, timeout=timeout)
+
+            with patch("asyncio.create_subprocess_exec", return_value=mock_process), \
+                 patch("claudestream._process.asyncio.wait_for", side_effect=tracking_wait_for):
+                from claudestream._process import check_version
+                result = await check_version("/fake/claude")
+
+            assert result == "2.1.0"
+            assert captured_timeouts == [2.0]
+
+        asyncio.run(run())
+
+    def test_custom_timeout(self):
+        """Verify check_version uses the provided timeout."""
+        captured_timeouts = []
+
+        async def run():
+            mock_process = MagicMock()
+            mock_process.communicate = AsyncMock(return_value=(b"2.1.0\n", b""))
+
+            original_wait_for = asyncio.wait_for
+
+            async def tracking_wait_for(coro, *, timeout=None):
+                captured_timeouts.append(timeout)
+                return await original_wait_for(coro, timeout=timeout)
+
+            with patch("asyncio.create_subprocess_exec", return_value=mock_process), \
+                 patch("claudestream._process.asyncio.wait_for", side_effect=tracking_wait_for):
+                from claudestream._process import check_version
+                result = await check_version("/fake/claude", timeout=5.0)
+
+            assert result == "2.1.0"
+            assert captured_timeouts == [5.0]
+
+        asyncio.run(run())
 
 
 class TestStderrDrain:

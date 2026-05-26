@@ -219,6 +219,22 @@ class TestSessionConfig:
         assert c.hooks is None
         assert c.no_persistence is False
 
+    def test_poll_timeout_default(self):
+        c = SessionConfig(model="sonnet", profile="work")
+        assert c.poll_timeout == 1.0
+
+    def test_join_timeout_default(self):
+        c = SessionConfig(model="sonnet", profile="work")
+        assert c.join_timeout == 5.0
+
+    def test_custom_poll_timeout(self):
+        c = SessionConfig(model="sonnet", profile="work", poll_timeout=0.5)
+        assert c.poll_timeout == 0.5
+
+    def test_custom_join_timeout(self):
+        c = SessionConfig(model="sonnet", profile="work", join_timeout=10.0)
+        assert c.join_timeout == 10.0
+
     def test_missing_required(self):
         with pytest.raises(TypeError):
             SessionConfig()  # type: ignore[call-arg]
@@ -249,6 +265,32 @@ class TestSessionConfig:
         )
         assert c.budget is not None
         assert c.budget.max_turns == 5
+
+    def test_process_limits_flow_to_process_config(self):
+        """ProcessLimits values flow through _build_process_config to ProcessConfig."""
+        from unittest.mock import patch, AsyncMock
+        from claudestream._async_session import AsyncSession
+
+        limits = ProcessLimits(
+            buffer_limit=4_000_000,
+            shutdown_timeout=3.0,
+            version_check_timeout=1.0,
+            health_timeout=15.0,
+        )
+        config = SessionConfig(
+            model="sonnet",
+            profile="test",
+            process_limits=limits,
+        )
+
+        with patch("claudestream._async_session.find_binary", return_value="/fake/claude"), \
+             patch("claudestream._async_session.check_version", new_callable=AsyncMock, return_value="2.1.0"), \
+             patch("claudewheel.profile.resolve_profile", return_value={}):
+            session = AsyncSession(config)
+
+        assert session._process_mgr.config.buffer_limit == 4_000_000
+        assert session._process_mgr.config.shutdown_timeout == 3.0
+        assert session._health_timeout == 15.0
 
     def test_frozen(self):
         c = SessionConfig(model="sonnet", profile="work")

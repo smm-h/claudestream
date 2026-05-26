@@ -114,6 +114,10 @@ class SessionConfig(msgspec.Struct, frozen=True):
     process_limits: ProcessLimits | None = None
     budget: Budget | None = None
 
+    # SyncSession tuning
+    poll_timeout: float = 1.0
+    join_timeout: float = 5.0
+
     # Flat Claude CLI flag params
     effort: str | None = None
     json_schema: dict | None = None

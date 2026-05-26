@@ -84,7 +84,7 @@ class SyncSession:
         if self._loop:
             self._loop.call_soon_threadsafe(self._loop.stop)
             if self._thread:
-                self._thread.join(timeout=5.0)
+                self._thread.join(timeout=self._config.join_timeout)
             self._loop = None
             self._thread = None
 
@@ -163,7 +163,7 @@ class SyncSession:
 
         while True:
             try:
-                item = q.get(timeout=1.0)
+                item = q.get(timeout=self._config.poll_timeout)
             except queue.Empty:
                 if future.done():
                     # Async task finished without sending sentinel -- check for error

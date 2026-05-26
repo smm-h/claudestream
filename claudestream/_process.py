@@ -61,7 +61,7 @@ def _version_lt(a: str, b: str) -> bool:
     return parts(a) < parts(b)
 
 
-async def check_version(binary: str) -> str | None:
+async def check_version(binary: str, *, timeout: float = 2.0) -> str | None:
     """Check claude CLI version. Logs warning if below minimum. Returns version string or None."""
     try:
         proc = await asyncio.create_subprocess_exec(
@@ -70,7 +70,7 @@ async def check_version(binary: str) -> str | None:
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
-        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=2.0)
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=timeout)
         output = stdout.decode("utf-8", errors="replace").strip()
         # Parse version from output like "claude-code 2.1.128" or just "2.1.128"
         match = re.search(r"(\d+\.\d+\.\d+)", output)
@@ -301,7 +301,7 @@ class ProcessManager:
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            limit=16 * 1024 * 1024,  # 16MB — extended thinking produces huge NDJSON lines
+            limit=self.config.buffer_limit,
             cwd=self.config.cwd,
             env=env,
         )
@@ -310,13 +310,14 @@ class ProcessManager:
         self._stderr_task = asyncio.create_task(self._drain_stderr())
 
     async def close(self) -> None:
-        """Graceful shutdown: close stdin -> 5s wait -> SIGTERM -> 5s wait -> SIGKILL."""
+        """Graceful shutdown: close stdin -> wait -> SIGTERM -> wait -> SIGKILL."""
         if not self._process:
             return
 
         proc = self._process
         self._process = None
         _ACTIVE_CHILDREN.discard(proc)
+        timeout = self.config.shutdown_timeout
 
         # Cancel stderr drain task
         if self._stderr_task is not None and not self._stderr_task.done():
@@ -338,7 +339,7 @@ class ProcessManager:
         # Wait for graceful exit
         if proc.returncode is None:
             try:
-                await asyncio.wait_for(proc.wait(), timeout=5.0)
+                await asyncio.wait_for(proc.wait(), timeout=timeout)
             except asyncio.TimeoutError:
                 pass
 
@@ -349,7 +350,7 @@ class ProcessManager:
             except (ProcessLookupError, OSError):
                 pass
             try:
-                await asyncio.wait_for(proc.wait(), timeout=5.0)
+                await asyncio.wait_for(proc.wait(), timeout=timeout)
             except asyncio.TimeoutError:
                 pass
 

@@ -2,7 +2,7 @@
 
 from unittest.mock import patch, MagicMock
 
-from claudestream.events import ApiRetry, RateLimit
+from claudestream.events import ApiRetry, RateLimit, Thinking, ToolResult
 from claudestream._cli import EventPrinter, cmd_stream, cmd_repl
 
 
@@ -44,6 +44,74 @@ class TestEventPrinterRateLimit:
         captured = capsys.readouterr()
         assert "[rate limit: rate_limited]" in captured.err
         assert captured.out == ""
+
+
+class TestEventPrinterTruncation:
+    """Tests for configurable truncation lengths in EventPrinter."""
+
+    def test_tool_result_default_truncation(self, capsys):
+        """ToolResult content truncated at default 500 chars."""
+        long_content = "x" * 600
+        event = ToolResult(type="tool_result", content=long_content)
+        p = EventPrinter(footer=False)
+        p.print_event(event)
+
+        captured = capsys.readouterr()
+        assert "x" * 500 + "..." in captured.out
+        assert "x" * 501 not in captured.out
+
+    def test_tool_result_custom_truncation(self, capsys):
+        """ToolResult content truncated at custom length."""
+        long_content = "x" * 300
+        event = ToolResult(type="tool_result", content=long_content)
+        p = EventPrinter(footer=False, tool_result_truncation=200)
+        p.print_event(event)
+
+        captured = capsys.readouterr()
+        assert "x" * 200 + "..." in captured.out
+        assert "x" * 201 not in captured.out
+
+    def test_tool_result_no_truncation_when_short(self, capsys):
+        """Short ToolResult content is not truncated."""
+        short_content = "hello world"
+        event = ToolResult(type="tool_result", content=short_content)
+        p = EventPrinter(footer=False, tool_result_truncation=500)
+        p.print_event(event)
+
+        captured = capsys.readouterr()
+        assert "hello world" in captured.out
+        assert "..." not in captured.out
+
+    def test_thinking_default_preview_length(self, capsys):
+        """Thinking preview truncated at default 100 chars."""
+        long_text = "t" * 200
+        event = Thinking(type="thinking", text=long_text)
+        p = EventPrinter(footer=False)
+        p.print_event(event)
+
+        captured = capsys.readouterr()
+        assert "t" * 100 + "..." in captured.out
+
+    def test_thinking_custom_preview_length(self, capsys):
+        """Thinking preview truncated at custom length."""
+        long_text = "t" * 200
+        event = Thinking(type="thinking", text=long_text)
+        p = EventPrinter(footer=False, thinking_preview_length=50)
+        p.print_event(event)
+
+        captured = capsys.readouterr()
+        assert "t" * 50 + "..." in captured.out
+
+    def test_thinking_no_truncation_when_short(self, capsys):
+        """Short thinking text is not truncated."""
+        short_text = "brief thought"
+        event = Thinking(type="thinking", text=short_text)
+        p = EventPrinter(footer=False, thinking_preview_length=100)
+        p.print_event(event)
+
+        captured = capsys.readouterr()
+        assert "brief thought" in captured.out
+        assert "..." not in captured.out
 
 
 # ---------------------------------------------------------------------------

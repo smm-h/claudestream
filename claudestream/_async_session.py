@@ -71,6 +71,11 @@ class AsyncSession:
 
         self._process_mgr = ProcessManager(self._build_process_config())
 
+        # Health timeout for _read_turn (default 30s, overridden by ProcessLimits)
+        self._health_timeout: float = 30.0
+        if config.process_limits is not None:
+            self._health_timeout = config.process_limits.health_timeout
+
         # Session metadata (populated from SystemInit)
         self._session_id: str | None = None
         self._model_name: str | None = None
@@ -317,7 +322,10 @@ class AsyncSession:
 
     async def _start(self) -> None:
         """Start the subprocess. SystemInit is captured during first send()."""
-        self._claude_version = await check_version(self._binary)
+        version_check_timeout = 2.0
+        if self._config.process_limits is not None:
+            version_check_timeout = self._config.process_limits.version_check_timeout
+        self._claude_version = await check_version(self._binary, timeout=version_check_timeout)
 
         await self._process_mgr.start()
 
@@ -395,7 +403,7 @@ class AsyncSession:
             msg = UserMessage(content=prompt, session_id=self._session_id or "")
             await write_message(self._process_mgr.stdin, msg)
 
-            async for event in self._read_turn(raw=raw):
+            async for event in self._read_turn(raw=raw, _health_timeout=self._health_timeout):
                 yield event
         finally:
             self._active_turn = False
