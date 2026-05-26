@@ -307,8 +307,6 @@ def cmd_repl(
                     print(f"\n[tool: {color.bold(event.name)}]")
                 elif isinstance(event, ToolResult):
                     content = event.content if isinstance(event.content, str) else str(event.content)
-                    if len(content) > 500:
-                        content = content[:500] + "..."
                     print(f"[result: {content}]")
                 elif isinstance(event, Result):
                     if footer:
@@ -623,14 +621,10 @@ class EventPrinter:
         self,
         footer: bool = True,
         color: Colorizer | None = None,
-        tool_result_truncation: int = 500,
-        thinking_preview_length: int = 100,
     ) -> None:
         self._streamed_text: str = ""
         self._footer = footer
         self._color = color or Colorizer(use_color=False)
-        self._tool_result_truncation = tool_result_truncation
-        self._thinking_preview_length = thinking_preview_length
 
     def print_event(self, event: Event) -> None:
         """Pretty-print an event to stdout, deduplicating AssistantText."""
@@ -650,14 +644,9 @@ class EventPrinter:
             print(json.dumps(event.input, indent=2))
         elif isinstance(event, ToolResult):
             content = event.content if isinstance(event.content, str) else str(event.content)
-            limit = self._tool_result_truncation
-            if len(content) > limit:
-                content = content[:limit] + "..."
             print(f"--- Result ---\n{content}")
         elif isinstance(event, Thinking):
-            limit = self._thinking_preview_length
-            preview = event.text[:limit] + "..." if len(event.text) > limit else event.text
-            print(c.dim(f"[thinking: {preview}]"))
+            print(c.dim(f"[thinking: {event.text}]"))
         elif isinstance(event, Result):
             if self._footer:
                 print(c.cyan(f"\n--- Done ({event.duration_ms:.0f}ms, ${event.total_cost_usd:.4f}) ---"), file=sys.stderr)

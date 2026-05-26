@@ -46,67 +46,47 @@ class TestEventPrinterRateLimit:
         assert captured.out == ""
 
 
-class TestEventPrinterTruncation:
-    """Tests for configurable truncation lengths in EventPrinter."""
+class TestEventPrinterFullOutput:
+    """Tests that EventPrinter prints full content without truncation."""
 
-    def test_tool_result_default_truncation(self, capsys):
-        """ToolResult content truncated at default 500 chars."""
+    def test_tool_result_long_content_printed_in_full(self, capsys):
+        """Long ToolResult content is printed without truncation."""
         long_content = "x" * 600
         event = ToolResult(type="tool_result", content=long_content)
         p = EventPrinter(footer=False)
         p.print_event(event)
 
         captured = capsys.readouterr()
-        assert "x" * 500 + "..." in captured.out
-        assert "x" * 501 not in captured.out
+        assert "x" * 600 in captured.out
+        assert "..." not in captured.out
 
-    def test_tool_result_custom_truncation(self, capsys):
-        """ToolResult content truncated at custom length."""
-        long_content = "x" * 300
-        event = ToolResult(type="tool_result", content=long_content)
-        p = EventPrinter(footer=False, tool_result_truncation=200)
-        p.print_event(event)
-
-        captured = capsys.readouterr()
-        assert "x" * 200 + "..." in captured.out
-        assert "x" * 201 not in captured.out
-
-    def test_tool_result_no_truncation_when_short(self, capsys):
-        """Short ToolResult content is not truncated."""
+    def test_tool_result_short_content(self, capsys):
+        """Short ToolResult content is printed in full."""
         short_content = "hello world"
         event = ToolResult(type="tool_result", content=short_content)
-        p = EventPrinter(footer=False, tool_result_truncation=500)
+        p = EventPrinter(footer=False)
         p.print_event(event)
 
         captured = capsys.readouterr()
         assert "hello world" in captured.out
         assert "..." not in captured.out
 
-    def test_thinking_default_preview_length(self, capsys):
-        """Thinking preview truncated at default 100 chars."""
+    def test_thinking_long_text_printed_in_full(self, capsys):
+        """Long thinking text is printed without truncation."""
         long_text = "t" * 200
         event = Thinking(type="thinking", text=long_text)
         p = EventPrinter(footer=False)
         p.print_event(event)
 
         captured = capsys.readouterr()
-        assert "t" * 100 + "..." in captured.out
+        assert "t" * 200 in captured.out
+        assert "..." not in captured.out
 
-    def test_thinking_custom_preview_length(self, capsys):
-        """Thinking preview truncated at custom length."""
-        long_text = "t" * 200
-        event = Thinking(type="thinking", text=long_text)
-        p = EventPrinter(footer=False, thinking_preview_length=50)
-        p.print_event(event)
-
-        captured = capsys.readouterr()
-        assert "t" * 50 + "..." in captured.out
-
-    def test_thinking_no_truncation_when_short(self, capsys):
-        """Short thinking text is not truncated."""
+    def test_thinking_short_text(self, capsys):
+        """Short thinking text is printed in full."""
         short_text = "brief thought"
         event = Thinking(type="thinking", text=short_text)
-        p = EventPrinter(footer=False, thinking_preview_length=100)
+        p = EventPrinter(footer=False)
         p.print_event(event)
 
         captured = capsys.readouterr()
