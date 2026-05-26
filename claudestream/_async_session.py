@@ -76,6 +76,9 @@ class AsyncSession:
         self._model_name: str | None = None
         self._tools: list[str] = []
         self._claude_version: str | None = None
+        self._cwd: str = ""
+        self._mcp_servers: list[str] = []
+        self._permission_mode: str = ""
 
     def _build_process_config(self) -> ProcessConfig:
         """Build a ProcessConfig from the stored SessionConfig.
@@ -262,6 +265,47 @@ class AsyncSession:
     def stderr_lines(self) -> list[str]:
         return self._process_mgr.stderr_lines
 
+    @property
+    def sandbox(self) -> Sandbox | None:
+        return self._config.sandbox
+
+    @property
+    def user_tools(self) -> list[Tool]:
+        return self._user_tools
+
+    @property
+    def is_alive(self) -> bool:
+        return self._process_mgr.is_alive
+
+    @property
+    def active_turn(self) -> bool:
+        return self._active_turn
+
+    @property
+    def cancelled(self) -> bool:
+        return self._cancelled
+
+    @property
+    def process_pid(self) -> int | None:
+        proc = self._process_mgr._process
+        return proc.pid if proc else None
+
+    @property
+    def cwd(self) -> str:
+        return self._cwd
+
+    @property
+    def mcp_servers(self) -> list[str]:
+        return self._mcp_servers
+
+    @property
+    def permission_mode(self) -> str:
+        return self._permission_mode
+
+    @property
+    def config(self) -> SessionConfig:
+        return self._config
+
     # --- Context manager ---
 
     async def __aenter__(self) -> AsyncSession:
@@ -372,6 +416,12 @@ class AsyncSession:
                 cost_usd=result_event.total_cost_usd,
                 duration_ms=result_event.duration_ms,
                 is_error=result_event.is_error,
+                num_turns=result_event.num_turns,
+                duration_api_ms=result_event.duration_api_ms,
+                stop_reason=result_event.stop_reason,
+                result=result_event.result,
+                api_error_status=result_event.api_error_status,
+                subtype=result_event.subtype,
             )
         return AskResult(text=text)
 
@@ -416,6 +466,9 @@ class AsyncSession:
                     self._session_id = event.session_id
                     self._model_name = event.model
                     self._tools = list(event.tools)
+                    self._cwd = event.cwd
+                    self._mcp_servers = list(event.mcp_servers)
+                    self._permission_mode = event.permission_mode
                     log.info(
                         "session started: id=%s model=%s tools=%d",
                         self._session_id,

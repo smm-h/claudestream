@@ -55,6 +55,12 @@ class _FakeAsyncSession:
                 cost_usd=result_event.total_cost_usd,
                 duration_ms=result_event.duration_ms,
                 is_error=result_event.is_error,
+                num_turns=result_event.num_turns,
+                duration_api_ms=result_event.duration_api_ms,
+                stop_reason=result_event.stop_reason,
+                result=result_event.result,
+                api_error_status=result_event.api_error_status,
+                subtype=result_event.subtype,
             )
         return AskResult(text=text)
 
@@ -196,6 +202,12 @@ class TestAskCapturesUsage:
         assert result.cost_usd == 0.025
         assert result.duration_ms == 1500.0
         assert result.is_error is False
+        assert result.num_turns == 1
+        assert result.duration_api_ms == 1200.0
+        assert result.stop_reason == "end_turn"
+        assert result.result == "Hello world"
+        assert result.api_error_status is None
+        assert result.subtype == "success"
 
     def test_ask_captures_error(self):
         data = _build_ndjson([_SYSTEM_INIT, _RESULT_ERROR])
@@ -209,6 +221,10 @@ class TestAskCapturesUsage:
         assert result.is_error is True
         assert result.text == ""
         assert result.cost_usd == 0.001
+        assert result.subtype == "error"
+        assert result.stop_reason == "error"
+        assert result.duration_api_ms == 400.0
+        assert result.num_turns == 1
 
 
 class TestAskNoResult:
@@ -231,6 +247,12 @@ class TestAskNoResult:
         assert result.cost_usd == 0.0
         assert result.duration_ms == 0.0
         assert result.is_error is False
+        assert result.num_turns == 0
+        assert result.duration_api_ms == 0.0
+        assert result.stop_reason == ""
+        assert result.result == ""
+        assert result.api_error_status is None
+        assert result.subtype == ""
 
 
 class TestAskEmptyResponse:
