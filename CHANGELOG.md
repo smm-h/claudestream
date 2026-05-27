@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.7.6
+
+### Fixes
+
+- **Fixed MCP tool visibility.** Tools registered via `@tool` are now visible to the Claude Code model. The `--permission-prompt-tool stdio` flag was missing when MCP tools were registered without sandbox restrictions.
+
 ## 0.7.5
 
 ### Features

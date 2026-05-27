@@ -33,7 +33,7 @@
     }
   },
   "name": "claudestream",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "help": "Stream Claude Code's JSON protocol",
   "commands": {
     "send": {
