@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.7.4
+
+### Fixes
+
+- **Fixed prompt template false positives.** `resolve_prompt()` no longer flags `{word}` patterns that were introduced by variable substitution itself.
+
 ## 0.7.3
 
 ### Features

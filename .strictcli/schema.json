@@ -1,10 +1,40 @@
 {
+  "defaults": {
+    "app": {
+      "env_prefix": null,
+      "config": false,
+      "global_flags": [],
+      "commands": {},
+      "groups": {},
+      "deprecated": {}
+    },
+    "flag": {
+      "short": null,
+      "default": null,
+      "env": null,
+      "choices": null,
+      "repeatable": false,
+      "negatable": null,
+      "hidden": false
+    },
+    "arg": {
+      "required": true,
+      "variadic": false
+    },
+    "command": {
+      "passthrough": false,
+      "flags": [],
+      "args": []
+    },
+    "group": {
+      "commands": {},
+      "groups": {},
+      "deprecated": {}
+    }
+  },
   "name": "claudestream",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "help": "Stream Claude Code's JSON protocol",
-  "env_prefix": null,
-  "config": false,
-  "global_flags": [],
   "commands": {
     "send": {
       "name": "send",
@@ -14,144 +44,82 @@
           "name": "model",
           "type": "str",
           "help": "Model to use (e.g. sonnet, opus)",
-          "short": "m",
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "short": "m"
         },
         {
           "name": "cwd",
           "type": "str",
           "help": "Working directory for Claude",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "raw",
           "type": "bool",
           "help": "Show raw protocol events instead of flattened",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "json-output",
           "type": "bool",
           "help": "Output events as JSON lines",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "skip-permissions",
           "type": "bool",
           "help": "Skip all permission prompts",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile to use",
-          "short": null,
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "help": "claudewheel profile to use"
         },
         {
           "name": "footer",
           "type": "bool",
           "help": "Show cost and timing on stderr",
-          "short": null,
           "default": true,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
           "help": "System prompt for Claude",
           "short": "s",
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "stdin",
           "type": "bool",
           "help": "Read prompt from stdin",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "no-color",
           "type": "bool",
           "help": "Disable colored output",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "resume",
           "type": "str",
           "help": "Resume a previous session by ID",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         }
       ],
       "args": [
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": false,
-          "variadic": false
+          "required": false
         }
-      ],
-      "passthrough": false
+      ]
     },
     "stream": {
       "name": "stream",
@@ -161,120 +129,68 @@
           "name": "model",
           "type": "str",
           "help": "Model to use",
-          "short": "m",
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "short": "m"
         },
         {
           "name": "cwd",
           "type": "str",
           "help": "Working directory for Claude",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "skip-permissions",
           "type": "bool",
           "help": "Skip all permission prompts",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile to use",
-          "short": null,
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "help": "claudewheel profile to use"
         },
         {
           "name": "footer",
           "type": "bool",
           "help": "Show cost and timing on stderr",
-          "short": null,
           "default": true,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
           "help": "System prompt for Claude",
           "short": "s",
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "stdin",
           "type": "bool",
           "help": "Read prompt from stdin",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "no-color",
           "type": "bool",
           "help": "Disable colored output",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "resume",
           "type": "str",
           "help": "Resume a previous session by ID",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         }
       ],
       "args": [
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": false,
-          "variadic": false
+          "required": false
         }
-      ],
-      "passthrough": false
+      ]
     },
     "events": {
       "name": "events",
@@ -284,120 +200,68 @@
           "name": "model",
           "type": "str",
           "help": "Model to use",
-          "short": "m",
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "short": "m"
         },
         {
           "name": "cwd",
           "type": "str",
           "help": "Working directory for Claude",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "skip-permissions",
           "type": "bool",
           "help": "Skip all permission prompts",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile to use",
-          "short": null,
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "help": "claudewheel profile to use"
         },
         {
           "name": "footer",
           "type": "bool",
           "help": "Show cost and timing on stderr",
-          "short": null,
           "default": true,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
           "help": "System prompt for Claude",
           "short": "s",
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "stdin",
           "type": "bool",
           "help": "Read prompt from stdin",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "no-color",
           "type": "bool",
           "help": "Disable colored output",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "resume",
           "type": "str",
           "help": "Resume a previous session by ID",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         }
       ],
       "args": [
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": false,
-          "variadic": false
+          "required": false
         }
-      ],
-      "passthrough": false
+      ]
     },
     "repl": {
       "name": "repl",
@@ -407,101 +271,54 @@
           "name": "model",
           "type": "str",
           "help": "Model to use",
-          "short": "m",
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "short": "m"
         },
         {
           "name": "cwd",
           "type": "str",
           "help": "Working directory for Claude",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "skip-permissions",
           "type": "bool",
           "help": "Skip all permission prompts",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile to use",
-          "short": null,
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "help": "claudewheel profile to use"
         },
         {
           "name": "footer",
           "type": "bool",
           "help": "Show cost and timing on stderr",
-          "short": null,
           "default": true,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
           "help": "System prompt for Claude",
           "short": "s",
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "no-color",
           "type": "bool",
           "help": "Disable colored output",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "resume",
           "type": "str",
           "help": "Resume a previous session by ID",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         }
-      ],
-      "args": [],
-      "passthrough": false
+      ]
     },
     "ask": {
       "name": "ask",
@@ -511,108 +328,62 @@
           "name": "model",
           "type": "str",
           "help": "Model to use",
-          "short": "m",
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "short": "m"
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile",
-          "short": null,
-          "default": null,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "help": "claudewheel profile"
         },
         {
           "name": "cwd",
           "type": "str",
           "help": "Working directory",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "skip-permissions",
           "type": "bool",
           "help": "Skip all permission prompts",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
           "help": "System prompt",
           "short": "s",
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         },
         {
           "name": "stdin",
           "type": "bool",
           "help": "Read prompt from stdin",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "json-output",
           "type": "bool",
           "help": "Output AskResult as JSON",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         },
         {
           "name": "no-color",
           "type": "bool",
           "help": "Disable colored output",
-          "short": null,
           "default": false,
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": true,
-          "hidden": false
+          "negatable": true
         }
       ],
       "args": [
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": false,
-          "variadic": false
+          "required": false
         }
-      ],
-      "passthrough": false
+      ]
     },
     "doctor": {
       "name": "doctor",
@@ -622,17 +393,9 @@
           "name": "profile",
           "type": "str",
           "help": "Profile to check",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         }
-      ],
-      "args": [],
-      "passthrough": false
+      ]
     },
     "config": {
       "name": "config",
@@ -642,17 +405,9 @@
           "name": "profile",
           "type": "str",
           "help": "Profile to show",
-          "short": null,
-          "default": "",
-          "env": null,
-          "choices": null,
-          "repeatable": false,
-          "negatable": null,
-          "hidden": false
+          "default": ""
         }
-      ],
-      "args": [],
-      "passthrough": false
+      ]
     }
   },
   "groups": {
@@ -668,90 +423,52 @@
               "name": "var",
               "type": "str",
               "help": "Variable in key=value format (repeatable)",
-              "short": null,
               "default": [],
-              "env": null,
-              "choices": null,
-              "repeatable": true,
-              "negatable": null,
-              "hidden": false
+              "repeatable": true
             },
             {
               "name": "model",
               "type": "str",
               "help": "Model override",
               "short": "m",
-              "default": "",
-              "env": null,
-              "choices": null,
-              "repeatable": false,
-              "negatable": null,
-              "hidden": false
+              "default": ""
             },
             {
               "name": "profile",
               "type": "str",
-              "help": "claudewheel profile to use",
-              "short": null,
-              "default": null,
-              "env": null,
-              "choices": null,
-              "repeatable": false,
-              "negatable": null,
-              "hidden": false
+              "help": "claudewheel profile to use"
             },
             {
               "name": "cwd",
               "type": "str",
               "help": "Working directory",
-              "short": null,
-              "default": "",
-              "env": null,
-              "choices": null,
-              "repeatable": false,
-              "negatable": null,
-              "hidden": false
+              "default": ""
             },
             {
               "name": "footer",
               "type": "bool",
               "help": "Show cost and timing on stderr",
-              "short": null,
               "default": true,
-              "env": null,
-              "choices": null,
-              "repeatable": false,
-              "negatable": true,
-              "hidden": false
+              "negatable": true
             },
             {
               "name": "no-color",
               "type": "bool",
               "help": "Disable colored output",
-              "short": null,
               "default": false,
-              "env": null,
-              "choices": null,
-              "repeatable": false,
-              "negatable": true,
-              "hidden": false
+              "negatable": true
             }
           ],
           "args": [
             {
               "name": "prompt",
-              "help": "User message to send to the agent",
-              "required": true,
-              "variadic": false
+              "help": "User message to send to the agent"
             },
             {
               "name": "definition",
-              "help": "Agent name or path to .agent.json file",
-              "required": true,
-              "variadic": false
+              "help": "Agent name or path to .agent.json file"
             }
-          ],
-          "passthrough": false
+          ]
         },
         "list": {
           "name": "list",
@@ -761,50 +478,31 @@
               "name": "cwd",
               "type": "str",
               "help": "Working directory",
-              "short": null,
-              "default": "",
-              "env": null,
-              "choices": null,
-              "repeatable": false,
-              "negatable": null,
-              "hidden": false
+              "default": ""
             }
-          ],
-          "args": [],
-          "passthrough": false
+          ]
         },
         "info": {
           "name": "info",
           "help": "Display agent definition details",
-          "flags": [],
           "args": [
             {
               "name": "name",
-              "help": "Agent name or path",
-              "required": true,
-              "variadic": false
+              "help": "Agent name or path"
             }
-          ],
-          "passthrough": false
+          ]
         },
         "validate": {
           "name": "validate",
           "help": "Validate an agent definition",
-          "flags": [],
           "args": [
             {
               "name": "name",
-              "help": "Agent name or path",
-              "required": true,
-              "variadic": false
+              "help": "Agent name or path"
             }
-          ],
-          "passthrough": false
+          ]
         }
-      },
-      "groups": {},
-      "deprecated": {}
+      }
     }
-  },
-  "deprecated": {}
+  }
 }
