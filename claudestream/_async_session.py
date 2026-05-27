@@ -119,6 +119,10 @@ class AsyncSession:
         for server_name in self._tools_by_server:
             allowed_tools.append(f"mcp__{server_name}__*")
 
+        # Enable stdio control protocol when SDK MCP tools are registered
+        if self._tools_by_server:
+            permission_prompt_tool = "stdio"
+
         # --- Option structs → ProcessConfig fields ---
         debug_enabled = False
         debug_filter: str | None = None

@@ -137,6 +137,46 @@ class TestMcpWildcardsInAllowedTools:
         assert "mcp__test_server__*" in allowed
 
 
+class TestPermissionPromptToolWithMcpTools:
+    def test_permission_prompt_tool_stdio_when_tools_registered(self):
+        """--permission-prompt-tool stdio is set when MCP tools are registered, even without sandbox tools/write_paths."""
+        tools = _make_tools()
+        session = make_test_session(tools=tools)
+        cfg = session._process_mgr.config
+        assert cfg.permission_prompt_tool == "stdio"
+        argv = cfg.build_argv()
+        assert "--permission-prompt-tool" in argv
+        idx = argv.index("--permission-prompt-tool")
+        assert argv[idx + 1] == "stdio"
+
+    def test_permission_prompt_tool_stdio_with_skip_permissions_and_tools(self):
+        """Both --dangerously-skip-permissions and --permission-prompt-tool stdio are present when sandbox.skip_permissions=True and tools are registered."""
+        from claudestream.policy import Sandbox
+        sandbox = Sandbox(skip_permissions=True)
+        tools = _make_tools()
+        session = make_test_session(sandbox=sandbox, tools=tools)
+        cfg = session._process_mgr.config
+        assert cfg.permission_prompt_tool == "stdio"
+        assert cfg.dangerously_skip_permissions is True
+        argv = cfg.build_argv()
+        assert "--permission-prompt-tool" in argv
+        assert "--dangerously-skip-permissions" in argv
+
+    def test_no_permission_prompt_tool_without_tools(self):
+        """--permission-prompt-tool is NOT set when no tools are registered and no sandbox tools/write_paths."""
+        session = make_test_session()
+        cfg = session._process_mgr.config
+        assert cfg.permission_prompt_tool is None
+
+    def test_permission_prompt_tool_from_sandbox_still_works(self):
+        """--permission-prompt-tool stdio is set via sandbox.tools even without MCP tools."""
+        from claudestream.policy import Sandbox
+        sandbox = Sandbox(tools=["Bash", "Read"])
+        session = make_test_session(sandbox=sandbox)
+        cfg = session._process_mgr.config
+        assert cfg.permission_prompt_tool == "stdio"
+
+
 class TestInitializeRequest:
     def test_init_request_sent_on_start(self):
         """InitializeRequest is written to stdin when tools are registered."""
