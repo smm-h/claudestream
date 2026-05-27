@@ -1,0 +1,29 @@
+{
+  "name": "claudestream",
+  "version": "0.7.4",
+  "description": "Stream Claude Code's JSON protocol - CLI wrapper for the Python claudestream package",
+  "bin": {
+    "claudestream": "./bin/claudestream.mjs"
+  },
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/smm-h/claudestream"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "streaming",
+    "json",
+    "protocol",
+    "cli",
+    "rlsbl"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "bin/"
+  ]
+}
