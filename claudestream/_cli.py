@@ -77,6 +77,7 @@ def _build_config(
     skip_permissions: bool = False,
     system_prompt: str = "",
     resume: str = "",
+    from_pr: str = "",
 ) -> SessionConfig:
     """Build a SessionConfig from common CLI flags."""
     sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
@@ -87,6 +88,7 @@ def _build_config(
         profile=profile,
         system_prompt=system_prompt or None,
         resume_session_id=resume or None,
+        from_pr=from_pr or None,
     )
 
 
@@ -158,6 +160,7 @@ def _stream_events(session: SyncSession, prompt: str, footer: bool, color: Color
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
+@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_send(
     prompt: str = "",
     model: str = "",
@@ -171,6 +174,7 @@ def cmd_send(
     stdin: bool = False,
     no_color: bool = False,
     resume: str = "",
+    from_pr: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
     resolved = _resolve_prompt(prompt, stdin, color)
@@ -178,7 +182,7 @@ def cmd_send(
         return resolved
     prompt = resolved
 
-    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume)
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume, from_pr)
     printer = EventPrinter(footer=footer, color=color)
 
     def handler(session: SyncSession) -> None:
@@ -204,6 +208,7 @@ def cmd_send(
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
+@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_stream(
     prompt: str = "",
     model: str = "",
@@ -215,6 +220,7 @@ def cmd_stream(
     stdin: bool = False,
     no_color: bool = False,
     resume: str = "",
+    from_pr: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
     resolved = _resolve_prompt(prompt, stdin, color)
@@ -222,7 +228,7 @@ def cmd_stream(
         return resolved
     prompt = resolved
 
-    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume)
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume, from_pr)
 
     def handler(session: SyncSession) -> None:
         _stream_events(session, prompt, footer, color)
@@ -243,6 +249,7 @@ def cmd_stream(
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
+@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_events(
     prompt: str = "",
     model: str = "",
@@ -254,6 +261,7 @@ def cmd_events(
     stdin: bool = False,
     no_color: bool = False,
     resume: str = "",
+    from_pr: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
     resolved = _resolve_prompt(prompt, stdin, color)
@@ -261,7 +269,7 @@ def cmd_events(
         return resolved
     prompt = resolved
 
-    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume)
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume, from_pr)
 
     def handler(session: SyncSession) -> None:
         for event in session.send(prompt, raw=True):
@@ -283,6 +291,7 @@ def cmd_events(
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
+@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_repl(
     model: str,
     profile: str,
@@ -292,9 +301,10 @@ def cmd_repl(
     system_prompt: str = "",
     no_color: bool = False,
     resume: str = "",
+    from_pr: str = "",
 ) -> None:
     color = Colorizer(should_color(no_color_flag=no_color))
-    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume)
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume, from_pr)
 
     def handler(session: SyncSession) -> None:
         print("claudestream repl")
@@ -504,6 +514,7 @@ def cmd_agent_validate(name: str) -> int | None:
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 @strictcli.flag("json-output", type=bool, default=False, help="Output AskResult as JSON")
 @strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_ask(
     prompt: str = "",
     model: str = "",
@@ -514,6 +525,7 @@ def cmd_ask(
     stdin: bool = False,
     json_output: bool = False,
     no_color: bool = False,
+    from_pr: str = "",
 ) -> int | None:
     color = Colorizer(should_color(no_color_flag=no_color))
     resolved = _resolve_prompt(prompt, stdin, color)
@@ -521,7 +533,7 @@ def cmd_ask(
         return resolved
     prompt = resolved
 
-    config = _build_config(model, profile, cwd, skip_permissions, system_prompt)
+    config = _build_config(model, profile, cwd, skip_permissions, system_prompt, from_pr=from_pr)
 
     try:
         with SyncSession(config) as session:
