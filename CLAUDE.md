@@ -5,11 +5,11 @@
 This project uses [rlsbl](https://github.com/smm-h/rlsbl) for release orchestration.
 
 - Update CHANGELOG.md with a `## X.Y.Z` entry describing changes
-- Run `rlsbl release [patch|minor|major]` to bump version and create a GitHub Release
+- Run `rlsbl release init` to scaffold the release file, set the bump type, then `rlsbl release run`
 - CI handles publishing automatically via the publish workflow
-- Never publish manually — always use `rlsbl release`
+- Never publish manually — always use `rlsbl release run`
 - Configure Trusted Publishing on pypi.org for automated PyPI releases
-- Use `rlsbl release --dry-run` to preview a release without making changes
+- Use `rlsbl --dry-run release run` to preview a release without making changes
 
 ## Conventions
 
