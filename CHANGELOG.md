@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.7.5
+
+### Features
+
+- **npm package.** `npx claudestream` now works. The npm package is a thin CLI wrapper that shells out to the Python `claudestream` command.
+
 ## 0.7.4
 
 ### Fixes
