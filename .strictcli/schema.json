@@ -33,7 +33,7 @@
     }
   },
   "name": "claudestream",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "help": "Stream Claude Code's JSON protocol",
   "commands": {
     "send": {
@@ -111,6 +111,12 @@
           "type": "str",
           "help": "Resume a previous session by ID",
           "default": ""
+        },
+        {
+          "name": "from-pr",
+          "type": "str",
+          "help": "Resume from a PR",
+          "default": ""
         }
       ],
       "args": [
@@ -181,6 +187,12 @@
           "name": "resume",
           "type": "str",
           "help": "Resume a previous session by ID",
+          "default": ""
+        },
+        {
+          "name": "from-pr",
+          "type": "str",
+          "help": "Resume from a PR",
           "default": ""
         }
       ],
@@ -253,6 +265,12 @@
           "type": "str",
           "help": "Resume a previous session by ID",
           "default": ""
+        },
+        {
+          "name": "from-pr",
+          "type": "str",
+          "help": "Resume from a PR",
+          "default": ""
         }
       ],
       "args": [
@@ -317,6 +335,12 @@
           "type": "str",
           "help": "Resume a previous session by ID",
           "default": ""
+        },
+        {
+          "name": "from-pr",
+          "type": "str",
+          "help": "Resume from a PR",
+          "default": ""
         }
       ]
     },
@@ -375,6 +399,12 @@
           "help": "Disable colored output",
           "default": false,
           "negatable": true
+        },
+        {
+          "name": "from-pr",
+          "type": "str",
+          "help": "Resume from a PR",
+          "default": ""
         }
       ],
       "args": [

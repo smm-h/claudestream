@@ -23,6 +23,7 @@ Send a prompt and print the response text
 | `--stdin` |  | bool |  |  | Read prompt from stdin |
 | `--json-output` |  | bool |  |  | Output AskResult as JSON |
 | `--no-color` |  | bool |  |  | Disable colored output |
+| `--from-pr` |  | str |  |  | Resume from a PR |
 
 ## Arguments
 

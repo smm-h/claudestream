@@ -2,6 +2,12 @@
 
 # Changelog
 
+## 0.7.7
+
+### Features
+
+- **`--from-pr` CLI flag.** All commands (send, stream, events, repl, ask) now accept `--from-pr` to resume from a PR-linked session.
+
 ## 0.7.6
 
 ### Fixes

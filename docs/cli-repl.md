@@ -23,3 +23,4 @@ Interactive multi-turn REPL
 | `--system-prompt` | `-s` | str |  |  | System prompt for Claude |
 | `--no-color` |  | bool |  |  | Disable colored output |
 | `--resume` |  | str |  |  | Resume a previous session by ID |
+| `--from-pr` |  | str |  |  | Resume from a PR |

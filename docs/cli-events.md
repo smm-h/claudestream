@@ -24,6 +24,7 @@ Debug: show all raw protocol events
 | `--stdin` |  | bool |  |  | Read prompt from stdin |
 | `--no-color` |  | bool |  |  | Disable colored output |
 | `--resume` |  | str |  |  | Resume a previous session by ID |
+| `--from-pr` |  | str |  |  | Resume from a PR |
 
 ## Arguments
 
