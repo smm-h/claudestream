@@ -1,0 +1,2 @@
+{"commits":["f85db3898daa95c5e2b6a3388c599003ab3316ca"],"user_facing":true,"description":"**npm package.** `npx claudestream` now works. The npm package is a thin CLI wrapper that shells out to the Python `claudestream` command.","type":"feature"}
+{"commits":["b94d9c75222708dd81a0a8792b012cbe7747abc6"],"user_facing":false}
