@@ -1,0 +1,2 @@
+{"commits":["3220783e111f8f67c310e91f3723726f17d0a68d"],"user_facing":true,"description":"**Fixed MCP tool visibility.** Tools registered via `@tool` are now visible to the Claude Code model. The `--permission-prompt-tool stdio` flag was missing when MCP tools were registered without sandbox restrictions.","type":"fix"}
+{"commits":["a1c715ec8bbc499a7e75b059cc7b07856a28898f"],"user_facing":false}
