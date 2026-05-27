@@ -1,2 +1,3 @@
 {"commits":["e8c69ae0cefb76ee4504e51151dfac73a479a260"],"user_facing":true,"description":"**Fixed prompt template false positives.** `resolve_prompt()` no longer flags `{word}` patterns that were introduced by variable substitution itself.","type":"fix"}
 {"commits":["585dd4bd72960ea82f25860570a917b9a6745c4a"],"user_facing":false}
+{"commits":["dd5701afea6170424bc42083572da3ff795b0fc9"],"user_facing":false}
