@@ -5,13 +5,14 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # requires-python: >= {{pypi.minRequiredPython}}
+        # requires-python: >= 3.11
         python-version: ["3.12", "3.13", "3.14"]
     steps:
       - uses: actions/checkout@v6

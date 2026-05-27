@@ -1,6 +1,7 @@
 {
   "targets": [
-    "pypi"
+    "pypi",
+    "npm"
   ],
   "private": false
 }
