@@ -3,3 +3,4 @@
 {"commits":["fe17534d113123c0533c60efff8805d7f445b568","781082cbf7ee3ac4aeef6a8146ebe16247a9ca72"],"user_facing":true,"description":"**Bug fix.** MCP handshake unit and integration tests verifying tool registration end-to-end.","type":"fix"}
 {"commits":["27a2b9da8911c23c30c0b4fe633982088e6695ca","9b0e1334a5b9670d4d6bcb24b442b0557119c60c","a493290611bc297c9fdeff49fbca5e26bfb8b1f1"],"user_facing":true,"description":"**Documentation.** README.md and CLAUDE.md are now auto-generated from selfdoc templates with comprehensive examples, architecture narrative, and API reference tables.","type":"feature"}
 {"commits":["bb50a4348d4fbf0df307d4c6c3526a11455de26a","1d8a4c18ae4aa3fef5202021e1d2411ac0af0b57","e1136e7dd95dc67ea2044c62cfba44afc74503ce","ae29bfd47ee00ced43231d96a1e5198a804f51b4","f2e50bd968528dc47f6f530b83dd280336b1ac5b"],"user_facing":false}
+{"commits":["9ab1d3797167b89a4cfcb54967e3e847c188392f","4faaca4547c39c94a30ff116e90d49bbeafed54e"],"user_facing":false}
