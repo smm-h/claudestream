@@ -4,6 +4,33 @@
 
 A Python library and CLI for streaming Claude Code's JSON protocol
 
+## Architecture
+
+claudestream has four layers, each building on the one below:
+
+- **Process** (`_process.py`): Spawns and manages the Claude Code subprocess. `ProcessConfig` maps configuration to CLI flags. `ProcessManager` handles lifecycle (start, graceful shutdown, kill) with atexit cleanup.
+- **Protocol** (`_protocol.py`): Reads NDJSON lines from the subprocess stdout and decodes them into typed `Event` objects. Writes `Message` objects as NDJSON to stdin. Handles event flattening (expanding `AssistantMessage` into individual `AssistantText`, `ToolUse`, `Thinking` events) and derives `FileWrite`/`FileEdit` events from tool calls.
+- **Session** (`_async_session.py`, `_sync_session.py`): Manages turn-based conversation state on top of the protocol layer. `AsyncSession` is the primary implementation; `SyncSession` wraps it with a dedicated event loop thread. Sessions handle permission interception via sandbox policies, MCP tool serving, lifecycle hooks, and event callbacks.
+- **CLI** (`_cli.py`): strictcli-based commands (`send`, `stream`, `ask`, `repl`, `events`, `agent`, `doctor`, `config`) that build `SessionConfig` from flags and run sessions.
+
+The `@tool` decorator (`_tools.py`) and agent definitions (`_agent.py`) are cross-cutting: tools are served via MCP to the subprocess, and agents compose config + sandbox + budget + tools into reusable definitions.
+
+## Modules
+
+- **claudestream** (`claudestream/__init__.py`): A Python library and CLI for streaming Claude Code's JSON protocol, providing typed events, async/sync sessions, and tool registration.
+- **claudestream._agent** (`claudestream/_agent.py`): Agent definition loader and budget enforcement for Claude Code sessions, with sync and async context managers for invoking agents.
+- **claudestream._async_session** (`claudestream/_async_session.py`): Async session manager for the Claude Code stream-json protocol, handling process lifecycle, event parsing, and permission callbacks.
+- **claudestream._cli** (`claudestream/_cli.py`): Command-line interface entry point for claudestream, providing send, listen, and agent commands for interacting with Claude Code.
+- **claudestream._color** (`claudestream/_color.py`): ANSI color output support with automatic TTY detection, NO_COLOR environment variable compliance, and a reusable Colorizer class.
+- **claudestream._options** (`claudestream/_options.py`): Option structs for configuring claudestream sessions, covering session resolution, debug, MCP, plugins, stream output, process limits, budget, tool sche...
+- **claudestream._process** (`claudestream/_process.py`): Subprocess management for launching and monitoring the Claude Code CLI process, including graceful shutdown and atexit cleanup.
+- **claudestream._protocol** (`claudestream/_protocol.py`): NDJSON protocol layer that reads raw Claude Code stream-json output lines and decodes them into typed Event objects for consumption.
+- **claudestream._sync_session** (`claudestream/_sync_session.py`): Synchronous session wrapper that bridges the async Claude Code stream-json protocol to a blocking iterator-based interface.
+- **claudestream._tools** (`claudestream/_tools.py`): Tool registration API providing the Tool struct and a decorator for defining user tools that are served via MCP to Claude Code.
+- **claudestream.events** (`claudestream/events.py`): Typed event dataclasses for every Claude Code stream output event, including assistant messages, tool use, permissions, and results.
+- **claudestream.messages** (`claudestream/messages.py`): Typed message structs for all Claude Code stream input messages, including user prompts, tool results, and permission responses.
+- **claudestream.policy** (`claudestream/policy.py`): Sandbox and permission policy types for Claude Code sessions, defining allow, deny, and approval rules for tool execution requests.
+
 ## Commands
 
 | Command | Description |
@@ -20,6 +47,245 @@ A Python library and CLI for streaming Claude Code's JSON protocol
 | `agent list` | List available agents from .claudestream/agents/ |
 | `agent info` | Display agent definition details |
 | `agent validate` | Validate an agent definition |
+
+## SessionConfig
+
+The unified configuration object. Both `model` and `profile` are required; everything else is optional.
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `model` | `str` |  | Claude model identifier (e.g. "claude-sonnet-4-20250514") |
+| `profile` | `str` |  | Claude Code profile name (e.g. "work", "personal") |
+| `cwd` | `str | None` | `None` | Working directory for the Claude Code process; None uses current dir |
+| `binary` | `str | None` | `None` | Path to the Claude CLI binary; None uses PATH lookup |
+| `sandbox` | `Sandbox | None` | `None` | Tool/filesystem sandbox policy; None means no restrictions |
+| `system_prompt` | `str | None` | `None` | Custom system prompt to prepend to the session |
+| `tools` | `list[Tool] | None` | `None` | User-defined tools served via MCP to Claude Code |
+| `extra_args` | `list[str] | None` | `None` | Additional raw CLI arguments passed to the process |
+| `env` | `dict[str, str] | None` | `None` | Extra environment variables for the subprocess |
+| `resume_session_id` | `str | None` | `None` | Session ID to resume; None starts a new session |
+| `session_resolution` | `SessionResolution | None` | `None` | Session lookup/resume/fork strategy |
+| `debug` | `DebugOptions | None` | `None` | Debug output configuration |
+| `mcp` | `McpOptions | None` | `None` | External MCP server configuration |
+| `plugins` | `PluginOptions | None` | `None` | Plugin loading paths and URLs |
+| `stream` | `StreamOptions | None` | `None` | Controls which events appear in the output stream |
+| `process_limits` | `ProcessLimits | None` | `None` | Subprocess buffer/timeout tuning |
+| `budget` | `Budget | None` | `None` | Cost, turn, and token limits for the session |
+| `poll_timeout` | `float` | `1.0` | Seconds between event queue polls in SyncSession |
+| `join_timeout` | `float` | `5.0` | Seconds to wait for the background thread on SyncSession close |
+| `effort` | `str | None` | `None` | Model reasoning effort level (e.g. "low", "medium", "high") |
+| `json_schema` | `dict | None` | `None` | JSON Schema to constrain model output format |
+| `fallback_model` | `str | None` | `None` | Model to fall back to if the primary model is unavailable |
+| `betas` | `list[str] | None` | `None` | Beta feature flags to enable in the session |
+| `add_dirs` | `list[str] | None` | `None` | Additional directories to include in the session context |
+| `builtin_tools` | `list[str] | None` | `None` | Built-in tool names to enable (e.g. "computer") |
+| `brief` | `bool` | `False` | Produce shorter, more concise model responses |
+| `settings` | `str | None` | `None` | Path to a custom settings file |
+| `setting_sources` | `str | None` | `None` | Comma-separated setting source override |
+| `file_specs` | `list[str] | None` | `None` | Files to attach to the session context |
+| `agent_name` | `str | None` | `None` | Built-in agent name to activate in Claude Code |
+| `agents_json` | `str | None` | `None` | Path to a custom agents JSON configuration file |
+| `hooks` | `dict | None` | `None` | Hook definitions for lifecycle events (e.g. pre-tool-use) |
+| `no_persistence` | `bool` | `False` | Disable session persistence so nothing is saved to disk |
+| `from_pr` | `str | None` | `None` | GitHub PR identifier to load as session context |
+| `tool_context` | `Any` | `None` | Object injected into tool handlers via the inject mechanism |
+
+## Budget
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `max_cost_usd` | `float | None` | `None` | Maximum spend in USD; None means unlimited |
+| `max_turns` | `int | None` | `None` | Maximum conversation turns; None means unlimited |
+| `max_tokens` | `int | None` | `None` | Maximum tokens consumed; None means unlimited |
+
+## Sandbox
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `tools` | `list[str] | None` | `None` | Tool allow-list; None means all tools allowed |
+| `bare` | `bool` | `False` | Suppress CLAUDE.md loading (passes --bare) |
+| `write_paths` | `list[str] | None` | `None` | Allowed paths for Write/Edit/MultiEdit; None means unrestricted |
+| `log_violations` | `bool` | `False` | Log denied tool calls at WARNING level |
+| `skip_permissions` | `bool` | `False` | Bypass all permission prompts (passes --dangerously-skip-permissions) |
+
+## AgentDefinition
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `name` | `str` |  | Agent identifier, also used as the session name |
+| `prompt_template` | `str` |  | System prompt with {variable} placeholders to resolve |
+| `version` | `str` |  | Schema version of this agent definition |
+| `description` | `str` | `''` | Human-readable summary of the agent's purpose |
+| `tools` | `list[ToolSchema] | None` | `None` | Tool schemas the agent can use; None means no tools |
+| `sandbox` | `Sandbox | None` | `None` | Tool/filesystem sandbox policy; overrides SessionConfig |
+| `budget` | `Budget | None` | `None` | Cost/turn/token limits; overrides SessionConfig |
+| `model` | `str | None` | `None` | Model override; None falls back to SessionConfig.model |
+| `mcp` | `McpOptions | None` | `None` | External MCP server config; overrides SessionConfig |
+| `stream` | `StreamOptions | None` | `None` | Stream output config; overrides SessionConfig |
+
+## ToolSchema
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `name` | `str` |  | Unique tool identifier used in MCP tool calls |
+| `description` | `str` |  | Human-readable summary shown to the model |
+| `input_schema` | `dict` |  | JSON Schema defining the tool's input parameters |
+| `server` | `str` |  | MCP server name that hosts this tool |
+
+## ProcessConfig
+
+Internal struct mapping SessionConfig to subprocess CLI flags. Not part of the public API but useful for understanding how configuration flows to the process.
+
+| Field | Type | Default | Description |
+| --- | --- | --- | --- |
+| `binary` | `str` | `'claude'` | Path to the Claude CLI binary |
+| `cwd` | `str | None` | `None` | Working directory for the subprocess; None uses the parent process cwd |
+| `model` | `str | None` | `None` | Claude model identifier (e.g. "claude-sonnet-4-20250514") |
+| `system_prompt` | `str | None` | `None` | Custom system prompt prepended to the session |
+| `permission_mode` | `str | None` | `None` | Permission handling mode (e.g. "default", "plan", "auto") |
+| `allowed_tools` | `list[str]` | `[]` | Tool names the model is permitted to use |
+| `disallowed_tools` | `list[str]` | `[]` | Tool names the model is forbidden from using |
+| `permission_prompt_tool` | `str | None` | `None` | MCP tool for permission prompts; "stdio" enables sandbox interception |
+| `resume_session_id` | `str | None` | `None` | Session ID to resume from where it left off |
+| `extra_args` | `list[str]` | `[]` | Additional raw CLI arguments appended after all generated flags |
+| `env` | `dict[str, str] | None` | `None` | Extra environment variables merged into the subprocess env |
+| `effort` | `str | None` | `None` | Model reasoning effort level (e.g. "low", "medium", "high") |
+| `json_schema_str` | `str | None` | `None` | JSON Schema string to constrain model output format |
+| `fallback_model` | `str | None` | `None` | Model to use if the primary model is unavailable |
+| `name` | `str | None` | `None` | Named session identifier for session management |
+| `setting_sources` | `str | None` | `None` | Comma-separated setting source override |
+| `settings` | `str | None` | `None` | Path to a custom settings file |
+| `debug_filter` | `str | None` | `None` | Pattern to limit which debug messages appear; implies debug output |
+| `debug_file` | `str | None` | `None` | Path to write debug output to instead of stderr |
+| `agent` | `str | None` | `None` | Built-in agent name to activate in Claude Code |
+| `agents_json` | `str | None` | `None` | Path to custom agents JSON configuration file |
+| `remote_control` | `str | None` | `None` | Remote control connection identifier |
+| `remote_control_prefix` | `str | None` | `None` | Prefix for remote control session names |
+| `worktree` | `str | None` | `None` | Git worktree path for the session context |
+| `from_pr` | `str | None` | `None` | GitHub PR identifier to load as session context |
+| `session_id` | `str | None` | `None` | Explicit session ID to connect to |
+| `betas` | `list[str]` | `[]` | Beta feature flags to enable in the session |
+| `add_dirs` | `list[str]` | `[]` | Additional directories to include in the session context |
+| `builtin_tools` | `list[str]` | `[]` | Built-in tool names to enable (e.g. "computer") |
+| `file_specs` | `list[str]` | `[]` | Files to attach to the session context |
+| `mcp_config` | `list[str]` | `[]` | Paths to MCP server configuration files |
+| `plugin_dirs` | `list[str]` | `[]` | Local directory paths to load plugins from |
+| `plugin_urls` | `list[str]` | `[]` | Remote URLs to load plugins from |
+| `bare` | `bool` | `False` | Strip all non-essential output for minimal protocol exchange |
+| `brief` | `bool` | `False` | Produce shorter, more concise model responses |
+| `continue_session` | `bool` | `False` | Continue the most recent session instead of starting a new one |
+| `fork_session` | `bool` | `False` | Create a new session forked from an existing one |
+| `no_session_persistence` | `bool` | `False` | Disable session persistence so nothing is saved to disk |
+| `strict_mcp_config` | `bool` | `False` | Reject unknown MCP server names instead of ignoring them |
+| `include_hook_events` | `bool` | `False` | Include hook lifecycle events in the event stream |
+| `replay_user_messages` | `bool` | `False` | Re-emit prior user messages when resuming a session |
+| `exclude_dynamic_prompt_sections` | `bool` | `False` | Omit dynamic system prompt sections from output |
+| `disable_slash_commands` | `bool` | `False` | Prevent the model from using slash commands |
+| `chrome` | `bool` | `False` | Enable Chrome browser integration for the session |
+| `ide` | `bool` | `False` | Enable IDE integration mode for the session |
+| `tmux` | `bool` | `False` | Enable tmux integration for the session |
+| `debug` | `bool` | `False` | Enable debug output from Claude Code; combines with debug_filter if set |
+| `max_budget_usd` | `float | None` | `None` | Maximum spend in USD for the session; None means unlimited |
+| `verbose` | `bool` | `True` | Emit verbose protocol output in the event stream |
+| `include_partial_messages` | `bool` | `True` | Stream incremental message fragments as they arrive |
+| `dangerously_skip_permissions` | `bool` | `False` | Bypass all permission checks (unsafe, for testing only) |
+| `buffer_limit` | `int` | `16777216` | Max bytes for the subprocess stdout/stderr pipe buffer |
+| `shutdown_timeout` | `float` | `5.0` | Seconds to wait at each stage of graceful shutdown |
+| `hooks` | `dict` | `{}` | Hook definitions for lifecycle events (e.g. pre-tool-use) |
+
+## Code patterns
+
+### Send and iterate events
+
+```python
+from claudestream import SessionConfig, SyncSession, AssistantText, ToolUse, Result
+
+config = SessionConfig(model="sonnet", profile="default")
+with SyncSession(config) as session:
+    for event in session.send("prompt"):
+        if isinstance(event, AssistantText):
+            print(event.text, end="")
+        elif isinstance(event, ToolUse):
+            print(f"[tool: {event.name}]")
+        elif isinstance(event, Result):
+            print(f"cost=${event.total_cost_usd:.4f}")
+```
+
+### One-shot ask
+
+```python
+config = SessionConfig(model="sonnet", profile="default")
+with SyncSession(config) as session:
+    result = session.ask("prompt")
+    print(result.text)
+```
+
+### Async session
+
+```python
+async with AsyncSession(config) as session:
+    async for event in session.send("prompt"):
+        ...
+```
+
+### Register a tool
+
+```python
+from claudestream import tool
+
+@tool("my_server")
+def search(query: str) -> str:
+    """Search for something.
+
+    Args:
+        query: The search query.
+    """
+    return "result"
+
+config = SessionConfig(model="sonnet", profile="default", tools=[search._tool])
+```
+
+### Load and invoke an agent
+
+```python
+from claudestream import load_agent, invoke_agent_sync
+
+agent = load_agent("agent_name")
+config = SessionConfig(model="sonnet", profile="default")
+with invoke_agent_sync(agent, config, variables={"key": "value"}) as session:
+    for event in session.send("prompt"):
+        ...
+```
+
+### Set up a sandbox
+
+```python
+from claudestream import create_sandbox
+
+sandbox = create_sandbox(tools=["Read", "Bash"], write_paths=["/project"])
+config = SessionConfig(model="sonnet", profile="default", sandbox=sandbox)
+```
+
+### Handle permissions manually
+
+```python
+from claudestream import SessionConfig, SyncSession, PermissionRequest
+
+config = SessionConfig(model="sonnet", profile="default")
+with SyncSession(config) as session:
+    for event in session.send("prompt", raw=True):
+        if isinstance(event, PermissionRequest):
+            session.respond_allow(event.request_id, event.tool_input)
+```
+
+### Lifecycle hooks
+
+```python
+def on_done(session, result):
+    print(f"Turn complete: {result.num_turns} turns, ${result.total_cost_usd:.4f}")
+
+session.on_turn_complete(on_done)
+```
 
 ## Release workflow
 
