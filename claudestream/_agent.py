@@ -21,16 +21,16 @@ log = logging.getLogger("claudestream")
 class AgentDefinition(msgspec.Struct, frozen=True):
     """A complete agent definition, loadable from a .agent.json file."""
 
-    name: str
-    prompt_template: str
-    version: str
-    description: str = ""
-    tools: list[ToolSchema] | None = None
-    sandbox: Sandbox | None = None
-    budget: Budget | None = None
-    model: str | None = None
-    mcp: McpOptions | None = None
-    stream: StreamOptions | None = None
+    name: str  # Agent identifier, also used as the session name
+    prompt_template: str  # System prompt with {variable} placeholders to resolve
+    version: str  # Schema version of this agent definition
+    description: str = ""  # Human-readable summary of the agent's purpose
+    tools: list[ToolSchema] | None = None  # Tool schemas the agent can use; None means no tools
+    sandbox: Sandbox | None = None  # Tool/filesystem sandbox policy; overrides SessionConfig
+    budget: Budget | None = None  # Cost/turn/token limits; overrides SessionConfig
+    model: str | None = None  # Model override; None falls back to SessionConfig.model
+    mcp: McpOptions | None = None  # External MCP server config; overrides SessionConfig
+    stream: StreamOptions | None = None  # Stream output config; overrides SessionConfig
 
 
 def resolve_prompt(template: str, variables: dict[str, str]) -> str:
