@@ -18,9 +18,9 @@ __all__ = [
 class UserMessage(msgspec.Struct, frozen=True):
     """A user prompt sent to Claude Code via stdin."""
 
-    content: str | list[Any]
-    parent_tool_use_id: str | None = None
-    session_id: str = ""
+    content: str | list[Any]  # Prompt text or structured content blocks
+    parent_tool_use_id: str | None = None  # ID of the parent tool_use that triggered this message; None at top level
+    session_id: str = ""  # Session ID to route this message to
 
     def to_dict(self) -> dict:
         msg: dict = {"role": "user", "content": self.content}
@@ -35,8 +35,8 @@ class UserMessage(msgspec.Struct, frozen=True):
 class AllowPermission(msgspec.Struct, frozen=True):
     """Allow a permission request."""
 
-    request_id: str
-    updated_input: dict
+    request_id: str  # ID of the PermissionRequest being allowed
+    updated_input: dict  # Optionally modified tool input to use instead of the original
 
     def to_dict(self) -> dict:
         return {
@@ -55,8 +55,8 @@ class AllowPermission(msgspec.Struct, frozen=True):
 class DenyPermission(msgspec.Struct, frozen=True):
     """Deny a permission request."""
 
-    request_id: str
-    message: str
+    request_id: str  # ID of the PermissionRequest being denied
+    message: str  # Reason for denial shown to the model
 
     def to_dict(self) -> dict:
         return {
@@ -75,8 +75,8 @@ class DenyPermission(msgspec.Struct, frozen=True):
 class McpResponse(msgspec.Struct, frozen=True):
     """Response to an MCP tool call request."""
 
-    request_id: str
-    mcp_response: dict
+    request_id: str  # ID of the McpRequest being responded to
+    mcp_response: dict  # MCP protocol response payload
 
     def to_dict(self) -> dict:
         return {
@@ -94,9 +94,9 @@ class McpResponse(msgspec.Struct, frozen=True):
 class InitializeRequest(msgspec.Struct, frozen=True):
     """SDK initialization request sent at session start."""
 
-    request_id: str = "init_1"
-    hooks: dict = {}
-    sdk_mcp_servers: list[str] = []
+    request_id: str = "init_1"  # Unique ID for this initialization request
+    hooks: dict = {}  # Hook configuration mapping hook names to handlers
+    sdk_mcp_servers: list[str] = []  # MCP server names to connect at session start
 
     def to_dict(self) -> dict:
         return {
