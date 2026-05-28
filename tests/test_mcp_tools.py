@@ -555,6 +555,195 @@ class TestToolsCall:
         assert len(responses) == 0
 
 
+class TestInitializeHandler:
+    def test_initialize_response(self):
+        """MCP initialize request returns protocol info and is NOT yielded."""
+        tools = _make_tools()
+        mcp_req = _mcp_request_raw("test_server", {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+        })
+        data = _build_ndjson([mcp_req, RESULT_RAW])
+
+        async def run():
+            session = make_test_session(tools=tools)
+            _prepare_session(session, data)
+            events = []
+            async for event in session._read_turn(raw=False):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+
+        # McpRequest for initialize should NOT be yielded
+        mcp_events = [e for e in events if isinstance(e, McpRequest)]
+        assert len(mcp_events) == 0
+
+        # Response should have been written to stdin
+        writes = _get_stdin_writes(session)
+        responses = [w for w in writes if w.get("type") == "control_response"]
+        assert len(responses) == 1
+        mcp_resp = responses[0]["response"]["response"]["mcp_response"]
+        assert mcp_resp["jsonrpc"] == "2.0"
+        assert mcp_resp["id"] == 1
+        result = mcp_resp["result"]
+        assert "protocolVersion" in result
+        assert result["protocolVersion"] == "2025-11-25"
+        assert "capabilities" in result
+        assert "tools" in result["capabilities"]
+        assert "serverInfo" in result
+        assert result["serverInfo"]["name"] == "test_server"
+        assert result["serverInfo"]["version"] == "1.0.0"
+
+
+class TestNotificationsInitializedHandler:
+    def test_notifications_initialized_response(self):
+        """notifications/initialized request returns empty result and is NOT yielded."""
+        tools = _make_tools()
+        mcp_req = _mcp_request_raw("test_server", {
+            "jsonrpc": "2.0",
+            "method": "notifications/initialized",
+        })
+        data = _build_ndjson([mcp_req, RESULT_RAW])
+
+        async def run():
+            session = make_test_session(tools=tools)
+            _prepare_session(session, data)
+            events = []
+            async for event in session._read_turn(raw=False):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+
+        # McpRequest for notifications/initialized should NOT be yielded
+        mcp_events = [e for e in events if isinstance(e, McpRequest)]
+        assert len(mcp_events) == 0
+
+        # Response should have been written to stdin
+        writes = _get_stdin_writes(session)
+        responses = [w for w in writes if w.get("type") == "control_response"]
+        assert len(responses) == 1
+        mcp_resp = responses[0]["response"]["response"]["mcp_response"]
+        assert mcp_resp["jsonrpc"] == "2.0"
+        assert mcp_resp["result"] == {}
+        # id should be 0 when rpc_id is None
+        assert mcp_resp["id"] == 0
+
+    def test_notifications_initialized_with_rpc_id(self):
+        """notifications/initialized with explicit rpc_id preserves it."""
+        tools = _make_tools()
+        mcp_req = _mcp_request_raw("test_server", {
+            "jsonrpc": "2.0",
+            "id": 5,
+            "method": "notifications/initialized",
+        })
+        data = _build_ndjson([mcp_req, RESULT_RAW])
+
+        async def run():
+            session = make_test_session(tools=tools)
+            _prepare_session(session, data)
+            events = []
+            async for event in session._read_turn(raw=False):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+
+        writes = _get_stdin_writes(session)
+        responses = [w for w in writes if w.get("type") == "control_response"]
+        assert len(responses) == 1
+        mcp_resp = responses[0]["response"]["response"]["mcp_response"]
+        assert mcp_resp["id"] == 5
+
+
+class TestFullHandshake:
+    def test_start_completes_handshake(self):
+        """_start() sends InitializeRequest, McpSetServers, and handles the full MCP handshake."""
+        tools = _make_tools()
+        session = make_test_session(tools=tools)
+
+        async def run():
+            handshake_data = _build_ndjson(_handshake_events("test_server"))
+            _prepare_session(session, handshake_data)
+            with patch.object(session._process_mgr, "start", new_callable=AsyncMock):
+                await session._start()
+            return _get_stdin_writes(session)
+
+        writes = asyncio.run(run())
+
+        # 1. InitializeRequest was sent
+        init_writes = [
+            w for w in writes
+            if w.get("type") == "control_request" and w.get("request", {}).get("subtype") == "initialize"
+        ]
+        assert len(init_writes) == 1
+        assert "test_server" in init_writes[0]["request"]["sdk_mcp_servers"]
+
+        # 2. McpSetServers was sent
+        set_server_writes = [
+            w for w in writes
+            if w.get("type") == "control_request" and w.get("request", {}).get("subtype") == "mcp_set_servers"
+        ]
+        assert len(set_server_writes) == 1
+        assert "test_server" in set_server_writes[0]["request"]["servers"]
+
+        # 3. Three MCP handshake responses were sent (initialize, notifications/initialized, tools/list)
+        mcp_responses = [
+            w for w in writes
+            if w.get("type") == "control_response" and "mcp_response" in w.get("response", {}).get("response", {})
+        ]
+        assert len(mcp_responses) == 3
+
+        # Verify initialize response
+        init_resp = mcp_responses[0]["response"]["response"]["mcp_response"]
+        assert "protocolVersion" in init_resp.get("result", {})
+
+        # Verify notifications/initialized response
+        notif_resp = mcp_responses[1]["response"]["response"]["mcp_response"]
+        assert notif_resp["result"] == {}
+
+        # Verify tools/list response
+        tools_resp = mcp_responses[2]["response"]["response"]["mcp_response"]
+        assert len(tools_resp["result"]["tools"]) == 1
+        assert tools_resp["result"]["tools"][0]["name"] == "my_tool"
+
+    def test_handshake_stores_startup_events(self):
+        """Non-MCP events during handshake are stored in _startup_events for later draining."""
+        tools = _make_tools()
+        session = make_test_session(tools=tools)
+
+        # Insert a SystemInit event in the middle of the handshake stream
+        handshake = _handshake_events("test_server")
+        system_init = {
+            "type": "system",
+            "subtype": "init",
+            "cwd": "/test",
+            "tools": ["Bash"],
+            "mcp_servers": ["test_server"],
+            "model": "test-model",
+            "session_id": "s1",
+        }
+        # Insert after the two ControlResponses but before the MCP messages
+        events_with_init = handshake[:2] + [system_init] + handshake[2:]
+
+        async def run():
+            data = _build_ndjson(events_with_init)
+            _prepare_session(session, data)
+            with patch.object(session._process_mgr, "start", new_callable=AsyncMock):
+                await session._start()
+            return session._startup_events
+
+        startup_events = asyncio.run(run())
+
+        # The SystemInit should be stored (it arrived during the MCP handshake phase)
+        from claudestream.events import SystemInit
+        sys_inits = [e for e in startup_events if isinstance(e, SystemInit)]
+        assert len(sys_inits) == 1
+        assert sys_inits[0].model == "test-model"
+
+
 class TestToolContextInjection:
     def test_tool_context_injected(self):
         """tool_context is injected into handler params listed in inject."""

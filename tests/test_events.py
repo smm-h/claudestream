@@ -12,7 +12,7 @@ from claudestream.events import (
     AssistantMessage, AssistantText, ToolUse, Thinking,
     ToolResultMessage, ToolResult,
     Result, StreamDelta, RateLimit,
-    PermissionRequest, McpRequest, HookEvent, UnknownEvent,
+    PermissionRequest, McpRequest, HookEvent, UnknownEvent, ControlResponse,
     TextBlock, ToolUseBlock, ThinkingBlock, ToolResultBlock,
     Usage,
 )
@@ -245,6 +245,59 @@ class TestParseEvent:
         event = parse_event(raw)
         assert isinstance(event, UnknownEvent)
         assert event.raw == raw
+
+    def test_control_response_parsed(self):
+        """control_response events are parsed into ControlResponse objects."""
+        raw = {
+            "type": "control_response",
+            "response": {
+                "subtype": "success",
+                "request_id": "init_1",
+                "response": {
+                    "commands": [],
+                    "models": [],
+                },
+            },
+            "session_id": "s1",
+        }
+        event = parse_event(raw)
+        assert isinstance(event, ControlResponse)
+        assert event.subtype == "success"
+        assert event.request_id == "init_1"
+        assert event.response == {"commands": [], "models": []}
+        assert event.session_id == "s1"
+
+    def test_request_id_extracted_from_root_level(self):
+        """parse_event extracts request_id from root level when not in request dict."""
+        raw = {
+            "type": "control_request",
+            "request_id": "root_level_id",
+            "request": {
+                "subtype": "mcp_message",
+                "server_name": "test",
+                "message": {"jsonrpc": "2.0", "method": "tools/list", "id": 1},
+            },
+            "session_id": "s1",
+        }
+        event = parse_event(raw)
+        assert isinstance(event, McpRequest)
+        assert event.request_id == "root_level_id"
+
+    def test_request_id_falls_back_to_request_dict(self):
+        """parse_event falls back to request.request_id when root-level is absent."""
+        raw = {
+            "type": "control_request",
+            "request": {
+                "subtype": "mcp_message",
+                "request_id": "nested_id",
+                "server_name": "test",
+                "message": {"jsonrpc": "2.0", "method": "tools/list", "id": 1},
+            },
+            "session_id": "s1",
+        }
+        event = parse_event(raw)
+        assert isinstance(event, McpRequest)
+        assert event.request_id == "nested_id"
 
     def test_missing_fields_no_crash(self):
         """parse_event should handle missing fields gracefully."""

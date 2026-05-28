@@ -1,7 +1,7 @@
 """Tests for input message serialization."""
 
 from claudestream.messages import (
-    UserMessage, AllowPermission, DenyPermission, McpResponse, InitializeRequest,
+    UserMessage, AllowPermission, DenyPermission, McpResponse, McpSetServers, InitializeRequest,
 )
 
 
@@ -52,6 +52,33 @@ class TestMcpResponse:
         msg = McpResponse(request_id="mcp_1", mcp_response={"jsonrpc": "2.0", "result": {"content": []}})
         d = msg.to_dict()
         assert d["response"]["response"]["mcp_response"]["jsonrpc"] == "2.0"
+
+
+class TestMcpSetServers:
+    def test_to_dict(self):
+        msg = McpSetServers(
+            request_id="mcp_set_1",
+            servers={"test_server": {"type": "sdk", "name": "test_server"}},
+        )
+        d = msg.to_dict()
+        assert d["type"] == "control_request"
+        assert d["request"]["subtype"] == "mcp_set_servers"
+        assert d["request"]["request_id"] == "mcp_set_1"
+        assert d["request"]["servers"]["test_server"]["type"] == "sdk"
+        assert d["request"]["servers"]["test_server"]["name"] == "test_server"
+
+    def test_multiple_servers(self):
+        msg = McpSetServers(
+            request_id="mcp_set_2",
+            servers={
+                "server_a": {"type": "sdk", "name": "server_a"},
+                "server_b": {"type": "sdk", "name": "server_b"},
+            },
+        )
+        d = msg.to_dict()
+        assert len(d["request"]["servers"]) == 2
+        assert "server_a" in d["request"]["servers"]
+        assert "server_b" in d["request"]["servers"]
 
 
 class TestInitializeRequest:
