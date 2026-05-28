@@ -13,13 +13,13 @@ log = logging.getLogger(__name__)
 class Allow(msgspec.Struct, frozen=True):
     """Allow the tool to execute."""
 
-    updated_input: dict | None = None
+    updated_input: dict | None = None  # Replacement input dict to forward; None keeps the original
 
 
 class Deny(msgspec.Struct, frozen=True):
     """Deny the tool execution."""
 
-    message: str = "Denied by policy"
+    message: str = "Denied by policy"  # Human-readable reason shown to the model
 
 
 Decision = Allow | Deny
@@ -41,20 +41,11 @@ class Sandbox(msgspec.Struct, frozen=True):
     Controls which tools are available, filesystem scope, and behavior flags.
     """
 
-    tools: list[str] | None = None
-    """Tool allow-list. None = all tools allowed."""
-
-    bare: bool = False
-    """If True, pass --bare to suppress CLAUDE.md."""
-
-    write_paths: list[str] | None = None
-    """Filesystem scope for Write/Edit/MultiEdit. None = no restriction."""
-
-    log_violations: bool = False
-    """Log denied tool calls at WARNING level."""
-
-    skip_permissions: bool = False
-    """If True, pass --dangerously-skip-permissions to bypass all permission prompts."""
+    tools: list[str] | None = None  # Tool allow-list; None means all tools allowed
+    bare: bool = False  # Suppress CLAUDE.md loading (passes --bare)
+    write_paths: list[str] | None = None  # Allowed paths for Write/Edit/MultiEdit; None means unrestricted
+    log_violations: bool = False  # Log denied tool calls at WARNING level
+    skip_permissions: bool = False  # Bypass all permission prompts (passes --dangerously-skip-permissions)
 
 
 def create_sandbox(
