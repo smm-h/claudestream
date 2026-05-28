@@ -148,74 +148,74 @@ _FLAG_REGISTRY: list[tuple[str, str, str]] = [
 class ProcessConfig(msgspec.Struct, frozen=True):
     """Configuration for spawning a Claude Code subprocess."""
 
-    binary: str = "claude"
-    cwd: str | None = None
-    model: str | None = None
-    system_prompt: str | None = None
-    permission_mode: str | None = None
-    allowed_tools: list[str] = []
-    disallowed_tools: list[str] = []
-    permission_prompt_tool: str | None = None  # "stdio" when sandbox needs permission interception
-    resume_session_id: str | None = None
-    extra_args: list[str] = []
-    env: dict[str, str] | None = None
+    binary: str = "claude"  # Path to the Claude CLI binary
+    cwd: str | None = None  # Working directory for the subprocess; None uses the parent process cwd
+    model: str | None = None  # Claude model identifier (e.g. "claude-sonnet-4-20250514")
+    system_prompt: str | None = None  # Custom system prompt prepended to the session
+    permission_mode: str | None = None  # Permission handling mode (e.g. "default", "plan", "auto")
+    allowed_tools: list[str] = []  # Tool names the model is permitted to use
+    disallowed_tools: list[str] = []  # Tool names the model is forbidden from using
+    permission_prompt_tool: str | None = None  # MCP tool for permission prompts; "stdio" enables sandbox interception
+    resume_session_id: str | None = None  # Session ID to resume from where it left off
+    extra_args: list[str] = []  # Additional raw CLI arguments appended after all generated flags
+    env: dict[str, str] | None = None  # Extra environment variables merged into the subprocess env
 
     # --- String value flags (--flag value) ---
-    effort: str | None = None
-    json_schema_str: str | None = None  # passed as --json-schema
-    fallback_model: str | None = None
-    name: str | None = None
-    setting_sources: str | None = None
-    settings: str | None = None
-    debug_filter: str | None = None  # --debug <filter_pattern>
-    debug_file: str | None = None
-    agent: str | None = None
-    agents_json: str | None = None  # --agents
-    remote_control: str | None = None
-    remote_control_prefix: str | None = None  # --remote-control-session-name-prefix
-    worktree: str | None = None
-    from_pr: str | None = None
-    session_id: str | None = None
+    effort: str | None = None  # Model reasoning effort level (e.g. "low", "medium", "high")
+    json_schema_str: str | None = None  # JSON Schema string to constrain model output format
+    fallback_model: str | None = None  # Model to use if the primary model is unavailable
+    name: str | None = None  # Named session identifier for session management
+    setting_sources: str | None = None  # Comma-separated setting source override
+    settings: str | None = None  # Path to a custom settings file
+    debug_filter: str | None = None  # Pattern to limit which debug messages appear; implies debug output
+    debug_file: str | None = None  # Path to write debug output to instead of stderr
+    agent: str | None = None  # Built-in agent name to activate in Claude Code
+    agents_json: str | None = None  # Path to custom agents JSON configuration file
+    remote_control: str | None = None  # Remote control connection identifier
+    remote_control_prefix: str | None = None  # Prefix for remote control session names
+    worktree: str | None = None  # Git worktree path for the session context
+    from_pr: str | None = None  # GitHub PR identifier to load as session context
+    session_id: str | None = None  # Explicit session ID to connect to
 
     # --- List flags (--flag value, repeatable) ---
-    betas: list[str] = []
-    add_dirs: list[str] = []  # --add-dir
-    builtin_tools: list[str] = []  # --tools
-    file_specs: list[str] = []  # --file
-    mcp_config: list[str] = []  # --mcp-config
-    plugin_dirs: list[str] = []  # --plugin-dir
-    plugin_urls: list[str] = []  # --plugin-url
+    betas: list[str] = []  # Beta feature flags to enable in the session
+    add_dirs: list[str] = []  # Additional directories to include in the session context
+    builtin_tools: list[str] = []  # Built-in tool names to enable (e.g. "computer")
+    file_specs: list[str] = []  # Files to attach to the session context
+    mcp_config: list[str] = []  # Paths to MCP server configuration files
+    plugin_dirs: list[str] = []  # Local directory paths to load plugins from
+    plugin_urls: list[str] = []  # Remote URLs to load plugins from
 
     # --- Bool flags ---
-    bare: bool = False
-    brief: bool = False
-    continue_session: bool = False  # --continue
-    fork_session: bool = False
-    no_session_persistence: bool = False
-    strict_mcp_config: bool = False
-    include_hook_events: bool = False
-    replay_user_messages: bool = False
-    exclude_dynamic_prompt_sections: bool = False  # --exclude-dynamic-system-prompt-sections
-    disable_slash_commands: bool = False
-    chrome: bool = False
-    ide: bool = False
-    tmux: bool = False
-    debug: bool = False  # --debug (bool component; True means pass --debug)
+    bare: bool = False  # Strip all non-essential output for minimal protocol exchange
+    brief: bool = False  # Produce shorter, more concise model responses
+    continue_session: bool = False  # Continue the most recent session instead of starting a new one
+    fork_session: bool = False  # Create a new session forked from an existing one
+    no_session_persistence: bool = False  # Disable session persistence so nothing is saved to disk
+    strict_mcp_config: bool = False  # Reject unknown MCP server names instead of ignoring them
+    include_hook_events: bool = False  # Include hook lifecycle events in the event stream
+    replay_user_messages: bool = False  # Re-emit prior user messages when resuming a session
+    exclude_dynamic_prompt_sections: bool = False  # Omit dynamic system prompt sections from output
+    disable_slash_commands: bool = False  # Prevent the model from using slash commands
+    chrome: bool = False  # Enable Chrome browser integration for the session
+    ide: bool = False  # Enable IDE integration mode for the session
+    tmux: bool = False  # Enable tmux integration for the session
+    debug: bool = False  # Enable debug output from Claude Code; combines with debug_filter if set
 
     # --- Float flag ---
-    max_budget_usd: float | None = None
+    max_budget_usd: float | None = None  # Maximum spend in USD for the session; None means unlimited
 
     # --- Currently hardcoded, now configurable ---
-    verbose: bool = True  # --verbose (default True)
-    include_partial_messages: bool = True  # --include-partial-messages (default True)
-    dangerously_skip_permissions: bool = False  # --dangerously-skip-permissions
+    verbose: bool = True  # Emit verbose protocol output in the event stream
+    include_partial_messages: bool = True  # Stream incremental message fragments as they arrive
+    dangerously_skip_permissions: bool = False  # Bypass all permission checks (unsafe, for testing only)
 
     # --- Process-level tuning (not CLI flags, used by ProcessManager) ---
-    buffer_limit: int = 16_777_216
-    shutdown_timeout: float = 5.0
+    buffer_limit: int = 16_777_216  # Max bytes for the subprocess stdout/stderr pipe buffer
+    shutdown_timeout: float = 5.0  # Seconds to wait at each stage of graceful shutdown
 
     # --- Hooks (passed to InitializeRequest, not a CLI flag) ---
-    hooks: dict = {}
+    hooks: dict = {}  # Hook definitions for lifecycle events (e.g. pre-tool-use)
 
     def build_argv(self) -> list[str]:
         """Build the full command-line argument list from the flag registry."""
