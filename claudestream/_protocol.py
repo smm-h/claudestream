@@ -42,13 +42,14 @@ from claudestream.messages import (
     DenyPermission,
     InitializeRequest,
     McpResponse,
+    McpSetServers,
     UserMessage,
 )
 
 log = logging.getLogger("claudestream")
 
 # Type alias for all writable messages
-Writable = Union[UserMessage, AllowPermission, DenyPermission, McpResponse, InitializeRequest]
+Writable = Union[UserMessage, AllowPermission, DenyPermission, McpResponse, McpSetServers, InitializeRequest]
 
 
 # ---------------------------------------------------------------------------

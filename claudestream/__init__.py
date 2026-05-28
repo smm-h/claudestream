@@ -36,6 +36,7 @@ from claudestream.messages import (
     DenyPermission,
     InitializeRequest,
     McpResponse,
+    McpSetServers,
     UserMessage,
 )
 from claudestream._protocol import (
@@ -113,6 +114,7 @@ __all__ = [
     "DenyPermission",
     "InitializeRequest",
     "McpResponse",
+    "McpSetServers",
     "UserMessage",
     # Protocol
     "Writable",

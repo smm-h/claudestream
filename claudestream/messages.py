@@ -11,6 +11,7 @@ __all__ = [
     "AllowPermission",
     "DenyPermission",
     "McpResponse",
+    "McpSetServers",
     "InitializeRequest",
 ]
 
@@ -87,6 +88,23 @@ class McpResponse(msgspec.Struct, frozen=True):
                 "response": {
                     "mcp_response": self.mcp_response,
                 },
+            },
+        }
+
+
+class McpSetServers(msgspec.Struct, frozen=True):
+    """Register SDK MCP servers with the Claude Code CLI."""
+
+    request_id: str  # Unique ID for this control request
+    servers: dict  # Server name to server config mapping (e.g. {"name": {"type": "sdk", "name": "name"}})
+
+    def to_dict(self) -> dict:
+        return {
+            "type": "control_request",
+            "request": {
+                "subtype": "mcp_set_servers",
+                "request_id": self.request_id,
+                "servers": self.servers,
             },
         }
 
