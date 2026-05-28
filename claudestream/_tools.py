@@ -22,12 +22,12 @@ __all__ = [
 class Tool(msgspec.Struct, frozen=True):
     """A user-defined tool that can be served via MCP to Claude Code."""
 
-    name: str
-    description: str
-    input_schema: dict
-    handler: Any
-    server: str
-    inject: list[str] = []
+    name: str  # Unique tool identifier used in MCP tool calls
+    description: str  # Human-readable summary shown to the model
+    input_schema: dict  # JSON Schema defining the tool's input parameters
+    handler: Any  # Callable invoked when the model calls this tool
+    server: str  # MCP server name that hosts this tool
+    inject: list[str] = []  # Parameter names to fill from SessionConfig.tool_context
 
 
 # Type-hint to JSON Schema type mapping
