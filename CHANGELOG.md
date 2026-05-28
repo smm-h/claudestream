@@ -2,6 +2,17 @@
 
 # Changelog
 
+## 0.8.0
+
+### Features
+
+- **Documentation.** README.md and CLAUDE.md are now auto-generated from selfdoc templates with comprehensive examples, architecture narrative, and API reference tables.
+
+### Fixes
+
+- **Bug fix.** Custom tools registered via `@tool` are now visible to the model. The SDK MCP handshake was incomplete -- claudestream now sends `mcp_set_servers` after initialization and handles the full MCP protocol negotiation (initialize, notifications/initialized, tools/list).
+- **Bug fix.** MCP handshake unit and integration tests verifying tool registration end-to-end.
+
 ## 0.7.7
 
 ### Features
