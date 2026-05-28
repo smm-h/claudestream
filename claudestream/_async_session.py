@@ -520,9 +520,11 @@ class AsyncSession:
                     if not handled:
                         # Unknown method or unknown server -- pass through
                         pass
-                    elif event.message.get("method") == "tools/list":
-                        # tools/list is fully internal, don't yield
-                        continue
+                    else:
+                        method = event.message.get("method", "")
+                        if method in ("tools/list", "initialize", "notifications/initialized"):
+                            # Handshake methods are fully internal, don't yield
+                            continue
                     # tools/call is yielded so consumers can track calls
 
                 # Per-type event logging (before flatten)
@@ -663,6 +665,33 @@ class AsyncSession:
                         for t in tools
                     ],
                 },
+            }
+            msg = McpResponse(request_id=request.request_id, mcp_response=response)
+            await write_message(self._process_mgr.stdin, msg)
+            return True
+
+        if method == "initialize":
+            response = {
+                "jsonrpc": "2.0",
+                "id": rpc_id,
+                "result": {
+                    "protocolVersion": "2025-11-25",
+                    "capabilities": {"tools": {}},
+                    "serverInfo": {
+                        "name": request.server_name,
+                        "version": "1.0.0",
+                    },
+                },
+            }
+            msg = McpResponse(request_id=request.request_id, mcp_response=response)
+            await write_message(self._process_mgr.stdin, msg)
+            return True
+
+        if method == "notifications/initialized":
+            response = {
+                "jsonrpc": "2.0",
+                "result": {},
+                "id": rpc_id or 0,
             }
             msg = McpResponse(request_id=request.request_id, mcp_response=response)
             await write_message(self._process_mgr.stdin, msg)
