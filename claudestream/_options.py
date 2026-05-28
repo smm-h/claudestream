@@ -25,117 +25,117 @@ __all__ = [
 class SessionResolution(msgspec.Struct, frozen=True):
     """How to resolve which session to use."""
 
-    name: str | None
-    session_id: str | None
-    resume_session_id: str | None
-    continue_last: bool
-    fork: bool
+    name: str | None  # Named session identifier for session management
+    session_id: str | None  # Explicit session ID to connect to
+    resume_session_id: str | None  # Session ID to resume from where it left off
+    continue_last: bool  # Continue the most recent session
+    fork: bool  # Create a new session forked from an existing one
 
 
 class DebugOptions(msgspec.Struct, frozen=True):
     """Debug configuration."""
 
-    enabled: bool
-    filter: str | None
-    file: str | None
+    enabled: bool  # Enable debug output from Claude Code
+    filter: str | None  # Filter pattern to limit which debug messages appear
+    file: str | None  # Path to write debug output to instead of stderr
 
 
 class McpOptions(msgspec.Struct, frozen=True):
     """External MCP server configuration."""
 
-    config_files: list[str]
-    strict: bool
+    config_files: list[str]  # Paths to MCP server configuration files
+    strict: bool  # Reject unknown MCP server names instead of ignoring them
 
 
 class PluginOptions(msgspec.Struct, frozen=True):
     """Plugin loading configuration."""
 
-    dirs: list[str]
-    urls: list[str]
+    dirs: list[str]  # Local directory paths to load plugins from
+    urls: list[str]  # Remote URLs to load plugins from
 
 
 class StreamOptions(msgspec.Struct, frozen=True):
     """Stream output behavior."""
 
-    verbose: bool
-    include_partial_messages: bool
-    include_hook_events: bool
-    replay_user_messages: bool
-    exclude_dynamic_prompt_sections: bool
+    verbose: bool  # Emit verbose protocol output in the event stream
+    include_partial_messages: bool  # Stream incremental message fragments as they arrive
+    include_hook_events: bool  # Include hook lifecycle events in the stream
+    replay_user_messages: bool  # Re-emit prior user messages when resuming a session
+    exclude_dynamic_prompt_sections: bool  # Omit dynamic system prompt sections from output
 
 
 class ProcessLimits(msgspec.Struct, frozen=True):
     """Process-level tuning parameters."""
 
-    buffer_limit: int
-    shutdown_timeout: float
-    version_check_timeout: float
-    health_timeout: float
+    buffer_limit: int  # Max bytes for the subprocess stdout/stderr buffer
+    shutdown_timeout: float  # Seconds to wait for the subprocess to exit gracefully
+    version_check_timeout: float  # Seconds to wait for the Claude CLI version check
+    health_timeout: float  # Seconds of silence before warning the subprocess may be stuck
 
 
 class Budget(msgspec.Struct, frozen=True):
     """Cost/turn/token limits for a session."""
 
-    max_cost_usd: float | None = None
-    max_turns: int | None = None
-    max_tokens: int | None = None
+    max_cost_usd: float | None = None  # Maximum spend in USD; None means unlimited
+    max_turns: int | None = None  # Maximum conversation turns; None means unlimited
+    max_tokens: int | None = None  # Maximum tokens consumed; None means unlimited
 
 
 class ToolSchema(msgspec.Struct, frozen=True):
     """Tool schema without handler -- for JSON-serializable agent definitions."""
 
-    name: str
-    description: str
-    input_schema: dict
-    server: str
+    name: str  # Unique tool identifier used in MCP tool calls
+    description: str  # Human-readable summary shown to the model
+    input_schema: dict  # JSON Schema defining the tool's input parameters
+    server: str  # MCP server name that hosts this tool
 
 
 class SessionConfig(msgspec.Struct, frozen=True):
     """Unified configuration object for AsyncSession, SyncSession, print_prompt, and invoke_agent."""
 
     # Required
-    model: str
-    profile: str
+    model: str  # Claude model identifier (e.g. "claude-sonnet-4-20250514")
+    profile: str  # Claude Code profile name (e.g. "work", "personal")
 
     # Existing session params (with defaults)
-    cwd: str | None = None
-    binary: str | None = None
-    sandbox: Sandbox | None = None
-    system_prompt: str | None = None
-    tools: list[Tool] | None = None
-    extra_args: list[str] | None = None
-    env: dict[str, str] | None = None
-    resume_session_id: str | None = None
+    cwd: str | None = None  # Working directory for the Claude Code process; None uses current dir
+    binary: str | None = None  # Path to the Claude CLI binary; None uses PATH lookup
+    sandbox: Sandbox | None = None  # Tool/filesystem sandbox policy; None means no restrictions
+    system_prompt: str | None = None  # Custom system prompt to prepend to the session
+    tools: list[Tool] | None = None  # User-defined tools served via MCP to Claude Code
+    extra_args: list[str] | None = None  # Additional raw CLI arguments passed to the process
+    env: dict[str, str] | None = None  # Extra environment variables for the subprocess
+    resume_session_id: str | None = None  # Session ID to resume; None starts a new session
 
     # Option struct params
-    session_resolution: SessionResolution | None = None
-    debug: DebugOptions | None = None
-    mcp: McpOptions | None = None
-    plugins: PluginOptions | None = None
-    stream: StreamOptions | None = None
-    process_limits: ProcessLimits | None = None
-    budget: Budget | None = None
+    session_resolution: SessionResolution | None = None  # Session lookup/resume/fork strategy
+    debug: DebugOptions | None = None  # Debug output configuration
+    mcp: McpOptions | None = None  # External MCP server configuration
+    plugins: PluginOptions | None = None  # Plugin loading paths and URLs
+    stream: StreamOptions | None = None  # Controls which events appear in the output stream
+    process_limits: ProcessLimits | None = None  # Subprocess buffer/timeout tuning
+    budget: Budget | None = None  # Cost, turn, and token limits for the session
 
     # SyncSession tuning
-    poll_timeout: float = 1.0
-    join_timeout: float = 5.0
+    poll_timeout: float = 1.0  # Seconds between event queue polls in SyncSession
+    join_timeout: float = 5.0  # Seconds to wait for the background thread on SyncSession close
 
     # Flat Claude CLI flag params
-    effort: str | None = None
-    json_schema: dict | None = None
-    fallback_model: str | None = None
-    betas: list[str] | None = None
-    add_dirs: list[str] | None = None
-    builtin_tools: list[str] | None = None
-    brief: bool = False
-    settings: str | None = None
-    setting_sources: str | None = None
-    file_specs: list[str] | None = None
-    agent_name: str | None = None
-    agents_json: str | None = None
-    hooks: dict | None = None
-    no_persistence: bool = False
-    from_pr: str | None = None
+    effort: str | None = None  # Model reasoning effort level (e.g. "low", "medium", "high")
+    json_schema: dict | None = None  # JSON Schema to constrain model output format
+    fallback_model: str | None = None  # Model to fall back to if the primary model is unavailable
+    betas: list[str] | None = None  # Beta feature flags to enable in the session
+    add_dirs: list[str] | None = None  # Additional directories to include in the session context
+    builtin_tools: list[str] | None = None  # Built-in tool names to enable (e.g. "computer")
+    brief: bool = False  # Produce shorter, more concise model responses
+    settings: str | None = None  # Path to a custom settings file
+    setting_sources: str | None = None  # Comma-separated setting source override
+    file_specs: list[str] | None = None  # Files to attach to the session context
+    agent_name: str | None = None  # Built-in agent name to activate in Claude Code
+    agents_json: str | None = None  # Path to a custom agents JSON configuration file
+    hooks: dict | None = None  # Hook definitions for lifecycle events (e.g. pre-tool-use)
+    no_persistence: bool = False  # Disable session persistence so nothing is saved to disk
+    from_pr: str | None = None  # GitHub PR identifier to load as session context
 
     # Tool context injection
-    tool_context: Any = None
+    tool_context: Any = None  # Object injected into tool handlers via the inject mechanism
