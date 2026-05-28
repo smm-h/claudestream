@@ -18,6 +18,66 @@ def _build_ndjson(events: list[dict]) -> bytes:
     return "".join(json.dumps(e) + "\n" for e in events).encode("utf-8")
 
 
+def _handshake_events(server_name: str = "test_server") -> list[dict]:
+    """Build the sequence of events that _start() reads during MCP handshake.
+
+    The handshake sequence is:
+    1. ControlResponse for InitializeRequest
+    2. ControlResponse for McpSetServers
+    3. McpRequest: initialize
+    4. McpRequest: notifications/initialized
+    5. McpRequest: tools/list
+    """
+    return [
+        {
+            "type": "control_response",
+            "response": {
+                "subtype": "success",
+                "request_id": "init_1",
+                "response": {},
+            },
+        },
+        {
+            "type": "control_response",
+            "response": {
+                "subtype": "success",
+                "request_id": "mcp_set_1",
+                "response": {},
+            },
+        },
+        {
+            "type": "control_request",
+            "request": {
+                "subtype": "mcp_message",
+                "request_id": "mcp_init_1",
+                "server_name": server_name,
+                "message": {"jsonrpc": "2.0", "id": 1, "method": "initialize"},
+            },
+            "session_id": "s1",
+        },
+        {
+            "type": "control_request",
+            "request": {
+                "subtype": "mcp_message",
+                "request_id": "mcp_notif_1",
+                "server_name": server_name,
+                "message": {"jsonrpc": "2.0", "id": 2, "method": "notifications/initialized"},
+            },
+            "session_id": "s1",
+        },
+        {
+            "type": "control_request",
+            "request": {
+                "subtype": "mcp_message",
+                "request_id": "mcp_tools_1",
+                "server_name": server_name,
+                "message": {"jsonrpc": "2.0", "id": 3, "method": "tools/list"},
+            },
+            "session_id": "s1",
+        },
+    ]
+
+
 def _prepare_session(session: AsyncSession, data: bytes) -> None:
     """Mock the process manager internals so _read_turn can read from data."""
     session._process_mgr._process = MagicMock()
@@ -184,20 +244,19 @@ class TestInitializeRequest:
         session = make_test_session(tools=tools)
 
         async def run():
-            # Mock start() to do nothing (skip real subprocess), then call our _start
-            _prepare_session(session, b"")
-            # Directly call write_message path by simulating _start
-            from claudestream._protocol import write_message
-            from claudestream.messages import InitializeRequest
-            # Check that _start writes InitializeRequest
-            # We need to mock ProcessManager.start and then call session._start
+            # Provide handshake data so _start() can complete the MCP handshake
+            handshake_data = _build_ndjson(_handshake_events("test_server"))
+            _prepare_session(session, handshake_data)
             with patch.object(session._process_mgr, "start", new_callable=AsyncMock):
                 await session._start()
             return _get_stdin_writes(session)
 
         writes = asyncio.run(run())
-        # Should have one InitializeRequest
-        init_writes = [w for w in writes if w.get("type") == "control_request"]
+        # Should have InitializeRequest and McpSetServers control requests
+        init_writes = [
+            w for w in writes
+            if w.get("type") == "control_request" and w.get("request", {}).get("subtype") == "initialize"
+        ]
         assert len(init_writes) == 1
         req = init_writes[0]["request"]
         assert req["subtype"] == "initialize"
@@ -243,13 +302,18 @@ class TestInitializeRequest:
         session = make_test_session(tools=tools, hooks=hooks)
 
         async def run():
-            _prepare_session(session, b"")
+            # Provide handshake data so _start() can complete the MCP handshake
+            handshake_data = _build_ndjson(_handshake_events("test_server"))
+            _prepare_session(session, handshake_data)
             with patch.object(session._process_mgr, "start", new_callable=AsyncMock):
                 await session._start()
             return _get_stdin_writes(session)
 
         writes = asyncio.run(run())
-        init_writes = [w for w in writes if w.get("type") == "control_request"]
+        init_writes = [
+            w for w in writes
+            if w.get("type") == "control_request" and w.get("request", {}).get("subtype") == "initialize"
+        ]
         assert len(init_writes) == 1
         req = init_writes[0]["request"]
         assert req["hooks"] == hooks

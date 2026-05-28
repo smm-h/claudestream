@@ -12,6 +12,7 @@ from claudestream.events import (
     AskResult,
     AssistantMessage,
     AssistantText,
+    ControlResponse,
     Event,
     FileEdit,
     FileWrite,
@@ -26,11 +27,11 @@ from claudestream.events import (
     ToolUse,
     UnknownEvent,
 )
-from claudestream.messages import AllowPermission, DenyPermission, InitializeRequest, McpResponse, UserMessage
+from claudestream.messages import AllowPermission, DenyPermission, InitializeRequest, McpResponse, McpSetServers, UserMessage
 from claudestream._options import SessionConfig
 from claudestream.policy import Allow, Deny, Sandbox, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
-from claudestream._protocol import flatten_event, read_events, write_message
+from claudestream._protocol import flatten_event, parse_event, read_events, write_message
 from claudestream._tools import Tool
 
 log = logging.getLogger("claudestream")
@@ -76,6 +77,9 @@ class AsyncSession:
             self._tools_by_server.setdefault(t.server, []).append(t)
 
         self._process_mgr = ProcessManager(self._build_process_config())
+
+        # Events captured during startup handshake (before first send())
+        self._startup_events: list[Event] = []
 
         # Health timeout for _read_turn (default 30s, overridden by ProcessLimits)
         self._health_timeout: float = 30.0
@@ -341,7 +345,16 @@ class AsyncSession:
         await self.close()
 
     async def _start(self) -> None:
-        """Start the subprocess. SystemInit is captured during first send()."""
+        """Start the subprocess and complete the MCP handshake if tools are registered.
+
+        When SDK MCP tools are registered, the full handshake is completed before
+        returning so tools are ready by the time the first send() is called:
+        1. Send InitializeRequest -> read ControlResponse
+        2. Send McpSetServers -> read ControlResponse
+        3. Read and respond to MCP handshake messages (initialize, notifications/initialized, tools/list)
+
+        SystemInit (if received during handshake) is stored and drained on first send().
+        """
         version_check_timeout = 2.0
         if self._config.process_limits is not None:
             version_check_timeout = self._config.process_limits.version_check_timeout
@@ -356,10 +369,90 @@ class AsyncSession:
             init_req = InitializeRequest(sdk_mcp_servers=server_names, hooks=hooks)
             await write_message(self._process_mgr.stdin, init_req)
 
-        # With --input-format stream-json, the Claude CLI does NOT send
-        # SystemInit until the first user message. We skip the blocking
-        # read and capture SystemInit during the first send() instead.
-        log.info("process started, skipping SystemInit wait (captured on first send)")
+        if self._user_tools:
+            # Complete the full MCP handshake so tools are ready before first send()
+            log.info("completing MCP handshake for %d server(s)", len(self._tools_by_server))
+
+            # Read the init ControlResponse
+            await self._read_control_response(timeout=10.0)
+
+            # Send McpSetServers for all SDK servers
+            servers = {name: {"type": "sdk", "name": name} for name in self._tools_by_server}
+            set_servers_req = McpSetServers(request_id="mcp_set_1", servers=servers)
+            await write_message(self._process_mgr.stdin, set_servers_req)
+
+            # Read the set_servers ControlResponse
+            await self._read_control_response(timeout=10.0)
+
+            # Complete the MCP handshake (initialize, notifications/initialized, tools/list)
+            await self._run_mcp_handshake(timeout=10.0)
+
+            log.info("MCP handshake complete, tools ready")
+        else:
+            log.info("process started, skipping SystemInit wait (captured on first send)")
+
+    async def _read_control_response(self, timeout: float = 10.0) -> ControlResponse:
+        """Read events from stdout until a ControlResponse is received.
+
+        Any non-ControlResponse events encountered are stored in _startup_events.
+        """
+        import json as _json
+
+        while True:
+            line = await asyncio.wait_for(self._process_mgr.stdout.readline(), timeout=timeout)
+            if not line:
+                raise ClaudeStreamError("Subprocess closed stdout while waiting for ControlResponse")
+            text = line.decode("utf-8", errors="replace").strip()
+            if not text:
+                continue
+            try:
+                raw = _json.loads(text)
+            except _json.JSONDecodeError:
+                log.warning("skipping non-JSON line during handshake: %s", text[:200])
+                continue
+            event = parse_event(raw)
+            if isinstance(event, ControlResponse):
+                log.info("received ControlResponse: request_id=%s", event.request_id)
+                return event
+            # Store non-ControlResponse events for later draining
+            log.debug("storing startup event during handshake: %s", type(event).__name__)
+            self._startup_events.append(event)
+
+    async def _run_mcp_handshake(self, timeout: float = 10.0) -> None:
+        """Complete the MCP protocol handshake (initialize, notifications/initialized, tools/list).
+
+        Reads NDJSON lines from stdout, dispatching MCP requests via _handle_mcp_request().
+        Exits once the tools/list method has been handled. Non-MCP events are stored
+        in _startup_events for later draining.
+        """
+        import json as _json
+
+        while True:
+            line = await asyncio.wait_for(self._process_mgr.stdout.readline(), timeout=timeout)
+            if not line:
+                raise ClaudeStreamError("Subprocess closed stdout during MCP handshake")
+            text = line.decode("utf-8", errors="replace").strip()
+            if not text:
+                continue
+            try:
+                raw = _json.loads(text)
+            except _json.JSONDecodeError:
+                log.warning("skipping non-JSON line during MCP handshake: %s", text[:200])
+                continue
+            event = parse_event(raw)
+
+            if isinstance(event, McpRequest):
+                method = event.message.get("method", "")
+                log.info("MCP handshake: handling %s for server %s", method, event.server_name)
+                await self._handle_mcp_request(event)
+                if method == "tools/list":
+                    return
+            elif isinstance(event, ControlResponse):
+                log.debug("storing ControlResponse during MCP handshake: request_id=%s", event.request_id)
+                self._startup_events.append(event)
+            else:
+                log.debug("storing startup event during MCP handshake: %s", type(event).__name__)
+                self._startup_events.append(event)
 
     async def close(self) -> None:
         """Shut down the session and kill the subprocess."""
@@ -487,6 +580,44 @@ class AsyncSession:
         health_task = asyncio.ensure_future(_health_check())
 
         try:
+            # Drain events captured during the startup MCP handshake
+            if self._startup_events:
+                startup_events = list(self._startup_events)
+                self._startup_events.clear()
+                for event in startup_events:
+                    if not _first_event_received:
+                        _first_event_received = True
+                        health_task.cancel()
+
+                    # Capture SystemInit metadata
+                    if isinstance(event, SystemInit):
+                        self._session_id = event.session_id
+                        self._model_name = event.model
+                        self._tools = list(event.tools)
+                        self._cwd = event.cwd
+                        self._mcp_servers = list(event.mcp_servers)
+                        self._permission_mode = event.permission_mode
+                        log.info(
+                            "session started (from startup): id=%s model=%s tools=%d",
+                            self._session_id,
+                            self._model_name,
+                            len(self._tools),
+                        )
+
+                    # Flatten or pass through
+                    if raw:
+                        events_to_yield = [event]
+                    else:
+                        events_to_yield = flatten_event(event, cwd=self._cwd or None)
+
+                    for evt in events_to_yield:
+                        if isinstance(evt, (FileWrite, FileEdit)):
+                            if evt.path:
+                                self._files_modified.add(evt.path)
+                        for cb in self._callbacks.get(type(evt), []):
+                            cb(evt)
+                        yield evt
+
             async for event in read_events(self._process_mgr.stdout):
                 if self._cancelled:
                     raise ClaudeStreamError("Session cancelled")
