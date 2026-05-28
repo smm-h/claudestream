@@ -157,10 +157,10 @@ class TestParseEvent:
 
     def test_permission_request(self):
         raw = {
-            "type": "sdk_control_request",
+            "type": "control_request",
+            "request_id": "perm_1",
             "request": {
                 "subtype": "permission",
-                "request_id": "perm_1",
                 "tool_name": "Bash",
                 "tool_input": {"command": "rm -rf /"},
                 "decision_reason": "not in allowlist",
@@ -175,10 +175,10 @@ class TestParseEvent:
 
     def test_mcp_request(self):
         raw = {
-            "type": "sdk_control_request",
+            "type": "control_request",
+            "request_id": "mcp_1",
             "request": {
                 "subtype": "mcp_message",
-                "request_id": "mcp_1",
                 "server_name": "calculator",
                 "message": {"jsonrpc": "2.0", "method": "tools/call"},
             },
@@ -188,13 +188,13 @@ class TestParseEvent:
         assert isinstance(event, McpRequest)
         assert event.server_name == "calculator"
 
-    def test_hook_event_from_unknown_sdk_control_subtype(self):
-        """Unknown sdk_control_request subtypes produce HookEvent."""
+    def test_hook_event_from_unknown_control_subtype(self):
+        """Unknown control_request subtypes produce HookEvent."""
         raw = {
-            "type": "sdk_control_request",
+            "type": "control_request",
+            "request_id": "hook_1",
             "request": {
                 "subtype": "PreToolUse",
-                "request_id": "hook_1",
                 "tool_name": "Bash",
                 "hook_data": {"some": "data"},
             },
@@ -204,15 +204,14 @@ class TestParseEvent:
         assert isinstance(event, HookEvent)
         assert event.hook_name == "PreToolUse"
         assert event.hook_data["subtype"] == "PreToolUse"
-        assert event.hook_data["request_id"] == "hook_1"
 
     def test_hook_event_fields(self):
         """HookEvent exposes hook_name and hook_data correctly."""
         raw = {
-            "type": "sdk_control_request",
+            "type": "control_request",
+            "request_id": "hook_2",
             "request": {
                 "subtype": "PostToolUse",
-                "request_id": "hook_2",
                 "output": "tool completed",
             },
             "session_id": "s1",

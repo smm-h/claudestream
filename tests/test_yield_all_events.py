@@ -65,10 +65,10 @@ RESULT_RAW = {
 }
 
 PERMISSION_REQUEST_RAW = {
-    "type": "sdk_control_request",
+    "type": "control_request",
+    "request_id": "perm_1",
     "request": {
         "subtype": "permission",
-        "request_id": "perm_1",
         "tool_name": "Bash",
         "tool_input": {"command": "ls"},
         "decision_reason": "not in allowlist",

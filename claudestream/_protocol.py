@@ -212,16 +212,17 @@ def parse_event(raw: dict) -> Event:
             parent_tool_use_id=raw.get("parent_tool_use_id"),
         )
 
-    # -- sdk control request (permission / mcp) ------------------------------
-    if event_type == "sdk_control_request":
+    # -- control request (permission / mcp) ------------------------------------
+    if event_type == "control_request":
         request = raw.get("request", {})
         subtype = request.get("subtype", "")
+        request_id = raw.get("request_id") or request.get("request_id", "")
         if subtype == "permission":
             return PermissionRequest(
-                type="sdk_control_request",
+                type="control_request",
                 session_id=session_id,
                 uuid=uuid,
-                request_id=request.get("request_id", ""),
+                request_id=request_id,
                 tool_name=request.get("tool_name", ""),
                 tool_input=request.get("tool_input", {}),
                 decision_reason=request.get("decision_reason", ""),
@@ -229,16 +230,16 @@ def parse_event(raw: dict) -> Event:
             )
         if subtype == "mcp_message":
             return McpRequest(
-                type="sdk_control_request",
+                type="control_request",
                 session_id=session_id,
                 uuid=uuid,
-                request_id=request.get("request_id", ""),
+                request_id=request_id,
                 server_name=request.get("server_name", ""),
                 message=request.get("message", {}),
             )
-        # Catch-all for hook lifecycle events and other sdk_control_request subtypes
+        # Catch-all for hook lifecycle events and other control_request subtypes
         return HookEvent(
-            type="sdk_control_request",
+            type="control_request",
             session_id=session_id,
             uuid=uuid,
             hook_name=subtype,

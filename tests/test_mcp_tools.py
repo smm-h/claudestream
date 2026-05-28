@@ -63,10 +63,10 @@ RESULT_RAW = {
 
 def _mcp_request_raw(server_name: str, message: dict, request_id: str = "mcp_1") -> dict:
     return {
-        "type": "sdk_control_request",
+        "type": "control_request",
+        "request_id": request_id,
         "request": {
             "subtype": "mcp_message",
-            "request_id": request_id,
             "server_name": server_name,
             "message": message,
         },

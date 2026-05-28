@@ -156,7 +156,7 @@ async def main():
                     elif bt == "tool_use":
                         print(f"  ToolUse: name={block.get('name')}, id={block.get('id')}, input={block.get('input')}")
 
-            elif etype in ("control_request", "sdk_control_request"):
+            elif etype == "control_request":
                 req = e.get("request", {})
                 msg = req.get("message", {})
                 sub = req.get("subtype", "")
