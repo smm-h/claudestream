@@ -4,7 +4,7 @@
     "source": ["claudestream"],
     "docs": "docs",
     "base_url": "https://claudestream.smmh.dev",
-    "versions": [{"version": "0.3.0", "indexed": true}, {"version": "0.5.1", "indexed": false}, {"version": "0.6.0", "indexed": false}, {"version": "0.6.1", "indexed": false}, {"version": "0.6.2", "indexed": false}, {"version": "0.7.0", "indexed": false}, {"version": "0.7.6", "indexed": false}],
+    "versions": [{"version": "0.3.0", "indexed": true}, {"version": "0.5.1", "indexed": false}, {"version": "0.6.0", "indexed": false}, {"version": "0.6.1", "indexed": false}, {"version": "0.6.2", "indexed": false}, {"version": "0.7.0", "indexed": false}, {"version": "0.7.6", "indexed": false}, {"version": "0.7.7", "indexed": false}],
     "locales": [{"code": "en", "label": "English", "default": true}],
     "deploy": {
         "provider": "cloudflare-pages",
