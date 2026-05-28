@@ -9,5 +9,6 @@
     "deploy": {
         "provider": "cloudflare-pages",
         "project": "claudestream"
-    }
+    },
+    "root_files": ["docs/_CLAUDE.md", "docs/_README.md"]
 }
