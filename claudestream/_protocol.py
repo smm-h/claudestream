@@ -15,6 +15,7 @@ from claudestream.events import (
     AssistantText,
     CompactBoundary,
     ContentBlock,
+    ControlResponse,
     Event,
     FileEdit,
     FileWrite,
@@ -257,6 +258,21 @@ def parse_event(raw: dict) -> Event:
             resets_at=info.get("resets_at"),
             rate_limit_type=info.get("rate_limit_type", ""),
             utilization=info.get("utilization", 0.0),
+        )
+
+    # -- control response ------------------------------------------------------
+    if event_type == "control_response":
+        resp = raw.get("response", {})
+        subtype = resp.get("subtype", "")
+        request_id = resp.get("request_id", "")
+        response_data = resp.get("response", {})
+        return ControlResponse(
+            type="control_response",
+            session_id=session_id,
+            uuid=uuid,
+            request_id=request_id,
+            subtype=subtype,
+            response=response_data,
         )
 
     # -- unknown -------------------------------------------------------------

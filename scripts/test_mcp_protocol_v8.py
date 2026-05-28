@@ -139,9 +139,8 @@ async def main():
             etype = e.get("type", "?")
 
             if etype == "system":
-                si = e.get("init", {})
-                tools = si.get("tools", [])
-                mcp = si.get("mcp_servers", [])
+                tools = e.get("tools", [])
+                mcp = e.get("mcp_servers", [])
                 print(f"  SystemInit: {len(tools)} tools, mcp_servers={mcp}")
                 mcp_tools = [t for t in tools if "mcp" in t.lower() or "greet" in t.lower()]
                 if mcp_tools:

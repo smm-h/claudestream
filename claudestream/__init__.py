@@ -9,6 +9,7 @@ from claudestream.events import (
     ApiRetry,
     CompactBoundary,
     ContentBlock,
+    ControlResponse,
     Event,
     FileEdit,
     FileWrite,
@@ -99,6 +100,7 @@ __all__ = [
     "McpRequest",
     "HookEvent",
     "UnknownEvent",
+    "ControlResponse",
     # Content blocks
     "TextBlock",
     "ToolUseBlock",

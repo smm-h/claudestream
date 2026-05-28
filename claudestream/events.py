@@ -32,6 +32,7 @@ __all__ = [
     "McpRequest",
     "HookEvent",
     "UnknownEvent",
+    "ControlResponse",
     "AskResult",
 ]
 
@@ -303,6 +304,14 @@ class UnknownEvent(Event, frozen=True):
     """Forward-compatible event for unrecognized event types."""
 
     raw: dict = {}  # Original unprocessed event data for forward compatibility
+
+
+class ControlResponse(Event, frozen=True):
+    """Response to a control request (e.g. initialize, mcp_set_servers)."""
+
+    request_id: str = ""  # ID of the control request this responds to
+    subtype: str = ""  # Response subtype (e.g. "success")
+    response: dict = {}  # Response payload
 
 
 # ---------------------------------------------------------------------------
