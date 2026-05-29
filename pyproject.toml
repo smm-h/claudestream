@@ -28,3 +28,8 @@ dev = [
     "pytest",
     "pytest-timeout>=2.4.0",
 ]
+
+[tool.uv.sources]
+strictcli = { path = "/home/m/Projects/strictcli/python", editable = true }
+selfdoc = { path = "/home/m/Projects/selfdoc", editable = true }
+claudewheel = { path = "/home/m/Projects/claudewheel", editable = true }
