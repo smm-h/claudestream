@@ -69,6 +69,7 @@ class AsyncSession:
         self._turn_count: int = 0
         self._total_tokens: int = 0
         self._files_modified: set[str] = set()
+        self._got_first_assistant: bool = False
 
         # User-defined tools, grouped by server name for MCP handling
         self._user_tools: list[Tool] = list(config.tools or [])
@@ -687,18 +688,17 @@ class AsyncSession:
                     else:
                         log.warning("event: Unknown (%s)", list(event.raw.keys()))
 
-                # Detect authentication errors
-                if isinstance(event, AssistantMessage):
+                # Detect authentication errors (only on the first assistant
+                # message AND only when the error field is set — scanning
+                # content text causes false positives when Claude talks
+                # about authentication in its response).
+                if isinstance(event, AssistantMessage) and not self._got_first_assistant:
+                    self._got_first_assistant = True
                     error_lower = (event.error or "").lower()
-                    content_lower = " ".join(
-                        block.text for block in event.content
-                        if isinstance(block, TextBlock) and block.text
-                    ).lower()
-                    is_auth_error = (
-                        any(p in error_lower for p in ("not logged in", "invalid authentication", "401"))
-                        or any(p in content_lower for p in ("not logged in", "invalid authentication"))
-                    )
-                    if is_auth_error:
+                    if error_lower and any(
+                        p in error_lower
+                        for p in ("not logged in", "invalid authentication", "401")
+                    ):
                         raise ClaudeStreamError(
                             "Authentication failed. Run `claude /login` to authenticate, "
                             "or check that your profile credentials are valid."

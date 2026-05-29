@@ -169,12 +169,16 @@ def _build_tools(
     tools = []
     for ts in definition.tools:
         handler = tool_handlers[ts.name]
+        inject: list[str] = []
+        if hasattr(handler, "_tool") and handler._tool.inject:
+            inject = list(handler._tool.inject)
         tools.append(Tool(
             name=ts.name,
             description=ts.description,
             input_schema=ts.input_schema,
             handler=handler,
             server=ts.server,
+            inject=inject,
         ))
     return tools or None
 
@@ -266,6 +270,7 @@ async def invoke_agent(
         agents_json=config.agents_json,
         hooks=config.hooks,
         no_persistence=config.no_persistence,
+        tool_context=config.tool_context,
     )
     async with AsyncSession(merged) as session:
         yield session
@@ -331,6 +336,7 @@ def invoke_agent_sync(
         agents_json=config.agents_json,
         hooks=config.hooks,
         no_persistence=config.no_persistence,
+        tool_context=config.tool_context,
     )
     with SyncSession(merged) as session:
         yield session
