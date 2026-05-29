@@ -360,6 +360,34 @@ class TestToolsList:
         assert result_tools[0]["description"] == "A test tool"
         assert result_tools[0]["inputSchema"] == tools[0].input_schema
 
+    def test_tools_list_includes_always_load_meta(self):
+        """tools/list response includes _meta.anthropic.alwaysLoad for each tool."""
+        tools = _make_tools()
+        mcp_req = _mcp_request_raw("test_server", {
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "tools/list",
+        })
+        data = _build_ndjson([mcp_req, RESULT_RAW])
+
+        async def run():
+            session = make_test_session(tools=tools)
+            _prepare_session(session, data)
+            events = []
+            async for event in session._read_turn(raw=False):
+                events.append(event)
+            return session, events
+
+        session, events = asyncio.run(run())
+
+        writes = _get_stdin_writes(session)
+        responses = [w for w in writes if w.get("type") == "control_response"]
+        assert len(responses) == 1
+        result_tools = responses[0]["response"]["response"]["mcp_response"]["result"]["tools"]
+        for t in result_tools:
+            assert "_meta" in t, f"Tool {t['name']} missing _meta"
+            assert t["_meta"] == {"anthropic": {"alwaysLoad": True}}
+
     def test_tools_list_unknown_server_yields_event(self):
         """tools/list for an unknown server yields the McpRequest to the consumer."""
         tools = _make_tools()
