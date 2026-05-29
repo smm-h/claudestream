@@ -63,8 +63,12 @@ class TestAuthInterception:
         with pytest.raises(ClaudeStreamError, match="Authentication failed"):
             asyncio.run(run())
 
-    def test_content_block_401(self):
-        """AssistantMessage with TextBlock containing '401' raises ClaudeStreamError."""
+    def test_content_block_401_no_raise(self):
+        """AssistantMessage with '401' in content text does NOT raise.
+
+        Auth detection only checks the error field, not content blocks,
+        to avoid false positives when Claude discusses authentication.
+        """
         raw_events = [
             {
                 "type": "assistant",
@@ -99,8 +103,11 @@ class TestAuthInterception:
                 events.append(event)
             return events
 
-        with pytest.raises(ClaudeStreamError, match="Authentication failed"):
-            asyncio.run(run())
+        # Should NOT raise -- content-text scanning was removed
+        events = asyncio.run(run())
+        types = [type(e).__name__ for e in events]
+        assert "AssistantText" in types
+        assert "Result" in types
 
     def test_normal_assistant_no_raise(self):
         """AssistantMessage with normal content does NOT raise."""
