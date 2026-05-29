@@ -1,1 +1,2 @@
 {"commits":["07719703fc46a30f9b7ecd07b0db8e7d65259ba3","fafb144dd81e2e8374d56afaa0d3a18831343533","c2d1a38707f48f4a29297a8cf6d5e097acc98a7e"],"user_facing":true,"description":"SyncSession now exposes all 19 AsyncSession properties including turn_count, total_tokens, sandbox, and config.","type":"feature"}
+{"commits":["d4aa4a5c082be0705c23870ac472c873305f9b63","2436f727ec2cd56b9bad15055d1c1e76420145d2"],"user_facing":true,"description":"SDK-registered MCP tools are now immediately visible to the model without requiring a ToolSearch call.","type":"feature"}
