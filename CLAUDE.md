@@ -35,18 +35,29 @@ The `@tool` decorator (`_tools.py`) and agent definitions (`_agent.py`) are cros
 
 | Command | Description |
 | --- | --- |
-| `send` | Send a prompt and display the response |
-| `stream` | Stream a prompt with real-time token output |
-| `events` | Debug: show all raw protocol events |
-| `repl` | Interactive multi-turn REPL |
-| `ask` | Send a prompt and print the response text |
-| `doctor` | Check claudestream environment health |
-| `config` | Show resolved configuration |
-| **agent** | Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata. |
-| `agent run` | Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition. |
-| `agent list` | List available agents from .claudestream/agents/ |
-| `agent info` | Display agent definition details |
-| `agent validate` | Validate an agent definition |
+| `bisect` | bisect (guarded) |
+| `checkout` | checkout a ref (guarded) |
+| `cherry-pick` | cherry-pick commits (guarded) |
+| `commit` | stage and commit files atomically |
+| `doctor` | health checks and repair |
+| `merge` | merge a branch (guarded) |
+| `pull` | fetch and merge (default --ff-only) |
+| `push` | push with pre-hooks and retry |
+| `rebase` | rebase onto upstream (guarded) |
+| `reset` | reset HEAD (guarded for --hard) |
+| `revert` | revert commits (guarded) |
+| `rewrite-author` | rewrite author/committer across history |
+| `undo` | reverse last commit/amend/reword via oplog |
+| `unlock` | release a stale ref lock |
+| `version` | print version and build info |
+| **config** | show or set configuration values |
+| `config get` | get a configuration value |
+| `config set` | set a configuration value |
+| `config show` | show all configuration |
+| **hook** | manage pre-pre-push hooks |
+| `hook install` | install a hook from a file |
+| `hook list` | list installed hooks |
+| `hook run` | run hooks |
 
 ## SessionConfig
 
