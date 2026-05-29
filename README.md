@@ -139,29 +139,18 @@ with SyncSession(config) as session:
 
 | Command | Description |
 | --- | --- |
-| `bisect` | bisect (guarded) |
-| `checkout` | checkout a ref (guarded) |
-| `cherry-pick` | cherry-pick commits (guarded) |
-| `commit` | stage and commit files atomically |
-| `doctor` | health checks and repair |
-| `merge` | merge a branch (guarded) |
-| `pull` | fetch and merge (default --ff-only) |
-| `push` | push with pre-hooks and retry |
-| `rebase` | rebase onto upstream (guarded) |
-| `reset` | reset HEAD (guarded for --hard) |
-| `revert` | revert commits (guarded) |
-| `rewrite-author` | rewrite author/committer across history |
-| `undo` | reverse last commit/amend/reword via oplog |
-| `unlock` | release a stale ref lock |
-| `version` | print version and build info |
-| **config** | show or set configuration values |
-| `config get` | get a configuration value |
-| `config set` | set a configuration value |
-| `config show` | show all configuration |
-| **hook** | manage pre-pre-push hooks |
-| `hook install` | install a hook from a file |
-| `hook list` | list installed hooks |
-| `hook run` | run hooks |
+| `send` | Send a prompt and display the response |
+| `stream` | Stream a prompt with real-time token output |
+| `events` | Debug: show all raw protocol events |
+| `repl` | Interactive multi-turn REPL |
+| `ask` | Send a prompt and print the response text |
+| `doctor` | Check claudestream environment health |
+| `config` | Show resolved configuration |
+| **agent** | Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata. |
+| `agent run` | Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition. |
+| `agent list` | List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'. |
+| `agent info` | Display agent definition details for a given agent name or path. Loads the .agent.json file, parses it, and prints every configured field: name, version, description, model, budget limits, sandbox policy, tool schemas, MCP server config, and stream options. Use this to inspect an agent's full configuration before invoking it. |
+| `agent validate` | Validate an agent definition by loading and checking its .agent.json file for structural and semantic correctness. Verifies that budget values are non-negative, the prompt template is non-empty, tool schemas are well-formed, and required fields are present. Reports specific errors on failure or prints a success confirmation. |
 
 ## Configuration
 
