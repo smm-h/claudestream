@@ -792,6 +792,7 @@ class AsyncSession:
                             "name": t.name,
                             "description": t.description,
                             "inputSchema": t.input_schema,
+                            "_meta": {"anthropic": {"alwaysLoad": True}},
                         }
                         for t in tools
                     ],
