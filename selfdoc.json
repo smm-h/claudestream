@@ -37,7 +37,7 @@
         },
         {
             "version": "0.8.0",
-            "indexed": false
+            "indexed": true
         }
     ],
     "locales": [
