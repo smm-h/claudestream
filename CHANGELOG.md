@@ -2,6 +2,18 @@
 
 # Changelog
 
+## 0.9.0
+
+### Features
+
+- SyncSession now exposes all 19 AsyncSession properties including turn_count, total_tokens, sandbox, and config.
+- SDK-registered MCP tools are now immediately visible to the model without requiring a ToolSearch call.
+- Expanded CLI help descriptions for agent subcommands.
+
+### Fixes
+
+- invoke_agent now correctly passes tool_context and inject metadata to MCP tools.
+
 ## 0.8.0
 
 ### Features
