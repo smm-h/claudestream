@@ -12,6 +12,8 @@ from typing import Any, Callable
 from claudestream.events import AskResult, Event, Result
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._options import SessionConfig
+from claudestream._tools import Tool
+from claudestream.policy import Sandbox
 
 log = logging.getLogger("claudestream")
 
@@ -118,6 +120,56 @@ class SyncSession:
     @property
     def stderr_lines(self) -> list[str]:
         return self._async_session.stderr_lines if self._async_session else []
+
+    @property
+    def turn_count(self) -> int:
+        return self._async_session.turn_count if self._async_session else 0
+
+    @property
+    def total_tokens(self) -> int:
+        return self._async_session.total_tokens if self._async_session else 0
+
+    @property
+    def sandbox(self) -> Sandbox | None:
+        return self._async_session.sandbox if self._async_session else None
+
+    @property
+    def user_tools(self) -> list[Tool]:
+        return self._async_session.user_tools if self._async_session else []
+
+    @property
+    def is_alive(self) -> bool:
+        return self._async_session.is_alive if self._async_session else False
+
+    @property
+    def active_turn(self) -> bool:
+        return self._async_session.active_turn if self._async_session else False
+
+    @property
+    def cancelled(self) -> bool:
+        return self._async_session.cancelled if self._async_session else False
+
+    @property
+    def process_pid(self) -> int | None:
+        return self._async_session.process_pid if self._async_session else None
+
+    @property
+    def cwd(self) -> str:
+        return self._async_session.cwd if self._async_session else ""
+
+    @property
+    def mcp_servers(self) -> list[str]:
+        return self._async_session.mcp_servers if self._async_session else []
+
+    @property
+    def permission_mode(self) -> str:
+        return self._async_session.permission_mode if self._async_session else ""
+
+    @property
+    def config(self) -> SessionConfig:
+        if self._async_session:
+            return self._async_session.config
+        return self._config
 
     # --- Cancel ---
 
