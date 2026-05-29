@@ -417,7 +417,7 @@ def cmd_agent_run(
         return 1
 
 
-@agent_group.command("list", help="List available agents from .claudestream/agents/")
+@agent_group.command("list", help="List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'.")
 @strictcli.flag("cwd", type=str, default="", help="Working directory")
 def cmd_agent_list(cwd: str = "") -> int | None:
     agents = discover_agents(cwd or None)
@@ -435,7 +435,7 @@ def cmd_agent_list(cwd: str = "") -> int | None:
     return None
 
 
-@agent_group.command("info", help="Display agent definition details")
+@agent_group.command("info", help="Display agent definition details for a given agent name or path. Loads the .agent.json file, parses it, and prints every configured field: name, version, description, model, budget limits, sandbox policy, tool schemas, MCP server config, and stream options. Use this to inspect an agent's full configuration before invoking it.")
 @strictcli.arg("name", help="Agent name or path")
 def cmd_agent_info(name: str) -> int | None:
     try:
@@ -472,7 +472,7 @@ def cmd_agent_info(name: str) -> int | None:
     return None
 
 
-@agent_group.command("validate", help="Validate an agent definition")
+@agent_group.command("validate", help="Validate an agent definition by loading and checking its .agent.json file for structural and semantic correctness. Verifies that budget values are non-negative, the prompt template is non-empty, tool schemas are well-formed, and required fields are present. Reports specific errors on failure or prints a success confirmation.")
 @strictcli.arg("name", help="Agent name or path")
 def cmd_agent_validate(name: str) -> int | None:
     try:
