@@ -10,7 +10,7 @@ from claudestream._async_session import AsyncSession
 from claudestream._sync_session import SyncSession
 from claudestream._options import SessionConfig
 from claudestream._tools import Tool
-from claudestream.events import AssistantText, Result
+from claudestream.events import AssistantText, Result  # noqa: F401
 from claudestream.policy import Sandbox
 
 
@@ -223,3 +223,150 @@ class TestSyncSessionStderrLines:
     def test_returns_empty_before_start(self):
         session = SyncSession(SessionConfig(model="test", profile="test"))
         assert session.stderr_lines == []
+
+
+# ---------------------------------------------------------------------------
+# SyncSession delegate properties (12 missing properties added in Phase 4)
+# ---------------------------------------------------------------------------
+
+
+def _sync_session_with_mock(**attrs):
+    """Create a SyncSession with a mock async session having the given attributes."""
+    mock_async = MagicMock()
+    for k, v in attrs.items():
+        setattr(mock_async, k, v)
+    session = SyncSession(SessionConfig(model="test", profile="test"))
+    session._async_session = mock_async
+    return session
+
+
+class TestSyncSessionTurnCount:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(turn_count=3)
+        assert session.turn_count == 3
+
+    def test_returns_zero_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.turn_count == 0
+
+
+class TestSyncSessionTotalTokens:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(total_tokens=1500)
+        assert session.total_tokens == 1500
+
+    def test_returns_zero_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.total_tokens == 0
+
+
+class TestSyncSessionSandbox:
+    def test_delegates_to_async_session(self):
+        sb = Sandbox(tools=["Read"])
+        session = _sync_session_with_mock(sandbox=sb)
+        assert session.sandbox is sb
+
+    def test_returns_none_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.sandbox is None
+
+
+class TestSyncSessionUserTools:
+    def test_delegates_to_async_session(self):
+        t = Tool(
+            name="greet",
+            description="Say hello",
+            input_schema={"type": "object"},
+            handler=lambda: "hi",
+            server="test_server",
+        )
+        session = _sync_session_with_mock(user_tools=[t])
+        assert len(session.user_tools) == 1
+        assert session.user_tools[0].name == "greet"
+
+    def test_returns_empty_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.user_tools == []
+
+
+class TestSyncSessionIsAlive:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(is_alive=True)
+        assert session.is_alive is True
+
+    def test_returns_false_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.is_alive is False
+
+
+class TestSyncSessionActiveTurn:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(active_turn=True)
+        assert session.active_turn is True
+
+    def test_returns_false_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.active_turn is False
+
+
+class TestSyncSessionCancelled:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(cancelled=True)
+        assert session.cancelled is True
+
+    def test_returns_false_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.cancelled is False
+
+
+class TestSyncSessionProcessPid:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(process_pid=12345)
+        assert session.process_pid == 12345
+
+    def test_returns_none_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.process_pid is None
+
+
+class TestSyncSessionCwd:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(cwd="/workspace/project")
+        assert session.cwd == "/workspace/project"
+
+    def test_returns_empty_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.cwd == ""
+
+
+class TestSyncSessionMcpServers:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(mcp_servers=["server-a", "server-b"])
+        assert session.mcp_servers == ["server-a", "server-b"]
+
+    def test_returns_empty_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.mcp_servers == []
+
+
+class TestSyncSessionPermissionMode:
+    def test_delegates_to_async_session(self):
+        session = _sync_session_with_mock(permission_mode="allowedTools")
+        assert session.permission_mode == "allowedTools"
+
+    def test_returns_empty_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert session.permission_mode == ""
+
+
+class TestSyncSessionConfig:
+    def test_delegates_to_async_session(self):
+        cfg = SessionConfig(model="opus", profile="work")
+        session = _sync_session_with_mock(config=cfg)
+        assert session.config is cfg
+        assert session.config.model == "opus"
+
+    def test_returns_own_config_before_start(self):
+        session = SyncSession(SessionConfig(model="test", profile="test"))
+        assert isinstance(session.config, SessionConfig)
+        assert session.config.model == "test"
