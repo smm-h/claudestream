@@ -2,3 +2,4 @@
 {"commits":["d4aa4a5c082be0705c23870ac472c873305f9b63","2436f727ec2cd56b9bad15055d1c1e76420145d2"],"user_facing":true,"description":"SDK-registered MCP tools are now immediately visible to the model without requiring a ToolSearch call.","type":"feature"}
 {"commits":["09664725e5e2d9e25bf12c8e992b058fe39d78d3"],"user_facing":true,"description":"invoke_agent now correctly passes tool_context and inject metadata to MCP tools.","type":"fix"}
 {"commits":["ecc6b573c6dcd8d8103cb25e76e20e409dca4b4a","a5ff829f755d6f6fca7b0771f2e9e5d0e2cba9d5"],"user_facing":false}
+{"commits":["5d9c4abb29cef6e619a58442731c48ccac60ae9f","4410452851f9f67c0b17a695b7dbbc0981fd3cfb"],"user_facing":false}
