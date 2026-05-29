@@ -4,3 +4,4 @@
 {"commits":["ecc6b573c6dcd8d8103cb25e76e20e409dca4b4a","a5ff829f755d6f6fca7b0771f2e9e5d0e2cba9d5"],"user_facing":false}
 {"commits":["5d9c4abb29cef6e619a58442731c48ccac60ae9f","4410452851f9f67c0b17a695b7dbbc0981fd3cfb"],"user_facing":false}
 {"commits":["188495b38af82844fa78bf607c95df3abfd96295","51aa98a526b2b60750684a020976cf565ec9a6f2"],"user_facing":true,"description":"Expanded CLI help descriptions for agent subcommands.","type":"feature"}
+{"commits":["9144cb200950c3311f7b0128758aa681db2abe08","5ab8500d09088003097cc49f6a2ea307af0b1fbc","ba8f2ea289056259c33dbbade512a73c7523605f"],"user_facing":false}
