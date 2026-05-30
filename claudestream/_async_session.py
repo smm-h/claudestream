@@ -420,15 +420,19 @@ class AsyncSession:
             self._startup_events.append(event)
 
     async def _run_mcp_handshake(self, timeout: float = 10.0) -> None:
-        """Complete the MCP protocol handshake (initialize, notifications/initialized, tools/list).
+        """Complete the MCP protocol handshake for ALL registered MCP servers.
 
-        Reads NDJSON lines from stdout, dispatching MCP requests via _handle_mcp_request().
-        Exits once the tools/list method has been handled. Non-MCP events are stored
-        in _startup_events for later draining.
+        Each server goes through: initialize -> notifications/initialized -> tools/list.
+        We must wait for every server's tools/list before returning, otherwise
+        send() will write a UserMessage to stdin before the CLI finishes
+        handshaking remaining servers, causing a protocol-level hang.
         """
         import json as _json
 
-        while True:
+        servers_pending = set(self._tools_by_server.keys())
+        log.info("MCP handshake: waiting for %d server(s): %s", len(servers_pending), servers_pending)
+
+        while servers_pending:
             line = await asyncio.wait_for(self._process_mgr.stdout.readline(), timeout=timeout)
             if not line:
                 raise ClaudeStreamError("Subprocess closed stdout during MCP handshake")
@@ -444,10 +448,12 @@ class AsyncSession:
 
             if isinstance(event, McpRequest):
                 method = event.message.get("method", "")
-                log.info("MCP handshake: handling %s for server %s", method, event.server_name)
+                server = event.server_name or ""
+                log.info("MCP handshake: handling %s for server %s", method, server)
                 await self._handle_mcp_request(event)
-                if method == "tools/list":
-                    return
+                if method == "tools/list" and server in servers_pending:
+                    servers_pending.discard(server)
+                    log.info("MCP handshake: server %s complete (%d remaining)", server, len(servers_pending))
             elif isinstance(event, ControlResponse):
                 log.debug("storing ControlResponse during MCP handshake: request_id=%s", event.request_id)
                 self._startup_events.append(event)
