@@ -92,7 +92,7 @@
     "description": "448cb117d26e31d27b070b3e4493d368e74b958ec92c5d131b3ae80154b4bbd3"
   },
   "en/claudestream-_async_session.md": {
-    "content": "4509542e331efa7e0bb9048e92034efd4fe69e6fccef93a3c729306e859f0be5",
+    "content": "cef7f2d9dc0c5b8b75ef864b6a4fcab70db345a6e97bd75946aec80110a7134e",
     "description": "eb7292da18c96240dd1e11507331026261fd5c6567f9f786aa480ac0a8acadb8"
   },
   "en/claudestream-_cli.md": {
@@ -116,7 +116,7 @@
     "description": "413dc8559243c1deb1cf0e6861cb1f6578c079ef224dadf0ea4c260eca2c8f68"
   },
   "en/claudestream-_sync_session.md": {
-    "content": "16bef25723e1121ee286abf126f1690fb08d5f2c7f232ce460b4e72c323ae8dd",
+    "content": "4577cf11c18c271d3e9bd49221a70d4108c493973364b812900ae9e8edfa7e34",
     "description": "e36a2c64066eae5739ce8bb583c5362b4c34db941c154665334db2cd5f5e3a87"
   },
   "en/claudestream-_tools.md": {
@@ -124,11 +124,11 @@
     "description": "74c78248ef2b1cbdf16a0dcd3b59cc732a3b323e09f177c7f9923c33a0a614a5"
   },
   "en/claudestream-events.md": {
-    "content": "6936a88a16e8da06b3adb9b01072bf327c611e4aab93c70af571716ced77ca17",
+    "content": "8109f29217d0542bf3f5353f9b30f2f210e7cee3068f251575f3bf33737f274a",
     "description": "7f97513fb5ce08f7fc07d06685cb8bdb519d3ff59626540543e191c7f3514f26"
   },
   "en/claudestream-messages.md": {
-    "content": "5aa0a2199faee3f51b140fae04e7f2e31cecd14cad297b016ad50ed7b025ef83",
+    "content": "1c4bc2997d181a7d78007ddd5330fbda6833ce675368804901f9839a8912b31b",
     "description": "5a0fd6fa966c1d03b5ed0e3622593ffb1b1563e522077810965b1c51b1ee2698"
   },
   "en/claudestream-policy.md": {
@@ -140,7 +140,7 @@
     "description": "f50401cc9e505481954edc9e5b82cd23f0272e63b1794cbe1f92bb57b35478ce"
   },
   "en/cli-agent.md": {
-    "content": "dd6db658966db6a2dad15b3852e7be1a13588dec1955d853ae3f08c67ad9f631",
+    "content": "ec4d50c970c4aee9e7e48ea3de6fe1f465830866aced5992ccbf76372e94042f",
     "description": "2e35a50823dcfa0a972444e2c03942cbb991c7774d7c292fec043b5dbea80497"
   },
   "en/cli-ask.md": {
@@ -160,7 +160,7 @@
     "description": "8e6085392b28c54a07787fbbf23748a2a910624cc38b30858395a647bf828c9c"
   },
   "en/cli-index.md": {
-    "content": "1809209467175b5bcd5c5eb1cea5381d94d9d0f062cfb6769baeff7bbb789e61",
+    "content": "f87088e3f1f8b9e6524ae1c846258c13bd3444c7ff165a04d06385ac7771cd1c",
     "description": "160dac3a666212f735378ede9e70b41f7bf7fa869de54000440ae80cc6347e6c"
   },
   "en/cli-repl.md": {
