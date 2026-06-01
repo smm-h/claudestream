@@ -51,6 +51,11 @@
         "provider": "cloudflare-pages",
         "project": "claudestream"
     },
+    "gen": {
+        "exclude": [
+            "claudestream"
+        ]
+    },
     "root_files": [
         "docs/_CLAUDE.md",
         "docs/_README.md"

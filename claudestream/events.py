@@ -15,7 +15,8 @@ __all__ = [
     "ToolUseBlock",
     "ThinkingBlock",
     "ToolResultBlock",
-    "ContentBlock",
+    # ContentBlock is a type alias (not renderable by selfdoc ref),
+    # so it is excluded from __all__. Import it by name if needed.
     "Usage",
     "AssistantMessage",
     "ToolResultMessage",
