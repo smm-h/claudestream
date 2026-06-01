@@ -10,7 +10,6 @@ order: 90
 
 # API Reference
 
-- [claudestream](claudestream.html)
 - [claudestream._agent](claudestream-_agent.html)
 - [claudestream._async_session](claudestream-_async_session.html)
 - [claudestream._cli](claudestream-_cli.html)
@@ -20,6 +19,5 @@ order: 90
 - [claudestream._protocol](claudestream-_protocol.html)
 - [claudestream._sync_session](claudestream-_sync_session.html)
 - [claudestream._tools](claudestream-_tools.html)
-- [claudestream.events](claudestream-events.html)
 - [claudestream.messages](claudestream-messages.html)
 - [claudestream.policy](claudestream-policy.html)
