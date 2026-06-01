@@ -32,8 +32,9 @@
       "deprecated": {}
     }
   },
+  "project_id": "claudestream",
   "name": "claudestream",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "help": "Stream Claude Code's JSON protocol",
   "commands": {
     "send": {
