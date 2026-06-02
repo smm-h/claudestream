@@ -7,6 +7,8 @@ import logging
 from collections.abc import AsyncIterator
 from typing import Any, Callable
 
+import psutil
+
 from claudestream.events import (
     ApiRetry,
     AskResult,
@@ -31,7 +33,7 @@ from claudestream.messages import AllowPermission, DenyPermission, InitializeReq
 from claudestream._options import SessionConfig
 from claudestream.policy import Allow, Deny, Sandbox, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
-from claudestream._protocol import flatten_event, parse_event, read_events, write_message
+from claudestream._protocol import flatten_event, parse_event, write_message
 from claudestream._tools import Tool
 
 log = logging.getLogger("claudestream")
@@ -576,26 +578,12 @@ class AsyncSession:
                 exit_code=self._process_mgr._process.returncode,
             )
 
-        # Health probe: warn if no events arrive within timeout
-        _first_event_received = False
-
-        async def _health_check() -> None:
-            await asyncio.sleep(_health_timeout)
-            if not _first_event_received:
-                log.warning("No events received after %.0fs — subprocess may be stuck", _health_timeout)
-
-        health_task = asyncio.ensure_future(_health_check())
-
         try:
             # Drain events captured during the startup MCP handshake
             if self._startup_events:
                 startup_events = list(self._startup_events)
                 self._startup_events.clear()
                 for event in startup_events:
-                    if not _first_event_received:
-                        _first_event_received = True
-                        health_task.cancel()
-
                     # Capture SystemInit metadata
                     if isinstance(event, SystemInit):
                         self._session_id = event.session_id
@@ -625,13 +613,35 @@ class AsyncSession:
                             cb(evt)
                         yield evt
 
-            async for event in read_events(self._process_mgr.stdout):
+            # Inline readline loop with liveness probing (replaces read_events)
+            import json as _json
+
+            stream = self._process_mgr.stdout
+            liveness_timeout = _health_timeout
+
+            while True:
+                try:
+                    line = await asyncio.wait_for(stream.readline(), timeout=liveness_timeout)
+                except asyncio.TimeoutError:
+                    # Liveness probe: check if the subprocess is still working
+                    await self._liveness_probe()
+                    # Process is busy (CPU > 0%), keep waiting
+                    continue
+
+                if not line:
+                    break
+                text = line.decode("utf-8", errors="replace").strip()
+                if not text:
+                    continue
+                try:
+                    raw_data = _json.loads(text)
+                except _json.JSONDecodeError:
+                    log.warning("skipping non-JSON line: %s", text[:200])
+                    continue
+                event = parse_event(raw_data)
+
                 if self._cancelled:
                     raise ClaudeStreamError("Session cancelled")
-
-                if not _first_event_received:
-                    _first_event_received = True
-                    health_task.cancel()
 
                 # Capture SystemInit (sent after first user message)
                 if isinstance(event, SystemInit):
@@ -695,7 +705,7 @@ class AsyncSession:
                         log.warning("event: Unknown (%s)", list(event.raw.keys()))
 
                 # Detect authentication errors (only on the first assistant
-                # message AND only when the error field is set — scanning
+                # message AND only when the error field is set -- scanning
                 # content text causes false positives when Claude talks
                 # about authentication in its response).
                 if isinstance(event, AssistantMessage) and not self._got_first_assistant:
@@ -749,11 +759,50 @@ class AsyncSession:
                 exit_code=rc,
             )
         finally:
-            health_task.cancel()
-            try:
-                await health_task
-            except asyncio.CancelledError:
-                pass
+            pass
+
+    async def _liveness_probe(self) -> None:
+        """Check if the subprocess is alive and doing work.
+
+        Called when readline times out. Uses psutil to check CPU usage.
+        If the process shows 0% CPU on two consecutive checks (2s apart),
+        it is considered stuck and is killed. If CPU > 0% on either check,
+        the process is assumed to be working and control returns to the caller.
+
+        Raises:
+            ClaudeStreamError: If the process is stuck or has died.
+        """
+        proc = self._process_mgr._process
+        if proc is None:
+            raise ClaudeStreamError("Subprocess died unexpectedly")
+
+        pid = proc.pid
+
+        try:
+            ps = psutil.Process(pid)
+        except psutil.NoSuchProcess:
+            raise ClaudeStreamError("Subprocess died unexpectedly")
+
+        # First CPU check (2-second measurement interval)
+        cpu1 = ps.cpu_percent(interval=2)
+        if cpu1 > 0:
+            log.info("liveness probe: pid=%d CPU=%.1f%% (working), continuing", pid, cpu1)
+            return
+
+        # Second consecutive check after 2 more seconds
+        try:
+            cpu2 = ps.cpu_percent(interval=2)
+        except psutil.NoSuchProcess:
+            raise ClaudeStreamError("Subprocess died unexpectedly")
+
+        if cpu2 > 0:
+            log.info("liveness probe: pid=%d CPU=%.1f%% on second check (working), continuing", pid, cpu2)
+            return
+
+        # Two consecutive 0% readings -- process is stuck
+        log.error("liveness probe: pid=%d 0%% CPU on two consecutive checks, killing", pid)
+        await self._process_mgr.close()
+        raise ClaudeStreamError("Subprocess stuck: alive but producing no output (0% CPU)")
 
     async def _handle_permission(self, request: PermissionRequest) -> bool:
         """Apply sandbox rules to a permission request. Returns True if handled."""

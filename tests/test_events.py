@@ -4,6 +4,9 @@ import asyncio
 import json
 from unittest.mock import MagicMock
 
+import pytest
+
+from claudestream._async_session import ClaudeStreamError
 from claudestream._protocol import parse_event, flatten_event, parse_content_block, parse_usage
 
 from tests.conftest import make_test_session
@@ -635,41 +638,34 @@ class TestSystemInitLazyCapture:
 
 
 class TestHealthProbe:
-    """Test that the startup health probe fires a warning when no events arrive."""
+    """Test that the liveness probe detects stuck subprocesses."""
 
-    def test_health_probe_fires_on_no_events(self, caplog):
-        """Health probe should log a warning when no events arrive within the timeout."""
-        import logging
+    def test_liveness_probe_kills_idle_process(self):
+        """Liveness probe should kill process and raise ClaudeStreamError when CPU is 0%."""
+        from unittest.mock import AsyncMock, patch
 
         async def run():
             session = make_test_session()
             session._process_mgr._process = MagicMock()
             session._process_mgr._process.returncode = None
+            session._process_mgr._process.pid = 12345
+            session._process_mgr.close = AsyncMock()
 
-            # Create a reader that never sends data, then feeds EOF after a delay
+            # Create a reader that never sends data (triggers timeout)
             reader = asyncio.StreamReader()
-
-            async def feed_eof_later():
-                await asyncio.sleep(0.3)
-                reader.feed_eof()
-
-            asyncio.ensure_future(feed_eof_later())
-
             session._process_mgr._process.stdout = reader
             session._process_mgr._process.stdin = MagicMock()
 
-            with caplog.at_level(logging.WARNING, logger="claudestream"):
-                try:
+            # Mock psutil.Process to return 0% CPU on both checks
+            mock_ps = MagicMock()
+            mock_ps.cpu_percent.return_value = 0.0
+
+            with patch("claudestream._async_session.psutil.Process", return_value=mock_ps):
+                with pytest.raises(ClaudeStreamError, match="Subprocess stuck"):
                     async for _ in session._read_turn(raw=False, _health_timeout=0.1):
                         pass
-                except Exception:
-                    pass  # ClaudeStreamError expected (no Result event)
+
+            # Verify close was called
+            session._process_mgr.close.assert_awaited_once()
 
         asyncio.run(run())
-
-        assert any(
-            "No events received after" in record.message
-            and "subprocess may be stuck" in record.message
-            and record.levelno == logging.WARNING
-            for record in caplog.records
-        )
