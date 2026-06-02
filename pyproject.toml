@@ -10,6 +10,7 @@ dependencies = [
     "msgspec",
     "selfdoc",
     "claudewheel",
+    "psutil",
 ]
 keywords = ["rlsbl"]
 
