@@ -1,7 +1,10 @@
 {
-    "version": "0.9.0",
+    "version": "0.10.0",
     "source": [
-        {"path": "claudestream", "language": "python"}
+        {
+            "path": "claudestream",
+            "language": "python"
+        }
     ],
     "docs": "docs",
     "base_url": "https://claudestream.smmh.dev",
@@ -35,7 +38,7 @@
             "indexed": false
         },
         {
-            "version": "0.9.0",
+            "version": "0.10.0",
             "indexed": true
         }
     ],
