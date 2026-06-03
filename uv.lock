@@ -197,7 +197,7 @@ wheels = [
 
 [[package]]
 name = "selfdoc"
-version = "0.13.0"
+version = "0.13.1"
 source = { editable = "../selfdoc" }
 dependencies = [
     { name = "strictcli" },
