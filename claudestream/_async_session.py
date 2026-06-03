@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import random
 from collections.abc import AsyncIterator
 from typing import Any, Callable
 
@@ -37,6 +38,15 @@ from claudestream._protocol import flatten_event, parse_event, write_message
 from claudestream._tools import Tool
 
 log = logging.getLogger("claudestream")
+
+_RECOVERY_MESSAGES = [
+    "continue",
+    "go ahead",
+    "carry on",
+    "proceed",
+    "keep going",
+    "resume where you left off",
+]
 
 
 class ClaudeStreamError(Exception):
@@ -78,6 +88,10 @@ class AsyncSession:
         self._tools_by_server: dict[str, list[Tool]] = {}
         for t in self._user_tools:
             self._tools_by_server.setdefault(t.server, []).append(t)
+
+        # Transparent retry state (must be initialized before _build_process_config)
+        self._resume_override: str | None = None
+        self._restart_count: int = 0
 
         self._process_mgr = ProcessManager(self._build_process_config())
 
@@ -176,7 +190,7 @@ class AsyncSession:
         # --- SessionResolution → ProcessConfig fields ---
         name: str | None = None
         session_id: str | None = None
-        resume_session_id = config.resume_session_id
+        resume_session_id = self._resume_override or config.resume_session_id
         continue_session = False
         fork_session = False
         if config.session_resolution is not None:
@@ -333,6 +347,10 @@ class AsyncSession:
     @property
     def permission_mode(self) -> str:
         return self._permission_mode
+
+    @property
+    def restart_count(self) -> int:
+        return self._restart_count
 
     @property
     def config(self) -> SessionConfig:
@@ -522,12 +540,36 @@ class AsyncSession:
         self._active_turn = True
         self._last_result = None
 
+        max_retries = 3
+
         try:
             msg = UserMessage(content=prompt, session_id=self._session_id or "")
             await write_message(self._process_mgr.stdin, msg)
 
-            async for event in self._read_turn(raw=raw, _health_timeout=self._health_timeout):
-                yield event
+            for attempt in range(max_retries + 1):
+                try:
+                    async for event in self._read_turn(raw=raw, _health_timeout=self._health_timeout):
+                        yield event
+                    return  # Normal completion
+                except ClaudeStreamError as exc:
+                    if "Subprocess stuck" not in str(exc) or attempt >= max_retries:
+                        raise  # Not a liveness error, or max retries exceeded
+
+                    log.warning(
+                        "Subprocess stuck on attempt %d/%d, restarting with --resume",
+                        attempt + 1,
+                        max_retries,
+                    )
+
+                    # Restart the subprocess
+                    await self._restart_subprocess()
+
+                    # Send a recovery message instead of the original prompt
+                    recovery = random.choice(_RECOVERY_MESSAGES)
+                    recovery_msg = UserMessage(content=recovery, session_id=self._session_id or "")
+                    await write_message(self._process_mgr.stdin, recovery_msg)
+
+                    # Continue the loop -- _read_turn will be called again on the new subprocess
         except Exception as exc:
             await self._fire_hooks(self._on_error, self, exc)
             raise
@@ -803,6 +845,35 @@ class AsyncSession:
         log.error("liveness probe: pid=%d 0%% CPU on two consecutive checks, killing", pid)
         await self._process_mgr.close()
         raise ClaudeStreamError("Subprocess stuck: alive but producing no output (0% CPU)")
+
+    async def _restart_subprocess(self) -> None:
+        """Kill the stuck subprocess and restart with --resume to preserve session."""
+        saved_session_id = self._session_id
+
+        # Close the dead process
+        await self._process_mgr.close()
+
+        # Set resume override so _build_process_config uses --resume
+        self._resume_override = saved_session_id
+
+        # Rebuild process manager with updated config
+        self._process_mgr = ProcessManager(self._build_process_config())
+
+        # Re-run startup (spawns subprocess, MCP handshake)
+        await self._start()
+
+        # Reset per-turn state; keep accumulated session state
+        self._startup_events = []
+        self._got_first_assistant = False
+        self._active_turn = False
+        self._cancelled = False
+
+        self._restart_count += 1
+        log.info(
+            "Subprocess restarted with --resume %s (restart #%d)",
+            saved_session_id,
+            self._restart_count,
+        )
 
     async def _handle_permission(self, request: PermissionRequest) -> bool:
         """Apply sandbox rules to a permission request. Returns True if handled."""
