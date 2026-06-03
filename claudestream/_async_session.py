@@ -376,6 +376,13 @@ class AsyncSession:
 
         SystemInit (if received during handshake) is stored and drained on first send().
         """
+        resume_session_id = self._resume_override or (
+            self._config.session_resolution.resume_session_id
+            if self._config.session_resolution is not None and self._config.session_resolution.resume_session_id is not None
+            else self._config.resume_session_id
+        )
+        log.info("session_start_begin", extra={"is_resume": bool(resume_session_id), "resume_session_id": resume_session_id})
+
         version_check_timeout = 2.0
         if self._config.process_limits is not None:
             version_check_timeout = self._config.process_limits.version_check_timeout
@@ -409,8 +416,10 @@ class AsyncSession:
             await self._run_mcp_handshake(timeout=10.0)
 
             log.info("MCP handshake complete, tools ready")
+            log.info("session_start_complete", extra={"session_id": self._session_id, "tools_registered": len(self._tools)})
         else:
             log.info("process started, skipping SystemInit wait (captured on first send)")
+            log.info("session_start_complete", extra={"session_id": self._session_id, "tools_registered": len(self._tools)})
 
     async def _read_control_response(self, timeout: float = 10.0) -> ControlResponse:
         """Read events from stdout until a ControlResponse is received.
@@ -553,13 +562,11 @@ class AsyncSession:
                     return  # Normal completion
                 except ClaudeStreamError as exc:
                     if "Subprocess stuck" not in str(exc) or attempt >= max_retries:
+                        if attempt >= max_retries and "Subprocess stuck" in str(exc):
+                            log.error("subprocess_retry_exhausted", extra={"attempts": max_retries, "session_id": self._session_id})
                         raise  # Not a liveness error, or max retries exceeded
 
-                    log.warning(
-                        "Subprocess stuck on attempt %d/%d, restarting with --resume",
-                        attempt + 1,
-                        max_retries,
-                    )
+                    log.warning("subprocess_retry_starting", extra={"attempt": attempt + 1, "max_retries": max_retries, "session_id": self._session_id})
 
                     # Restart the subprocess
                     await self._restart_subprocess()
@@ -568,6 +575,8 @@ class AsyncSession:
                     recovery = random.choice(_RECOVERY_MESSAGES)
                     recovery_msg = UserMessage(content=recovery, session_id=self._session_id or "")
                     await write_message(self._process_mgr.stdin, recovery_msg)
+
+                    log.info("subprocess_retry_resumed", extra={"attempt": attempt + 1, "session_id": self._session_id, "recovery_message": recovery})
 
                     # Continue the loop -- _read_turn will be called again on the new subprocess
         except Exception as exc:
@@ -665,6 +674,7 @@ class AsyncSession:
                 try:
                     line = await asyncio.wait_for(stream.readline(), timeout=liveness_timeout)
                 except asyncio.TimeoutError:
+                    log.info("readline_timeout", extra={"health_timeout": _health_timeout, "turn_count": self._turn_count})
                     # Liveness probe: check if the subprocess is still working
                     await self._liveness_probe()
                     # Process is busy (CPU > 0%), keep waiting
@@ -819,6 +829,7 @@ class AsyncSession:
             raise ClaudeStreamError("Subprocess died unexpectedly")
 
         pid = proc.pid
+        log.info("liveness_probe_started", extra={"pid": pid, "health_timeout": self._health_timeout})
 
         try:
             ps = psutil.Process(pid)
@@ -828,7 +839,7 @@ class AsyncSession:
         # First CPU check (2-second measurement interval)
         cpu1 = ps.cpu_percent(interval=2)
         if cpu1 > 0:
-            log.info("liveness probe: pid=%d CPU=%.1f%% (working), continuing", pid, cpu1)
+            log.warning("liveness_probe_check", extra={"pid": pid, "cpu_percent_1": cpu1, "cpu_percent_2": None, "action": "continuing"})
             return
 
         # Second consecutive check after 2 more seconds
@@ -838,29 +849,34 @@ class AsyncSession:
             raise ClaudeStreamError("Subprocess died unexpectedly")
 
         if cpu2 > 0:
-            log.info("liveness probe: pid=%d CPU=%.1f%% on second check (working), continuing", pid, cpu2)
+            log.warning("liveness_probe_check", extra={"pid": pid, "cpu_percent_1": cpu1, "cpu_percent_2": cpu2, "action": "continuing"})
             return
 
         # Two consecutive 0% readings -- process is stuck
-        log.error("liveness probe: pid=%d 0%% CPU on two consecutive checks, killing", pid)
+        log.error("liveness_probe_killing", extra={"pid": pid, "cpu_percent_1": cpu1, "cpu_percent_2": cpu2, "action": "kill"})
         await self._process_mgr.close()
         raise ClaudeStreamError("Subprocess stuck: alive but producing no output (0% CPU)")
 
     async def _restart_subprocess(self) -> None:
         """Kill the stuck subprocess and restart with --resume to preserve session."""
         saved_session_id = self._session_id
+        log.info("subprocess_restart_begin", extra={"session_id": saved_session_id})
 
         # Close the dead process
         await self._process_mgr.close()
+        log.info("subprocess_restart_process_closed")
 
         # Set resume override so _build_process_config uses --resume
         self._resume_override = saved_session_id
 
         # Rebuild process manager with updated config
         self._process_mgr = ProcessManager(self._build_process_config())
+        log.info("subprocess_restart_config_rebuilt", extra={"resume_session_id": saved_session_id})
 
         # Re-run startup (spawns subprocess, MCP handshake)
         await self._start()
+
+        log.info("subprocess_restart_started", extra={"pid": self._process_mgr._process.pid if self._process_mgr._process else None})
 
         # Reset per-turn state; keep accumulated session state
         self._startup_events = []
@@ -869,11 +885,7 @@ class AsyncSession:
         self._cancelled = False
 
         self._restart_count += 1
-        log.info(
-            "Subprocess restarted with --resume %s (restart #%d)",
-            saved_session_id,
-            self._restart_count,
-        )
+        log.info("subprocess_restart_complete", extra={"restart_count": self._restart_count})
 
     async def _handle_permission(self, request: PermissionRequest) -> bool:
         """Apply sandbox rules to a permission request. Returns True if handled."""
