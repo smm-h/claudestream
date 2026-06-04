@@ -2,9 +2,15 @@
 
 # Changelog
 
-## 0.12.1
+## 0.12.2
 
-Fix uv.lock local paths and Usage struct documentation
+Fix liveness probe to use event-based timeout instead of CPU-based polling
+
+### Fixes
+
+- **Fix.** Liveness probe now uses event-based timeout instead of CPU monitoring, correctly detecting I/O-bound subprocess hangs.
+
+## 0.12.1
 
 ### Fixes
 

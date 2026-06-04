@@ -211,7 +211,6 @@ with SyncSession(config) as session:
 | `msgspec` | * |
 | `selfdoc` | * |
 | `claudewheel` | * |
-| `psutil` | * |
 
 ## Modules
 
