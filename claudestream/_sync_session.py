@@ -130,6 +130,10 @@ class SyncSession:
         return self._async_session.total_tokens if self._async_session else 0
 
     @property
+    def total_cost_usd(self) -> float:
+        return self._async_session.total_cost_usd if self._async_session else 0.0
+
+    @property
     def sandbox(self) -> Sandbox | None:
         return self._async_session.sandbox if self._async_session else None
 
