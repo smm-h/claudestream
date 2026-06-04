@@ -102,7 +102,6 @@ _FLAG_REGISTRY: list[tuple[str, str, str]] = [
     ("resume_session_id", "--resume", "value"),
     ("effort", "--effort", "value"),
     ("json_schema_str", "--json-schema", "value"),
-    ("max_budget_usd", "--max-budget-usd", "value"),
     ("fallback_model", "--fallback-model", "value"),
     ("name", "--name", "value"),
     ("setting_sources", "--setting-sources", "value"),
@@ -201,9 +200,6 @@ class ProcessConfig(msgspec.Struct, frozen=True):
     ide: bool = False  # Enable IDE integration mode for the session
     tmux: bool = False  # Enable tmux integration for the session
     debug: bool = False  # Enable debug output from Claude Code; combines with debug_filter if set
-
-    # --- Float flag ---
-    max_budget_usd: float | None = None  # Maximum spend in USD for the session; None means unlimited
 
     # --- Currently hardcoded, now configurable ---
     verbose: bool = True  # Emit verbose protocol output in the event stream

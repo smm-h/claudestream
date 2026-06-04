@@ -31,7 +31,7 @@ from claudestream.events import (
     UnknownEvent,
 )
 from claudestream.messages import AllowPermission, DenyPermission, InitializeRequest, McpResponse, McpSetServers, UserMessage
-from claudestream._options import SessionConfig
+from claudestream._options import SessionConfig, validate_budget
 from claudestream.policy import Allow, Deny, Sandbox, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
 from claudestream._protocol import flatten_event, parse_event, write_message
@@ -80,6 +80,8 @@ class AsyncSession:
         self._cancelled = False
         self._turn_count: int = 0
         self._total_tokens: int = 0
+        self._total_cost_usd: float = 0.0
+        self._fired_thresholds: set[tuple[str, float]] = set()
         self._files_modified: set[str] = set()
         self._got_first_assistant: bool = False
 
@@ -183,10 +185,6 @@ class AsyncSession:
             buffer_limit = config.process_limits.buffer_limit
             shutdown_timeout = config.process_limits.shutdown_timeout
 
-        max_budget_usd: float | None = None
-        if config.budget is not None:
-            max_budget_usd = config.budget.max_cost_usd
-
         # --- SessionResolution → ProcessConfig fields ---
         name: str | None = None
         session_id: str | None = None
@@ -259,8 +257,6 @@ class AsyncSession:
             verbose=verbose,
             include_partial_messages=include_partial_messages,
             dangerously_skip_permissions=dangerously_skip_permissions,
-            # Float
-            max_budget_usd=max_budget_usd,
             # Process-level tuning
             buffer_limit=buffer_limit,
             shutdown_timeout=shutdown_timeout,
@@ -297,6 +293,10 @@ class AsyncSession:
     @property
     def total_tokens(self) -> int:
         return self._total_tokens
+
+    @property
+    def total_cost_usd(self) -> float:
+        return self._total_cost_usd
 
     @property
     def stderr_lines(self) -> list[str]:
@@ -376,6 +376,9 @@ class AsyncSession:
 
         SystemInit (if received during handshake) is stored and drained on first send().
         """
+        if self._config.budget is not None:
+            validate_budget(self._config.budget)
+
         resume_session_id = self._resume_override or (
             self._config.session_resolution.resume_session_id
             if self._config.session_resolution is not None and self._config.session_resolution.resume_session_id is not None
@@ -537,14 +540,6 @@ class AsyncSession:
                 "Cannot send while a previous turn is active. "
                 "Drain the event iterator or wait for the Result event."
             )
-
-        # Budget enforcement: check limits before starting a new turn
-        budget = self._config.budget
-        if budget is not None:
-            if budget.max_turns is not None and self._turn_count >= budget.max_turns:
-                raise ClaudeStreamError("Budget exceeded: max_turns limit reached")
-            if budget.max_tokens is not None and self._total_tokens >= budget.max_tokens:
-                raise ClaudeStreamError("Budget exceeded: max_tokens limit reached")
 
         self._active_turn = True
         self._last_result = None
@@ -800,7 +795,13 @@ class AsyncSession:
                     self._last_result = event
                     self._turn_count += 1
                     if event.usage is not None:
-                        self._total_tokens += event.usage.input_tokens + event.usage.output_tokens
+                        self._total_tokens = event.usage.input_tokens + event.usage.output_tokens
+                    self._total_cost_usd = event.total_cost_usd
+                    for te in self._check_thresholds():
+                        for cb in self._callbacks.get(type(te), []):
+                            cb(te)
+                        yield te
+                    self._write_cost_log(event)
                     await self._fire_hooks(self._on_turn_complete, self, event)
                     return
 
@@ -1030,6 +1031,66 @@ class AsyncSession:
 
         # Unknown JSON-RPC method
         return False
+
+    # --- Budget observation ---
+
+    def _check_thresholds(self) -> list:
+        """Check all threshold lists and return BudgetThreshold events for newly-crossed thresholds."""
+        from .events import BudgetThreshold
+
+        if self._config.budget is None:
+            return []
+
+        events = []
+        budget = self._config.budget
+
+        # Fixed metric order: cost, turns, tokens
+        checks = [
+            ("cost", budget.cost_thresholds, self._total_cost_usd),
+            ("turns", budget.turn_thresholds, float(self._turn_count)),
+            ("tokens", budget.token_thresholds, float(self._total_tokens)),
+        ]
+
+        for metric, thresholds, current in checks:
+            for t in sorted(thresholds):
+                key = (metric, float(t))
+                if key not in self._fired_thresholds and current >= t:
+                    self._fired_thresholds.add(key)
+                    events.append(BudgetThreshold(
+                        metric=metric,
+                        threshold=float(t),
+                        current_value=current,
+                    ))
+
+        return events
+
+    def _write_cost_log(self, result) -> None:
+        """Append a JSONL line to the cost log file if configured."""
+        path = self._config.cost_log_path
+        if path is None:
+            return
+
+        import json
+        from datetime import datetime, timezone
+
+        record = {
+            "session_id": self._session_id,
+            "model": self._model_name,
+            "turn": self._turn_count,
+            "total_cost_usd": self._total_cost_usd,
+            "stop_reason": result.stop_reason,
+            "duration_ms": result.duration_ms,
+            "duration_api_ms": result.duration_api_ms,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        if result.usage is not None:
+            record["input_tokens"] = result.usage.input_tokens
+            record["output_tokens"] = result.usage.output_tokens
+            record["cache_creation_input_tokens"] = result.usage.cache_creation_input_tokens
+            record["cache_read_input_tokens"] = result.usage.cache_read_input_tokens
+
+        with open(path, "a") as f:
+            f.write(json.dumps(record) + "\n")
 
     # --- Callbacks ---
 
