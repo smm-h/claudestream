@@ -11,6 +11,7 @@ from claudestream.policy import Sandbox
 
 __all__ = [
     "Budget",
+    "validate_budget",
     "ToolSchema",
     "SessionResolution",
     "DebugOptions",
@@ -74,11 +75,24 @@ class ProcessLimits(msgspec.Struct, frozen=True):
 
 
 class Budget(msgspec.Struct, frozen=True):
-    """Cost/turn/token limits for a session."""
+    """Cost/turn/token threshold lists for a session."""
 
-    max_cost_usd: float | None = None  # Maximum spend in USD; None means unlimited
-    max_turns: int | None = None  # Maximum conversation turns; None means unlimited
-    max_tokens: int | None = None  # Maximum tokens consumed; None means unlimited
+    cost_thresholds: list[float] = []  # USD amounts that trigger BudgetThreshold events
+    turn_thresholds: list[int] = []  # Turn counts that trigger BudgetThreshold events
+    token_thresholds: list[int] = []  # Token counts that trigger BudgetThreshold events
+
+
+def validate_budget(budget: Budget) -> None:
+    """Raise ValueError if any threshold is negative."""
+    for value in budget.cost_thresholds:
+        if value < 0:
+            raise ValueError(f"cost_thresholds contains negative value: {value}")
+    for value in budget.turn_thresholds:
+        if value < 0:
+            raise ValueError(f"turn_thresholds contains negative value: {value}")
+    for value in budget.token_thresholds:
+        if value < 0:
+            raise ValueError(f"token_thresholds contains negative value: {value}")
 
 
 class ToolSchema(msgspec.Struct, frozen=True):
@@ -131,6 +145,7 @@ class SessionConfig(msgspec.Struct, frozen=True):
     settings: str | None = None  # Path to a custom settings file
     setting_sources: str | None = None  # Comma-separated setting source override
     file_specs: list[str] | None = None  # Files to attach to the session context
+    cost_log_path: str | None = None  # Path to JSONL file for per-turn cost logging; None disables logging
     agent_name: str | None = None  # Built-in agent name to activate in Claude Code
     agents_json: str | None = None  # Path to a custom agents JSON configuration file
     hooks: dict | None = None  # Hook definitions for lifecycle events (e.g. pre-tool-use)
