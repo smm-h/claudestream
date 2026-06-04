@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json as _json_mod
 import logging
 import os
 import re
@@ -77,7 +78,21 @@ def load_agent(path: str | Path, cwd: str | None = None) -> AgentDefinition:
         data = expected.read_bytes()
     else:
         data = Path(path).read_bytes()
-    return msgspec.json.decode(data, type=AgentDefinition)
+    agent_def = msgspec.json.decode(data, type=AgentDefinition)
+
+    # Check for deprecated budget fields
+    raw = _json_mod.loads(data)
+    budget_dict = raw.get("budget")
+    if isinstance(budget_dict, dict):
+        deprecated = {"max_cost_usd", "max_turns", "max_tokens"}
+        for field in sorted(deprecated & budget_dict.keys()):
+            raise ValueError(
+                f"Agent '{agent_def.name}' uses deprecated budget field '{field}'. "
+                "Replace with threshold fields: cost_thresholds, turn_thresholds, "
+                "token_thresholds. See migration guide."
+            )
+
+    return agent_def
 
 
 def discover_agents(
