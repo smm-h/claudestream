@@ -30,6 +30,7 @@ from claudestream import (
     UnknownEvent,
 )
 from claudestream._agent import discover_agents, invoke_agent_sync, load_agent
+from claudestream._options import validate_budget
 from claudestream._color import Colorizer, should_color
 from claudestream._process import MINIMUM_CLAUDE_VERSION, find_binary, check_version, _version_lt
 
@@ -450,15 +451,12 @@ def cmd_agent_info(name: str) -> int | None:
     if agent.model:
         print(f"Model:       {agent.model}")
     if agent.budget:
-        parts = []
-        if agent.budget.max_cost_usd is not None:
-            parts.append(f"max_cost_usd={agent.budget.max_cost_usd}")
-        if agent.budget.max_turns is not None:
-            parts.append(f"max_turns={agent.budget.max_turns}")
-        if agent.budget.max_tokens is not None:
-            parts.append(f"max_tokens={agent.budget.max_tokens}")
-        if parts:
-            print(f"Budget:      {', '.join(parts)}")
+        if agent.budget.cost_thresholds:
+            print(f"Cost thresholds: {agent.budget.cost_thresholds}")
+        if agent.budget.turn_thresholds:
+            print(f"Turn thresholds: {agent.budget.turn_thresholds}")
+        if agent.budget.token_thresholds:
+            print(f"Token thresholds: {agent.budget.token_thresholds}")
     if agent.sandbox:
         print(f"Sandbox:     tools={agent.sandbox.tools}")
     if agent.tools:
@@ -480,16 +478,12 @@ def cmd_agent_validate(name: str) -> int | None:
     except (FileNotFoundError, Exception) as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
-    # Validate budget values are non-negative
+    # Validate budget thresholds are non-negative
     if agent.budget:
-        if agent.budget.max_cost_usd is not None and agent.budget.max_cost_usd < 0:
-            print("error: budget.max_cost_usd must be non-negative", file=sys.stderr)
-            return 1
-        if agent.budget.max_turns is not None and agent.budget.max_turns < 0:
-            print("error: budget.max_turns must be non-negative", file=sys.stderr)
-            return 1
-        if agent.budget.max_tokens is not None and agent.budget.max_tokens < 0:
-            print("error: budget.max_tokens must be non-negative", file=sys.stderr)
+        try:
+            validate_budget(agent.budget)
+        except ValueError as e:
+            print(f"error: {e}", file=sys.stderr)
             return 1
     # Basic tool schema validation
     if agent.tools:
