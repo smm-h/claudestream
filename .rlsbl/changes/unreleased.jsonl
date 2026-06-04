@@ -3,3 +3,4 @@
 {"commits":["dc3f3a5757e295b33842b49a6c44eb0c5e7cc133"],"user_facing":true,"description":"**Fix.** Clarified Usage struct docstring to explain context-dependent semantics (per-call vs cumulative).","type":"fix"}
 {"commits":["24abdb97cadc1f4b533525c95bd0430232cdb6e4"],"user_facing":false}
 {"commits":["a7d43dc5e3062f59d4107c849573ba8eb3279a7d"],"user_facing":false}
+{"commits":["062499a77d40641d80705df5cf3cd09e9c8215a7"],"user_facing":false}
