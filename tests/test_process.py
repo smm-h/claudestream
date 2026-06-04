@@ -73,12 +73,6 @@ class TestProcessConfig:
         idx = argv.index("--json-schema")
         assert argv[idx + 1] == '{"type":"object"}'
 
-    def test_max_budget_usd_flag(self):
-        config = ProcessConfig(binary="claude", max_budget_usd=10.5)
-        argv = config.build_argv()
-        idx = argv.index("--max-budget-usd")
-        assert argv[idx + 1] == "10.5"
-
     def test_bare_flag(self):
         config = ProcessConfig(binary="claude", bare=True)
         argv = config.build_argv()
@@ -184,7 +178,6 @@ class TestProcessConfig:
             ide=True,
             tmux=True,
             debug=True,
-            max_budget_usd=10.5,
             verbose=False,
             include_partial_messages=False,
             buffer_limit=8_000_000,
@@ -227,7 +220,6 @@ class TestProcessConfig:
         assert config.ide is True
         assert config.tmux is True
         assert config.debug is True
-        assert config.max_budget_usd == 10.5
         assert config.verbose is False
         assert config.include_partial_messages is False
         assert config.buffer_limit == 8_000_000
@@ -276,8 +268,6 @@ class TestProcessConfig:
         assert config.ide is False
         assert config.tmux is False
         assert config.debug is False
-        # Float field defaults to None
-        assert config.max_budget_usd is None
         # Hardcoded-now-configurable default to True
         assert config.verbose is True
         assert config.include_partial_messages is True
