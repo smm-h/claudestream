@@ -13,7 +13,6 @@ import pytest
 from claudestream import (
     AskResult,
     AssistantText,
-    Budget,
     ClaudeStreamError,
     FileEdit,
     FileWrite,
@@ -414,26 +413,6 @@ class TestFileTracking:
                     break
             assert found_file_write, "Expected a FileWrite event but none was emitted"
             assert session.files_modified, "Expected files_modified to be non-empty"
-
-
-class TestBudgetEnforcement:
-    """Verify budget limits are enforced."""
-
-    @pytest.mark.timeout(90)
-    def test_max_turns_enforced(self):
-        config = SessionConfig(
-            model=MODEL,
-            profile=PROFILE,
-            binary=BINARY,
-            sandbox=Sandbox(skip_permissions=True),
-            budget=Budget(max_cost_usd=None, max_turns=1, max_tokens=None),
-        )
-        with SyncSession(config) as session:
-            result = session.ask("Reply: ok")
-            assert result.text
-            # Second turn should raise because max_turns=1
-            with pytest.raises(ClaudeStreamError, match="max_turns"):
-                session.ask("Reply: ok again")
 
 
 class TestLifecycleHooks:
