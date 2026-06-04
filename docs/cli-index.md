@@ -12,7 +12,7 @@ order: 91
 
 Stream Claude Code's JSON protocol
 
-Version: 0.10.0
+Version: 0.11.0
 
 ## Commands
 

@@ -2,16 +2,33 @@
 
 # Changelog
 
-## 0.11.0
+## 0.12.0
 
-Transparent subprocess retry and structured logging
+Observe-not-limit budget redesign
 
 <details>
 <summary>Context</summary>
 
-Adds automatic subprocess retry on stuck detection and structured logging for liveness probe events.
+Budget fields replaced with threshold-based observation. Budget no longer kills sessions -- it emits BudgetThreshold events.
 
 </details>
+
+### Breaking
+
+- **Breaking.** Budget fields `max_cost_usd`, `max_turns`, `max_tokens` replaced with threshold-based observation: `cost_thresholds`, `turn_thresholds`, `token_thresholds`. Budget no longer kills sessions — it emits `BudgetThreshold` events when thresholds are crossed.
+
+### Features
+
+- **New.** `session.total_cost_usd` property for cumulative session cost tracking.
+- **New.** `SessionConfig.cost_log_path` enables per-turn JSONL cost logging with session metadata.
+- **New.** `SyncSession.total_cost_usd` property.
+
+### Fixes
+
+- **Fix.** Token accumulation no longer double-counts — `usage` fields are session-cumulative, not per-turn.
+- **Fix.** Pass all `SessionConfig` fields through agent invocation merge.
+
+## 0.11.0
 
 ### Features
 
