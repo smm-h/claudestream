@@ -1,0 +1,1 @@
+{"commits":["0109d34dcae90fa12842b6b0358f808f9ec83873"],"user_facing":true,"description":"**Fix.** Liveness probe now uses event-based timeout instead of CPU monitoring, correctly detecting I/O-bound subprocess hangs.","type":"fix"}
