@@ -83,6 +83,7 @@ The unified configuration object. Both `model` and `profile` are required; every
 | `settings` | `str | None` | `None` | Path to a custom settings file |
 | `setting_sources` | `str | None` | `None` | Comma-separated setting source override |
 | `file_specs` | `list[str] | None` | `None` | Files to attach to the session context |
+| `cost_log_path` | `str | None` | `None` | Path to JSONL file for per-turn cost logging; None disables logging |
 | `agent_name` | `str | None` | `None` | Built-in agent name to activate in Claude Code |
 | `agents_json` | `str | None` | `None` | Path to a custom agents JSON configuration file |
 | `hooks` | `dict | None` | `None` | Hook definitions for lifecycle events (e.g. pre-tool-use) |
@@ -94,9 +95,9 @@ The unified configuration object. Both `model` and `profile` are required; every
 
 | Field | Type | Default | Description |
 | --- | --- | --- | --- |
-| `max_cost_usd` | `float | None` | `None` | Maximum spend in USD; None means unlimited |
-| `max_turns` | `int | None` | `None` | Maximum conversation turns; None means unlimited |
-| `max_tokens` | `int | None` | `None` | Maximum tokens consumed; None means unlimited |
+| `cost_thresholds` | `list[float]` | `[]` | USD amounts that trigger BudgetThreshold events |
+| `turn_thresholds` | `list[int]` | `[]` | Turn counts that trigger BudgetThreshold events |
+| `token_thresholds` | `list[int]` | `[]` | Token counts that trigger BudgetThreshold events |
 
 ## Sandbox
 
@@ -185,7 +186,6 @@ Internal struct mapping SessionConfig to subprocess CLI flags. Not part of the p
 | `ide` | `bool` | `False` | Enable IDE integration mode for the session |
 | `tmux` | `bool` | `False` | Enable tmux integration for the session |
 | `debug` | `bool` | `False` | Enable debug output from Claude Code; combines with debug_filter if set |
-| `max_budget_usd` | `float | None` | `None` | Maximum spend in USD for the session; None means unlimited |
 | `verbose` | `bool` | `True` | Emit verbose protocol output in the event stream |
 | `include_partial_messages` | `bool` | `True` | Stream incremental message fragments as they arrive |
 | `dangerously_skip_permissions` | `bool` | `False` | Bypass all permission checks (unsafe, for testing only) |

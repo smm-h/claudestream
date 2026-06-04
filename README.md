@@ -185,6 +185,7 @@ with SyncSession(config) as session:
 | `settings` | `str | None` | `None` | Path to a custom settings file |
 | `setting_sources` | `str | None` | `None` | Comma-separated setting source override |
 | `file_specs` | `list[str] | None` | `None` | Files to attach to the session context |
+| `cost_log_path` | `str | None` | `None` | Path to JSONL file for per-turn cost logging; None disables logging |
 | `agent_name` | `str | None` | `None` | Built-in agent name to activate in Claude Code |
 | `agents_json` | `str | None` | `None` | Path to a custom agents JSON configuration file |
 | `hooks` | `dict | None` | `None` | Hook definitions for lifecycle events (e.g. pre-tool-use) |
