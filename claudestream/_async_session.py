@@ -5,10 +5,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+import time
 from collections.abc import AsyncIterator
 from typing import Any, Callable
-
-import psutil
 
 from claudestream.events import (
     ApiRetry,
@@ -104,6 +103,11 @@ class AsyncSession:
         self._health_timeout: float = 30.0
         if config.process_limits is not None:
             self._health_timeout = config.process_limits.health_timeout
+
+        # Stuck timeout: total silence before declaring subprocess stuck (default 120s)
+        self._stuck_timeout: float = 120.0
+        if config.process_limits is not None:
+            self._stuck_timeout = config.process_limits.stuck_timeout
 
         # Session metadata (populated from SystemInit)
         self._session_id: str | None = None
@@ -659,20 +663,24 @@ class AsyncSession:
                             cb(evt)
                         yield evt
 
-            # Inline readline loop with liveness probing (replaces read_events)
+            # Inline readline loop with event-based stuck detection (replaces read_events)
             import json as _json
 
             stream = self._process_mgr.stdout
             liveness_timeout = _health_timeout
+            last_event_time = time.monotonic()
 
             while True:
                 try:
                     line = await asyncio.wait_for(stream.readline(), timeout=liveness_timeout)
                 except asyncio.TimeoutError:
-                    log.info("readline_timeout", extra={"health_timeout": _health_timeout, "turn_count": self._turn_count})
-                    # Liveness probe: check if the subprocess is still working
-                    await self._liveness_probe()
-                    # Process is busy (CPU > 0%), keep waiting
+                    elapsed = time.monotonic() - last_event_time
+                    if elapsed >= self._stuck_timeout:
+                        log.error("Subprocess stuck: no events for %.0fs (stuck_timeout=%.0fs)", elapsed, self._stuck_timeout)
+                        await self._process_mgr.close()
+                        raise ClaudeStreamError(f"Subprocess stuck: no events for {elapsed:.0f}s")
+                    else:
+                        log.debug("Readline timeout after %.0fs (stuck_timeout=%.0fs, still waiting)", elapsed, self._stuck_timeout)
                     continue
 
                 if not line:
@@ -686,6 +694,7 @@ class AsyncSession:
                     log.warning("skipping non-JSON line: %s", text[:200])
                     continue
                 event = parse_event(raw_data)
+                last_event_time = time.monotonic()
 
                 if self._cancelled:
                     raise ClaudeStreamError("Session cancelled")
@@ -815,48 +824,14 @@ class AsyncSession:
             pass
 
     async def _liveness_probe(self) -> None:
-        """Check if the subprocess is alive and doing work.
-
-        Called when readline times out. Uses psutil to check CPU usage.
-        If the process shows 0% CPU on two consecutive checks (2s apart),
-        it is considered stuck and is killed. If CPU > 0% on either check,
-        the process is assumed to be working and control returns to the caller.
+        """Check if the subprocess is still alive.
 
         Raises:
-            ClaudeStreamError: If the process is stuck or has died.
+            ClaudeStreamError: If the process has died.
         """
         proc = self._process_mgr._process
-        if proc is None:
+        if proc is None or proc.returncode is not None:
             raise ClaudeStreamError("Subprocess died unexpectedly")
-
-        pid = proc.pid
-        log.info("liveness_probe_started", extra={"pid": pid, "health_timeout": self._health_timeout})
-
-        try:
-            ps = psutil.Process(pid)
-        except psutil.NoSuchProcess:
-            raise ClaudeStreamError("Subprocess died unexpectedly")
-
-        # First CPU check (2-second measurement interval)
-        cpu1 = ps.cpu_percent(interval=2)
-        if cpu1 > 0:
-            log.warning("liveness_probe_check", extra={"pid": pid, "cpu_percent_1": cpu1, "cpu_percent_2": None, "action": "continuing"})
-            return
-
-        # Second consecutive check after 2 more seconds
-        try:
-            cpu2 = ps.cpu_percent(interval=2)
-        except psutil.NoSuchProcess:
-            raise ClaudeStreamError("Subprocess died unexpectedly")
-
-        if cpu2 > 0:
-            log.warning("liveness_probe_check", extra={"pid": pid, "cpu_percent_1": cpu1, "cpu_percent_2": cpu2, "action": "continuing"})
-            return
-
-        # Two consecutive 0% readings -- process is stuck
-        log.error("liveness_probe_killing", extra={"pid": pid, "cpu_percent_1": cpu1, "cpu_percent_2": cpu2, "action": "kill"})
-        await self._process_mgr.close()
-        raise ClaudeStreamError("Subprocess stuck: alive but producing no output (0% CPU)")
 
     async def _restart_subprocess(self) -> None:
         """Kill the stuck subprocess and restart with --resume to preserve session."""

@@ -72,6 +72,7 @@ class ProcessLimits(msgspec.Struct, frozen=True):
     shutdown_timeout: float  # Seconds to wait for the subprocess to exit gracefully
     version_check_timeout: float  # Seconds to wait for the Claude CLI version check
     health_timeout: float  # Seconds of silence before warning the subprocess may be stuck
+    stuck_timeout: float = 120.0  # Seconds of total silence before declaring subprocess stuck
 
 
 class Budget(msgspec.Struct, frozen=True):

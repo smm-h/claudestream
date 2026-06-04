@@ -638,14 +638,15 @@ class TestSystemInitLazyCapture:
 
 
 class TestHealthProbe:
-    """Test that the liveness probe detects stuck subprocesses."""
+    """Test that the event-based stuck detection works."""
 
-    def test_liveness_probe_kills_idle_process(self):
-        """Liveness probe should kill process and raise ClaudeStreamError when CPU is 0%."""
-        from unittest.mock import AsyncMock, patch
+    def test_stuck_detection_kills_idle_process(self):
+        """When no events arrive for stuck_timeout, raise ClaudeStreamError."""
+        from unittest.mock import AsyncMock
 
         async def run():
             session = make_test_session()
+            session._stuck_timeout = 0.2  # Very short for testing
             session._process_mgr._process = MagicMock()
             session._process_mgr._process.returncode = None
             session._process_mgr._process.pid = 12345
@@ -656,14 +657,9 @@ class TestHealthProbe:
             session._process_mgr._process.stdout = reader
             session._process_mgr._process.stdin = MagicMock()
 
-            # Mock psutil.Process to return 0% CPU on both checks
-            mock_ps = MagicMock()
-            mock_ps.cpu_percent.return_value = 0.0
-
-            with patch("claudestream._async_session.psutil.Process", return_value=mock_ps):
-                with pytest.raises(ClaudeStreamError, match="Subprocess stuck"):
-                    async for _ in session._read_turn(raw=False, _health_timeout=0.1):
-                        pass
+            with pytest.raises(ClaudeStreamError, match="Subprocess stuck"):
+                async for _ in session._read_turn(raw=False, _health_timeout=0.1):
+                    pass
 
             # Verify close was called
             session._process_mgr.close.assert_awaited_once()
