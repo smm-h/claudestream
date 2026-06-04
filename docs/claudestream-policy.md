@@ -9,4 +9,4 @@ nav_order: 11
 
 # claudestream.policy
 
-:-: ref path="claudestream.policy"
+:-: ref path="claudestream.policy" lang="python"

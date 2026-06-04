@@ -9,4 +9,4 @@ nav_order: 8
 
 # claudestream._sync_session
 
-:-: ref path="claudestream._sync_session"
+:-: ref path="claudestream._sync_session" lang="python"

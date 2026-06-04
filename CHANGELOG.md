@@ -2,9 +2,23 @@
 
 # Changelog
 
-## 0.10.0
+## 0.11.0
 
-Liveness probe, MCP multi-server handshake fix
+Transparent subprocess retry and structured logging
+
+<details>
+<summary>Context</summary>
+
+Adds automatic subprocess retry on stuck detection and structured logging for liveness probe events.
+
+</details>
+
+### Features
+
+- **New.** Transparent subprocess retry when stuck detection triggers, preventing session hangs.
+- **New.** Structured logging for liveness probe events, subprocess retry, restart, and session start.
+
+## 0.10.0
 
 ### Features
 

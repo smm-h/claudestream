@@ -1,6 +1,6 @@
 {
   "name": "claudestream",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "Stream Claude Code's JSON protocol - CLI wrapper for the Python claudestream package",
   "bin": {
     "claudestream": "./bin/claudestream.mjs"

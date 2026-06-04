@@ -9,4 +9,4 @@ nav_order: 7
 
 # claudestream._protocol
 
-:-: ref path="claudestream._protocol"
+:-: ref path="claudestream._protocol" lang="python"

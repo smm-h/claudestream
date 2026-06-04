@@ -9,4 +9,4 @@ nav_order: 4
 
 # claudestream._color
 
-:-: ref path="claudestream._color"
+:-: ref path="claudestream._color" lang="python"

@@ -9,4 +9,4 @@ nav_order: 1
 
 # claudestream._agent
 
-:-: ref path="claudestream._agent"
+:-: ref path="claudestream._agent" lang="python"

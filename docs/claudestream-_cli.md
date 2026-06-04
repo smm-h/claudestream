@@ -9,4 +9,4 @@ nav_order: 3
 
 # claudestream._cli
 
-:-: ref path="claudestream._cli"
+:-: ref path="claudestream._cli" lang="python"

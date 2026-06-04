@@ -9,4 +9,4 @@ nav_order: 5
 
 # claudestream._options
 
-:-: ref path="claudestream._options"
+:-: ref path="claudestream._options" lang="python"
