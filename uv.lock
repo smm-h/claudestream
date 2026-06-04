@@ -22,11 +22,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "claudewheel", editable = "../claudewheel" },
+    { name = "claudewheel" },
     { name = "msgspec" },
     { name = "psutil" },
-    { name = "selfdoc", editable = "../selfdoc" },
-    { name = "strictcli", editable = "../strictcli/python" },
+    { name = "selfdoc" },
+    { name = "strictcli" },
 ]
 
 [package.metadata.requires-dev]
@@ -38,13 +38,14 @@ dev = [
 [[package]]
 name = "claudewheel"
 version = "0.4.5"
-source = { editable = "../claudewheel" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "strictcli" },
 ]
-
-[package.metadata]
-requires-dist = [{ name = "strictcli", editable = "../strictcli/python" }]
+sdist = { url = "https://files.pythonhosted.org/packages/01/54/4660524f2b7c316bc805e182e2352db20f50aca068021811144a0115d476/claudewheel-0.4.5.tar.gz", hash = "sha256:9e3977932ec37e86da5bce2a6a4bcfbe6910b7f1a16d71061ae94815c064eb96", size = 2556935, upload-time = "2026-05-18T19:58:39.937Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/5b/663b8dd3e23361ccdd17d229eb0861b67ba749d41dcf06b6a5f2acafc377/claudewheel-0.4.5-py3-none-any.whl", hash = "sha256:1ba78cde760a01495726b0c88ce7c2760a7ea0dd5f3146a7a70343a8956e7101", size = 59427, upload-time = "2026-05-18T19:58:38.585Z" },
+]
 
 [[package]]
 name = "colorama"
@@ -198,36 +199,20 @@ wheels = [
 [[package]]
 name = "selfdoc"
 version = "0.14.1"
-source = { editable = "../selfdoc" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "strictcli" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "brotli", marker = "extra == 'perf'", specifier = ">=1.1" },
-    { name = "predraw", marker = "extra == 'og'", editable = "../predraw" },
-    { name = "strictcli", editable = "../strictcli/python" },
-]
-provides-extras = ["perf", "og"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pygments", specifier = ">=2.20.0" },
-    { name = "pytest", specifier = ">=9.0.3" },
-    { name = "pytest-playwright", specifier = ">=0.7.2" },
+sdist = { url = "https://files.pythonhosted.org/packages/76/0e/8f7f3c355b7d60c9474f6e86950f49fd5be4d65c084373c954958e2b092e/selfdoc-0.14.1.tar.gz", hash = "sha256:b4a527ab3ba9362e5eefc62520b38e6ef4d6cd05a7852e5481641c1f6fd7ec47", size = 550401, upload-time = "2026-06-03T07:38:04.43Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a8/7b/7351fbe92a3fef18ff2fd9ba22b88cf77b0daf30b3d8b2557fb367e5f2a3/selfdoc-0.14.1-py3-none-any.whl", hash = "sha256:c5556b5189bcdf1b9647ef4d3c54ba417af05b12041850f62f55396701c3bdd8", size = 203651, upload-time = "2026-06-03T07:38:02.829Z" },
 ]
 
 [[package]]
 name = "strictcli"
 version = "0.14.0"
-source = { editable = "../strictcli/python" }
-
-[package.metadata]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "allpairspy" },
-    { name = "jsonschema" },
-    { name = "pytest" },
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/96/31/5e6428dbb161ee677e1f250f54e4455c9b7ed9424804e07b89208efc84da/strictcli-0.14.0.tar.gz", hash = "sha256:f6af5ddbb666abc9dbd3c8ff722ad6371ca76eefb1bac13ea2c1f9284b7d5057", size = 104372, upload-time = "2026-06-03T16:02:26.411Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/1a/fd2be861974518011157b49b6c4bae6ebff5218d4969c55216ca58f427c6/strictcli-0.14.0-py3-none-any.whl", hash = "sha256:772f4af6ee02b8d3f4eb4fad572a866cc207fa174635437e4334751bd86d477c", size = 30344, upload-time = "2026-06-03T16:02:25.244Z" },
 ]
