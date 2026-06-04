@@ -1,0 +1,1 @@
+{"commits":["4eaf879aadaee2abadaaf86c25af561c6166b1c4","579e16e2aed1095c2738abf79c0cb33479822268"],"user_facing":true,"description":"**New.** Transparent subprocess retry when stuck detection triggers, preventing session hangs.","type":"feature"}
