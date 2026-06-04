@@ -34,6 +34,7 @@ __all__ = [
     "HookEvent",
     "UnknownEvent",
     "ControlResponse",
+    "BudgetThreshold",
     "AskResult",
 ]
 
@@ -265,6 +266,15 @@ class Result(Event, frozen=True):
     total_cost_usd: float = 0.0  # Cumulative API cost for the session in US dollars
     usage: Usage | None = None  # Cumulative token usage for this turn
     api_error_status: int | None = None  # HTTP status code if the turn ended with an API error
+
+
+class BudgetThreshold(Event, frozen=True):
+    """Fired when a budget threshold is crossed. Informational only -- does not stop the session."""
+
+    type: str = "budget_threshold"  # Override base type with a fixed default
+    metric: str = ""  # One of "cost", "turns", "tokens"
+    threshold: float = 0.0  # The threshold value that was crossed
+    current_value: float = 0.0  # The current value that crossed the threshold
 
 
 class RateLimit(Event, frozen=True):

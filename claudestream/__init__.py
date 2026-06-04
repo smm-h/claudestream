@@ -7,6 +7,7 @@ from claudestream.events import (
     AssistantMessage,
     AssistantText,
     ApiRetry,
+    BudgetThreshold,
     CompactBoundary,
     ContentBlock,
     ControlResponse,
@@ -82,6 +83,7 @@ __all__ = [
     "ClaudeStreamError",
     # Events
     "AskResult",
+    "BudgetThreshold",
     "Event",
     "SystemInit",
     "ApiRetry",
