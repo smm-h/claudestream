@@ -4,3 +4,4 @@
 {"commits":["abb6aa4c0e78eecc5b9239427910c806b23920ae"],"user_facing":true,"description":"**Fix.** Token accumulation no longer double-counts \u2014 `usage` fields are session-cumulative, not per-turn.","type":"fix"}
 {"commits":["8778cc6605b4bda68a60343d2bcfb12eda422b2c"],"user_facing":true,"description":"**New.** `SyncSession.total_cost_usd` property.","type":"feature"}
 {"commits":["7620bbbf559f2ec836388b20d1cbb8c299db8734"],"user_facing":true,"description":"**Fix.** Pass all `SessionConfig` fields through agent invocation merge.","type":"fix"}
+{"commits":["fb9e5e0cf99cced820a2edd609f43d7c285d9cf9","a7eca22ad2758a66c2d6a5d4eb913c0ecb90f7a1","059aa3bbb8f3a30e8895c2e7980cc1a024fbcf24","602f4486916795000d84205fe23ee7e583a9bf4d"],"user_facing":false}
