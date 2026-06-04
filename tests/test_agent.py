@@ -33,15 +33,15 @@ from claudestream._tools import Tool
 class TestBudget:
     def test_budget_defaults(self):
         b = Budget()
-        assert b.max_cost_usd is None
-        assert b.max_turns is None
-        assert b.max_tokens is None
+        assert b.cost_thresholds == []
+        assert b.turn_thresholds == []
+        assert b.token_thresholds == []
 
     def test_budget_with_values(self):
-        b = Budget(max_cost_usd=5.0, max_turns=10, max_tokens=100_000)
-        assert b.max_cost_usd == 5.0
-        assert b.max_turns == 10
-        assert b.max_tokens == 100_000
+        b = Budget(cost_thresholds=[5.0, 10.0], turn_thresholds=[10], token_thresholds=[100_000])
+        assert b.cost_thresholds == [5.0, 10.0]
+        assert b.turn_thresholds == [10]
+        assert b.token_thresholds == [100_000]
 
 
 class TestToolSchema:
@@ -79,7 +79,7 @@ class TestAgentDefinition:
     def test_agent_definition_full(self):
         ts = ToolSchema(name="t", description="d", input_schema={"type": "object"}, server="test")
         sc = Sandbox(tools=["Read"], bare=True)
-        b = Budget(max_cost_usd=1.0, max_turns=5, max_tokens=50_000)
+        b = Budget(cost_thresholds=[1.0, 5.0], turn_thresholds=[5], token_thresholds=[50_000])
         ad = AgentDefinition(
             name="shop-assistant",
             prompt_template="Help the user buy {product}.",
@@ -157,7 +157,7 @@ class TestLoadAgent:
                 }
             ],
             "sandbox": {"tools": ["Read", "Bash"], "bare": True, "write_paths": ["/out"]},
-            "budget": {"max_cost_usd": 2.5, "max_turns": 20, "max_tokens": 200000},
+            "budget": {"cost_thresholds": [2.5, 5.0], "turn_thresholds": [20], "token_thresholds": [200000]},
             "model": "haiku",
         }
         path = tmp_path / "shop.agent.json"
@@ -174,9 +174,9 @@ class TestLoadAgent:
         assert ad.sandbox.tools == ["Read", "Bash"]
         assert ad.sandbox.bare is True
         assert ad.sandbox.write_paths == ["/out"]
-        assert ad.budget.max_cost_usd == 2.5
-        assert ad.budget.max_turns == 20
-        assert ad.budget.max_tokens == 200000
+        assert ad.budget.cost_thresholds == [2.5, 5.0]
+        assert ad.budget.turn_thresholds == [20]
+        assert ad.budget.token_thresholds == [200000]
         assert ad.model == "haiku"
 
     def test_load_agent_invalid_json(self, tmp_path):
@@ -197,7 +197,7 @@ class TestLoadAgent:
     def test_roundtrip(self):
         ts = ToolSchema(name="t", description="d", input_schema={"type": "object"}, server="test")
         sc = Sandbox(tools=["Read"])
-        b = Budget(max_cost_usd=1.0)
+        b = Budget(cost_thresholds=[1.0])
         ad = AgentDefinition(
             name="roundtrip",
             prompt_template="test",
@@ -210,6 +210,61 @@ class TestLoadAgent:
         encoded = msgspec.json.encode(ad)
         decoded = msgspec.json.decode(encoded, type=AgentDefinition)
         assert decoded == ad
+
+
+class TestLoadAgentMigrationGuard:
+    def test_max_cost_usd_raises(self, tmp_path):
+        data = {
+            "name": "old-agent",
+            "prompt_template": "p",
+            "version": "1.0",
+            "budget": {"max_cost_usd": 5.0},
+        }
+        path = tmp_path / "old.agent.json"
+        path.write_text(json.dumps(data))
+
+        with pytest.raises(ValueError, match="deprecated budget field 'max_cost_usd'"):
+            load_agent(path)
+
+    def test_max_turns_raises(self, tmp_path):
+        data = {
+            "name": "old-agent",
+            "prompt_template": "p",
+            "version": "1.0",
+            "budget": {"max_turns": 10},
+        }
+        path = tmp_path / "old.agent.json"
+        path.write_text(json.dumps(data))
+
+        with pytest.raises(ValueError, match="deprecated budget field 'max_turns'"):
+            load_agent(path)
+
+    def test_max_tokens_raises(self, tmp_path):
+        data = {
+            "name": "old-agent",
+            "prompt_template": "p",
+            "version": "1.0",
+            "budget": {"max_tokens": 50000},
+        }
+        path = tmp_path / "old.agent.json"
+        path.write_text(json.dumps(data))
+
+        with pytest.raises(ValueError, match="deprecated budget field 'max_tokens'"):
+            load_agent(path)
+
+    def test_new_fields_pass(self, tmp_path):
+        data = {
+            "name": "new-agent",
+            "prompt_template": "p",
+            "version": "1.0",
+            "budget": {"cost_thresholds": [5.0], "turn_thresholds": [10]},
+        }
+        path = tmp_path / "new.agent.json"
+        path.write_text(json.dumps(data))
+
+        ad = load_agent(path)
+        assert ad.budget.cost_thresholds == [5.0]
+        assert ad.budget.turn_thresholds == [10]
 
 
 class TestResolveModel:
@@ -468,6 +523,36 @@ class TestInvokeAgentSync:
                 with invoke_agent_sync(ad, base_config) as session:
                     pass
         assert "Agent: my-agent - A helpful agent" in caplog.text
+
+    def test_cost_log_path_passes_through(self):
+        ad = AgentDefinition(name="test", prompt_template="p", version="1.0", model="sonnet")
+        base_config = SessionConfig(
+            model="sonnet", profile="profile", cost_log_path="/tmp/costs.jsonl"
+        )
+        mock_session = MagicMock()
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
+
+        with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
+            with invoke_agent_sync(ad, base_config) as session:
+                pass
+            config = mock_cls.call_args.args[0]
+            assert config.cost_log_path == "/tmp/costs.jsonl"
+
+    def test_from_pr_passes_through(self):
+        ad = AgentDefinition(name="test", prompt_template="p", version="1.0", model="sonnet")
+        base_config = SessionConfig(
+            model="sonnet", profile="profile", from_pr="123"
+        )
+        mock_session = MagicMock()
+        mock_session.__enter__ = MagicMock(return_value=mock_session)
+        mock_session.__exit__ = MagicMock(return_value=False)
+
+        with patch("claudestream._sync_session.SyncSession", return_value=mock_session) as mock_cls:
+            with invoke_agent_sync(ad, base_config) as session:
+                pass
+            config = mock_cls.call_args.args[0]
+            assert config.from_pr == "123"
 
     def test_no_description_not_logged(self, caplog):
         ad = AgentDefinition(

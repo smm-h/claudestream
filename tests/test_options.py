@@ -4,6 +4,7 @@ import pytest
 
 from claudestream._options import (
     Budget,
+    validate_budget,
     ToolSchema,
     SessionResolution,
     DebugOptions,
@@ -150,20 +151,57 @@ class TestProcessLimits:
 class TestBudget:
     def test_all_defaults(self):
         b = Budget()
-        assert b.max_cost_usd is None
-        assert b.max_turns is None
-        assert b.max_tokens is None
+        assert b.cost_thresholds == []
+        assert b.turn_thresholds == []
+        assert b.token_thresholds == []
 
     def test_construction(self):
-        b = Budget(max_cost_usd=1.5, max_turns=10, max_tokens=4096)
-        assert b.max_cost_usd == 1.5
-        assert b.max_turns == 10
-        assert b.max_tokens == 4096
+        b = Budget(
+            cost_thresholds=[1.0, 5.0],
+            turn_thresholds=[10, 20],
+            token_thresholds=[4096, 8192],
+        )
+        assert b.cost_thresholds == [1.0, 5.0]
+        assert b.turn_thresholds == [10, 20]
+        assert b.token_thresholds == [4096, 8192]
 
     def test_frozen(self):
         b = Budget()
         with pytest.raises(AttributeError):
-            b.max_cost_usd = 2.0  # type: ignore[misc]
+            b.cost_thresholds = [1.0]  # type: ignore[misc]
+
+
+class TestValidateBudget:
+    def test_empty_lists_pass(self):
+        validate_budget(Budget())
+
+    def test_valid_thresholds_pass(self):
+        b = Budget(
+            cost_thresholds=[0.0, 1.0, 5.0],
+            turn_thresholds=[0, 5, 10],
+            token_thresholds=[0, 1000],
+        )
+        validate_budget(b)
+
+    def test_negative_cost_raises(self):
+        b = Budget(cost_thresholds=[-1.0])
+        with pytest.raises(ValueError, match="cost_thresholds contains negative value: -1.0"):
+            validate_budget(b)
+
+    def test_negative_turn_raises(self):
+        b = Budget(turn_thresholds=[-5])
+        with pytest.raises(ValueError, match="turn_thresholds contains negative value: -5"):
+            validate_budget(b)
+
+    def test_negative_token_raises(self):
+        b = Budget(token_thresholds=[-100])
+        with pytest.raises(ValueError, match="token_thresholds contains negative value: -100"):
+            validate_budget(b)
+
+    def test_mixed_valid_and_negative_raises(self):
+        b = Budget(cost_thresholds=[1.0, -0.5, 5.0])
+        with pytest.raises(ValueError, match="cost_thresholds contains negative value: -0.5"):
+            validate_budget(b)
 
 
 class TestToolSchema:
@@ -261,10 +299,18 @@ class TestSessionConfig:
         c = SessionConfig(
             model="sonnet",
             profile="work",
-            budget=Budget(max_turns=5),
+            budget=Budget(turn_thresholds=[5, 10]),
         )
         assert c.budget is not None
-        assert c.budget.max_turns == 5
+        assert c.budget.turn_thresholds == [5, 10]
+
+    def test_cost_log_path_default(self):
+        c = SessionConfig(model="sonnet", profile="work")
+        assert c.cost_log_path is None
+
+    def test_cost_log_path_set(self):
+        c = SessionConfig(model="sonnet", profile="work", cost_log_path="/tmp/costs.jsonl")
+        assert c.cost_log_path == "/tmp/costs.jsonl"
 
     def test_process_limits_flow_to_process_config(self):
         """ProcessLimits values flow through _build_process_config to ProcessConfig."""
