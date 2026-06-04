@@ -2,16 +2,16 @@
 
 # Changelog
 
+## 0.12.1
+
+Fix uv.lock local paths and Usage struct documentation
+
+### Fixes
+
+- **Fix.** Regenerated uv.lock to resolve dependencies from PyPI instead of local editable paths, fixing CI test failures.
+- **Fix.** Clarified Usage struct docstring to explain context-dependent semantics (per-call vs cumulative).
+
 ## 0.12.0
-
-Observe-not-limit budget redesign
-
-<details>
-<summary>Context</summary>
-
-Budget fields replaced with threshold-based observation. Budget no longer kills sessions -- it emits BudgetThreshold events.
-
-</details>
 
 ### Breaking
 
