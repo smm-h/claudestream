@@ -130,10 +130,10 @@ ContentBlock = TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock
 class Usage(msgspec.Struct, frozen=True):
     """Token usage statistics for an API call."""
 
-    input_tokens: int = 0  # Number of input tokens consumed
-    output_tokens: int = 0  # Number of output tokens generated
-    cache_creation_input_tokens: int = 0  # Input tokens written to the prompt cache
-    cache_read_input_tokens: int = 0  # Input tokens read from the prompt cache
+    input_tokens: int = 0  # Cumulative input tokens consumed across the session
+    output_tokens: int = 0  # Cumulative output tokens generated across the session
+    cache_creation_input_tokens: int = 0  # Cumulative input tokens written to the prompt cache across the session
+    cache_read_input_tokens: int = 0  # Cumulative input tokens read from the prompt cache across the session
 
 
 # ---------------------------------------------------------------------------
@@ -262,7 +262,7 @@ class Result(Event, frozen=True):
     num_turns: int = 0  # Number of agentic turns in this interaction
     result: str = ""  # Final text result of the turn
     stop_reason: str = ""  # Why generation stopped (e.g. "end_turn", "tool_use")
-    total_cost_usd: float = 0.0  # Total API cost for this turn in US dollars
+    total_cost_usd: float = 0.0  # Cumulative API cost for the session in US dollars
     usage: Usage | None = None  # Cumulative token usage for this turn
     api_error_status: int | None = None  # HTTP status code if the turn ended with an API error
 
