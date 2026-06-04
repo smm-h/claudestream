@@ -11,6 +11,7 @@ import strictcli
 
 from claudestream import (
     AssistantText,
+    BudgetThreshold,
     ClaudeStreamError,
     CompactBoundary,
     Event,
@@ -142,6 +143,8 @@ def _stream_events(session: SyncSession, prompt: str, footer: bool, color: Color
             print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
         elif isinstance(event, PermissionRequest):
             print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
+        elif isinstance(event, BudgetThreshold):
+            print(f"[threshold: {event.metric} {event.threshold} crossed at {event.current_value}]", file=sys.stderr)
         elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
             pass
 
@@ -339,6 +342,8 @@ def cmd_repl(
                     print(color.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
                 elif isinstance(event, PermissionRequest):
                     print(color.yellow(f"[permission: {event.tool_name}]"), file=sys.stderr)
+                elif isinstance(event, BudgetThreshold):
+                    print(f"[threshold: {event.metric} {event.threshold} crossed at {event.current_value}]", file=sys.stderr)
                 elif isinstance(event, (StreamDelta, SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
                     pass
             if not model_shown and session.model_name:
@@ -672,6 +677,8 @@ class EventPrinter:
             print(c.yellow(f"[permission needed: {event.tool_name}]"), file=sys.stderr)
         elif isinstance(event, RateLimit):
             print(c.yellow(f"[rate limit: {event.status}]"), file=sys.stderr)
+        elif isinstance(event, BudgetThreshold):
+            print(f"[threshold: {event.metric} {event.threshold} crossed at {event.current_value}]", file=sys.stderr)
         elif isinstance(event, (SystemInit, CompactBoundary, McpRequest, UnknownEvent)):
             pass
 
