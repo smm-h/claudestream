@@ -1,1 +1,2 @@
 {"commits":["4eaf879aadaee2abadaaf86c25af561c6166b1c4","579e16e2aed1095c2738abf79c0cb33479822268"],"user_facing":true,"description":"**New.** Transparent subprocess retry when stuck detection triggers, preventing session hangs.","type":"feature"}
+{"commits":["982d23071c91f0ddcef5c805e0acb4ba97450e42"],"user_facing":true,"description":"**New.** Structured logging for liveness probe events, subprocess retry, restart, and session start.","type":"feature"}
