@@ -34,7 +34,7 @@
   },
   "project_id": "claudestream",
   "name": "claudestream",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "help": "Stream Claude Code's JSON protocol",
   "commands": {
     "send": {
