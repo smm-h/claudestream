@@ -129,7 +129,7 @@ ContentBlock = TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock
 
 
 class Usage(msgspec.Struct, frozen=True):
-    """Token usage statistics for an API call."""
+    """Token usage statistics. Semantics depend on context: per-call in AssistantMessage, cumulative across the session in Result."""
 
     input_tokens: int = 0  # Cumulative input tokens consumed across the session
     output_tokens: int = 0  # Cumulative output tokens generated across the session
@@ -264,7 +264,7 @@ class Result(Event, frozen=True):
     result: str = ""  # Final text result of the turn
     stop_reason: str = ""  # Why generation stopped (e.g. "end_turn", "tool_use")
     total_cost_usd: float = 0.0  # Cumulative API cost for the session in US dollars
-    usage: Usage | None = None  # Cumulative token usage for this turn
+    usage: Usage | None = None  # Cumulative token usage for the session
     api_error_status: int | None = None  # HTTP status code if the turn ended with an API error
 
 
