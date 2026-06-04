@@ -285,7 +285,9 @@ async def invoke_agent(
         agents_json=config.agents_json,
         hooks=config.hooks,
         no_persistence=config.no_persistence,
+        from_pr=config.from_pr,
         tool_context=config.tool_context,
+        cost_log_path=config.cost_log_path,
     )
     async with AsyncSession(merged) as session:
         yield session
@@ -351,7 +353,9 @@ def invoke_agent_sync(
         agents_json=config.agents_json,
         hooks=config.hooks,
         no_persistence=config.no_persistence,
+        from_pr=config.from_pr,
         tool_context=config.tool_context,
+        cost_log_path=config.cost_log_path,
     )
     with SyncSession(merged) as session:
         yield session
