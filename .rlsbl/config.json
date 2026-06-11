@@ -3,6 +3,16 @@
     "pypi",
     "npm"
   ],
+  "pipelines": {
+    "pypi": {
+      "type": "pypi",
+      "local": false
+    },
+    "npm": {
+      "type": "npm",
+      "local": false
+    }
+  },
   "private": false,
   "push_timeout": 120
 }
