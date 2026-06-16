@@ -1,65 +1,74 @@
 {
-    "version": "0.12.2",
-    "source": [
-        {
-            "path": "claudestream",
-            "language": "python"
-        }
-    ],
-    "docs": "docs",
-    "base_url": "https://claudestream.smmh.dev",
-    "versions": [
-        {
-            "version": "0.3.0",
-            "indexed": true
-        },
-        {
-            "version": "0.5.1",
-            "indexed": false
-        },
-        {
-            "version": "0.6.0",
-            "indexed": false
-        },
-        {
-            "version": "0.6.1",
-            "indexed": false
-        },
-        {
-            "version": "0.6.2",
-            "indexed": false
-        },
-        {
-            "version": "0.7.0",
-            "indexed": false
-        },
-        {
-            "version": "0.7.6",
-            "indexed": false
-        },
-        {
-            "version": "0.12.2",
-            "indexed": true
-        }
-    ],
-    "locales": [
-        {
-            "code": "en",
-            "label": "English",
-            "default": true
-        }
-    ],
-    "deploy": {
-        "provider": "cloudflare-pages",
-        "project": "claudestream"
+  "version": "0.12.2",
+  "source": [
+    {
+      "path": "claudestream",
+      "language": "python"
+    }
+  ],
+  "docs": "docs",
+  "base_url": "https://claudestream.smmh.dev",
+  "versions": [
+    {
+      "version": "0.3.0",
+      "indexed": true
     },
-    "gen": {
-        "exclude": [
-            "claudestream"
-        ]
+    {
+      "version": "0.5.1",
+      "indexed": false
     },
-    "root_files": [
-        "docs/_CLAUDE.md",
-        "docs/_README.md"
+    {
+      "version": "0.6.0",
+      "indexed": false
+    },
+    {
+      "version": "0.6.1",
+      "indexed": false
+    },
+    {
+      "version": "0.6.2",
+      "indexed": false
+    },
+    {
+      "version": "0.7.0",
+      "indexed": false
+    },
+    {
+      "version": "0.7.6",
+      "indexed": false
+    },
+    {
+      "version": "0.12.2",
+      "indexed": true
+    }
+  ],
+  "locales": [
+    {
+      "code": "en",
+      "label": "English",
+      "default": true
+    }
+  ],
+  "deploy": {
+    "provider": "cloudflare-pages",
+    "project": "claudestream"
+  },
+  "gen": {
+    "exclude": [
+      "claudestream"
     ]
+  },
+  "root_files": [
+    "docs/_CLAUDE.md",
+    "docs/_README.md"
+  ],
+  "topology": {
+    "slug": "claudestream",
+    "docs_base": "https://docs.smmh.dev",
+    "posts_base": "https://blog.smmh.dev",
+    "assembly": "smm-h/selfdoc-cache"
+  },
+  "assembly": {
+    "repo": "smm-h/selfdoc-cache"
+  }
 }
