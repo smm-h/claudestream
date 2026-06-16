@@ -100,9 +100,9 @@ class ToolSchema(msgspec.Struct, frozen=True):
     """Tool schema without handler -- for JSON-serializable agent definitions."""
 
     name: str  # Unique tool identifier used in MCP tool calls
-    description: str  # Human-readable summary shown to the model
-    input_schema: dict  # JSON Schema defining the tool's input parameters
-    server: str  # MCP server name that hosts this tool
+    description: str | None = None  # Human-readable summary shown to the model
+    input_schema: dict | None = None  # JSON Schema defining the tool's input parameters
+    server: str | None = None  # MCP server name that hosts this tool
 
 
 class SessionConfig(msgspec.Struct, frozen=True):
