@@ -6,15 +6,15 @@ import os
 import sys
 
 
-def should_color(stream: object | None = None, no_color_flag: bool = False) -> bool:
+def should_color(stream: object | None = None, color_flag: bool = True) -> bool:
     """Determine if color output should be used.
 
     Returns False when:
-    - no_color_flag is True (--no-color CLI flag)
+    - color_flag is False (--no-color CLI flag)
     - NO_COLOR environment variable is set (https://no-color.org/)
     - The stream is not a TTY (piping/redirection)
     """
-    if no_color_flag:
+    if not color_flag:
         return False
     if os.environ.get("NO_COLOR"):
         return False

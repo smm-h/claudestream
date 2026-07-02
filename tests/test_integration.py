@@ -179,7 +179,7 @@ class TestStdinPiping:
                 "--model", MODEL,
                 "--profile", PROFILE,
                 "--skip-permissions",
-                "--no-color",
+                "--no-color",  # strictcli auto-negation of --color
             ],
             input="respond with exactly pong",
             capture_output=True,

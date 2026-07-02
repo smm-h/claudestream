@@ -1,4 +1,4 @@
-"""Tests for ANSI color support, TTY auto-detection, and --no-color flag."""
+"""Tests for ANSI color support, TTY auto-detection, and --color flag."""
 
 from io import StringIO
 from unittest.mock import patch, MagicMock
@@ -28,11 +28,11 @@ class TestShouldColor:
         stream = StringIO()
         assert should_color(stream=stream) is False
 
-    def test_returns_false_when_no_color_flag_is_true(self):
+    def test_returns_false_when_color_flag_is_false(self):
         """The --no-color flag explicitly disables color."""
         tty = MagicMock()
         tty.isatty.return_value = True
-        assert should_color(stream=tty, no_color_flag=True) is False
+        assert should_color(stream=tty, color_flag=False) is False
 
     def test_returns_false_when_no_color_env_var_is_set(self):
         """The NO_COLOR env var disables color (https://no-color.org/)."""
@@ -188,7 +188,7 @@ class TestEventPrinterColor:
 
 
 # ---------------------------------------------------------------------------
-# --no-color flag on commands
+# --color flag on commands
 # ---------------------------------------------------------------------------
 
 
@@ -203,17 +203,17 @@ def _mock_sync_session(events):
     return ctx
 
 
-class TestNoColorFlag:
+class TestColorFlag:
     @patch("claudestream._cli.SyncSession")
-    def test_no_color_suppresses_ansi_in_stream(self, mock_cls, capsys):
-        """cmd_stream with no_color=True produces no ANSI codes on stderr."""
+    def test_color_false_suppresses_ansi_in_stream(self, mock_cls, capsys):
+        """cmd_stream with color=False produces no ANSI codes on stderr."""
         events = [
             Thinking(type="thinking", text="hmm..."),
             RateLimit(type="rate_limit", status="rate_limited"),
             Result(type="result", duration_ms=100.0, total_cost_usd=0.001),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello", model="sonnet", profile="test", footer=True, no_color=True)
+        cmd_stream("hello", model="sonnet", profile="test", footer=True, color=False)
 
         captured = capsys.readouterr()
         assert "\033[" not in captured.err

@@ -162,7 +162,7 @@ def _stream_events(session: SyncSession, prompt: str, footer: bool, color: Color
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
-@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_send(
@@ -176,11 +176,11 @@ def cmd_send(
     footer: bool = True,
     system_prompt: str = "",
     stdin: bool = False,
-    no_color: bool = False,
+    color: bool = True,
     resume: str = "",
     from_pr: str = "",
 ) -> int | None:
-    color = Colorizer(should_color(no_color_flag=no_color))
+    color = Colorizer(should_color(color_flag=color))
     resolved = _resolve_prompt(prompt, stdin, color)
     if isinstance(resolved, int):
         return resolved
@@ -210,7 +210,7 @@ def cmd_send(
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
-@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_stream(
@@ -222,11 +222,11 @@ def cmd_stream(
     footer: bool = True,
     system_prompt: str = "",
     stdin: bool = False,
-    no_color: bool = False,
+    color: bool = True,
     resume: str = "",
     from_pr: str = "",
 ) -> int | None:
-    color = Colorizer(should_color(no_color_flag=no_color))
+    color = Colorizer(should_color(color_flag=color))
     resolved = _resolve_prompt(prompt, stdin, color)
     if isinstance(resolved, int):
         return resolved
@@ -251,7 +251,7 @@ def cmd_stream(
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
-@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_events(
@@ -263,11 +263,11 @@ def cmd_events(
     footer: bool = True,
     system_prompt: str = "",
     stdin: bool = False,
-    no_color: bool = False,
+    color: bool = True,
     resume: str = "",
     from_pr: str = "",
 ) -> int | None:
-    color = Colorizer(should_color(no_color_flag=no_color))
+    color = Colorizer(should_color(color_flag=color))
     resolved = _resolve_prompt(prompt, stdin, color)
     if isinstance(resolved, int):
         return resolved
@@ -293,7 +293,7 @@ def cmd_events(
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
-@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_repl(
@@ -303,11 +303,11 @@ def cmd_repl(
     skip_permissions: bool = False,
     footer: bool = True,
     system_prompt: str = "",
-    no_color: bool = False,
+    color: bool = True,
     resume: str = "",
     from_pr: str = "",
 ) -> None:
-    color = Colorizer(should_color(no_color_flag=no_color))
+    color = Colorizer(should_color(color_flag=color))
     config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume, from_pr)
 
     def handler(session: SyncSession) -> None:
@@ -367,7 +367,7 @@ agent_group = app.group("agent", help="Manage and run agents defined in .agent.j
 @strictcli.flag("profile", type=str, help="claudewheel profile to use")
 @strictcli.flag("cwd", type=str, help="Working directory", default="")
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
-@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
 def cmd_agent_run(
     definition: str,
     prompt: str,
@@ -376,9 +376,9 @@ def cmd_agent_run(
     profile: str,
     cwd: str = "",
     footer: bool = True,
-    no_color: bool = False,
+    color: bool = True,
 ) -> int | None:
-    color = Colorizer(should_color(no_color_flag=no_color))
+    color = Colorizer(should_color(color_flag=color))
 
     # Parse variables from --var key=value flags
     variables: dict[str, str] = {}
@@ -512,7 +512,7 @@ def cmd_agent_validate(name: str) -> int | None:
 @strictcli.flag("system-prompt", type=str, default="", short="s", help="System prompt")
 @strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
 @strictcli.flag("json-output", type=bool, default=False, help="Output AskResult as JSON")
-@strictcli.flag("no-color", type=bool, default=False, help="Disable colored output")
+@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_ask(
     prompt: str = "",
@@ -523,10 +523,10 @@ def cmd_ask(
     system_prompt: str = "",
     stdin: bool = False,
     json_output: bool = False,
-    no_color: bool = False,
+    color: bool = True,
     from_pr: str = "",
 ) -> int | None:
-    color = Colorizer(should_color(no_color_flag=no_color))
+    color = Colorizer(should_color(color_flag=color))
     resolved = _resolve_prompt(prompt, stdin, color)
     if isinstance(resolved, int):
         return resolved
