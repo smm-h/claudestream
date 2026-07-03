@@ -3,3 +3,4 @@
 {"commits":["9596c6f63f7412bf71691666cae5a500ca5880ce"],"user_facing":true,"description":"**Fix.** `ToolSchema` fields `description`, `input_schema`, and `server` are now optional, supporting name-only tool entries.","type":"fix"}
 {"commits":["c5226760b6bdd3edce1247a6f09d5fbf417479b3"],"user_facing":true,"description":"**New feature.** Added `__version__` attribute to the `claudestream` package.","type":"feature"}
 {"commits":["0043342f9026856b5e35bcb145ba79f48bb41517","5aab6ef77bf6ac43e571c6a37ec97a61e01936a5","5f26a24df6c77e15b05c2164a42f10c0c6d66e09","6132804c9f4cbffd8e5e0bd3d4317273e93c041d","64ec597a0d069d7bccec6a050e2520eea922bdde"],"user_facing":false}
+{"commits":["70a305ec18aed564cf97dceca7f46be853046c29","8f0c0b69e23d619c9220e4091b8773d075fea366","b98c14066dfe6901a74d79fe0a342b4db04b100d","cc1ef66ae14720b739b53771eed22a180b4b8f24"],"user_facing":false}
