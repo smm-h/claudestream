@@ -2,3 +2,4 @@
 {"commits":["60e5b69a33c9106cb90cb45b83375125d748e7e7"],"user_facing":true,"description":"**Breaking.** Renamed `--no-color` flag to `--color` (default: true) across all commands. Use `--no-color` to disable color output.","type":"breaking"}
 {"commits":["9596c6f63f7412bf71691666cae5a500ca5880ce"],"user_facing":true,"description":"**Fix.** `ToolSchema` fields `description`, `input_schema`, and `server` are now optional, supporting name-only tool entries.","type":"fix"}
 {"commits":["c5226760b6bdd3edce1247a6f09d5fbf417479b3"],"user_facing":true,"description":"**New feature.** Added `__version__` attribute to the `claudestream` package.","type":"feature"}
+{"commits":["0043342f9026856b5e35bcb145ba79f48bb41517","5aab6ef77bf6ac43e571c6a37ec97a61e01936a5","5f26a24df6c77e15b05c2164a42f10c0c6d66e09","6132804c9f4cbffd8e5e0bd3d4317273e93c041d","64ec597a0d069d7bccec6a050e2520eea922bdde"],"user_facing":false}
