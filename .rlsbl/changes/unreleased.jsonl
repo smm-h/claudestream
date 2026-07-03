@@ -1,1 +1,2 @@
 {"commits":["89eeaad06e0744d7c2b7a9e337604acb8bad5749"],"user_facing":false}
+{"commits":["60e5b69a33c9106cb90cb45b83375125d748e7e7"],"user_facing":true,"description":"**Breaking.** Renamed `--no-color` flag to `--color` (default: true) across all commands. Use `--no-color` to disable color output.","type":"breaking"}
