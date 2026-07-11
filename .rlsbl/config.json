@@ -10,7 +10,8 @@
     },
     "npm": {
       "type": "npm",
-      "local": false
+      "local": false,
+      "provenance": true
     }
   },
   "private": false,
