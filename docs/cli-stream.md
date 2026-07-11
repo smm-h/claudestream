@@ -2,6 +2,7 @@
 title: claudestream stream
 description: "Reference for the claudestream stream command — usage, flags, arguments, and examples for the stream subcommand of the claudestream CLI."
 generated: true
+seeded: true
 nav_group: "CLI Reference"
 nav_order: 8
 ---
@@ -14,7 +15,7 @@ Stream a prompt with real-time token output
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
-|------|-------|------|---------|-----|-------------|
+| --- | --- | --- | --- | --- | --- |
 | `--model` | `-m` | str |  |  | Model to use |
 | `--cwd` |  | str |  |  | Working directory for Claude |
 | `--skip-permissions` |  | bool |  |  | Skip all permission prompts |
@@ -29,5 +30,5 @@ Stream a prompt with real-time token output
 ## Arguments
 
 | Name | Required | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `prompt` | no | The prompt to send |

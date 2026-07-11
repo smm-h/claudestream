@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "name": "claudestream",
+  "slug": "claudestream",
+  "version": "0.12.2",
+  "description": "",
+  "language": "python",
+  "base_url": "https://claudestream.smmh.dev",
+  "pages": [
+    {
+      "path": "claudestream-_agent.md",
+      "title": "claudestream._agent",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_async_session.md",
+      "title": "claudestream._async_session",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_cli.md",
+      "title": "claudestream._cli",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_color.md",
+      "title": "claudestream._color",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_options.md",
+      "title": "claudestream._options",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_process.md",
+      "title": "claudestream._process",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_protocol.md",
+      "title": "claudestream._protocol",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_sync_session.md",
+      "title": "claudestream._sync_session",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_tools.md",
+      "title": "claudestream._tools",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-events.md",
+      "title": "claudestream.events",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-messages.md",
+      "title": "claudestream.messages",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-policy.md",
+      "title": "claudestream.policy",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream.md",
+      "title": "claudestream",
+      "type": "doc"
+    },
+    {
+      "path": "cli-agent.md",
+      "title": "claudestream agent",
+      "type": "doc"
+    },
+    {
+      "path": "cli-ask.md",
+      "title": "claudestream ask",
+      "type": "doc"
+    },
+    {
+      "path": "cli-config.md",
+      "title": "claudestream config",
+      "type": "doc"
+    },
+    {
+      "path": "cli-doctor.md",
+      "title": "claudestream doctor",
+      "type": "doc"
+    },
+    {
+      "path": "cli-events.md",
+      "title": "claudestream events",
+      "type": "doc"
+    },
+    {
+      "path": "cli-index.md",
+      "title": "claudestream CLI Reference",
+      "type": "doc"
+    },
+    {
+      "path": "cli-repl.md",
+      "title": "claudestream repl",
+      "type": "doc"
+    },
+    {
+      "path": "cli-send.md",
+      "title": "claudestream send",
+      "type": "doc"
+    },
+    {
+      "path": "cli-stream.md",
+      "title": "claudestream stream",
+      "type": "doc"
+    },
+    {
+      "path": "gen-index.md",
+      "title": "API Reference",
+      "type": "doc"
+    },
+    {
+      "path": "index.md",
+      "title": "claudestream",
+      "type": "doc"
+    }
+  ],
+  "posts": [],
+  "last_gen": "2026-07-11T14:30:39.212735+00:00"
+}

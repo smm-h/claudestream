@@ -22,7 +22,7 @@ The `@tool` decorator (`_tools.py`) and agent definitions (`_agent.py`) are cros
 
 ## Commands
 
-:-: table-commands path="claudestream/"
+:-: table-commands
 
 ## SessionConfig
 

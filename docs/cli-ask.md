@@ -2,6 +2,7 @@
 title: claudestream ask
 description: "Reference for the claudestream ask command — usage, flags, arguments, and examples for the ask subcommand of the claudestream CLI."
 generated: true
+seeded: true
 nav_group: "CLI Reference"
 nav_order: 2
 ---
@@ -14,7 +15,7 @@ Send a prompt and print the response text
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
-|------|-------|------|---------|-----|-------------|
+| --- | --- | --- | --- | --- | --- |
 | `--model` | `-m` | str |  |  | Model to use |
 | `--profile` |  | str |  |  | claudewheel profile |
 | `--cwd` |  | str |  |  | Working directory |
@@ -28,5 +29,5 @@ Send a prompt and print the response text
 ## Arguments
 
 | Name | Required | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `prompt` | no | The prompt to send |

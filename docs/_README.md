@@ -138,7 +138,7 @@ with SyncSession(config) as session:
 
 ## CLI
 
-:-: table-commands path="claudestream/"
+:-: table-commands
 
 ## Configuration
 

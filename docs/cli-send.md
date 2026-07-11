@@ -2,6 +2,7 @@
 title: claudestream send
 description: "Reference for the claudestream send command — usage, flags, arguments, and examples for the send subcommand of the claudestream CLI."
 generated: true
+seeded: true
 nav_group: "CLI Reference"
 nav_order: 7
 ---
@@ -14,7 +15,7 @@ Send a prompt and display the response
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
-|------|-------|------|---------|-----|-------------|
+| --- | --- | --- | --- | --- | --- |
 | `--model` | `-m` | str |  |  | Model to use (e.g. sonnet, opus) |
 | `--cwd` |  | str |  |  | Working directory for Claude |
 | `--raw` |  | bool |  |  | Show raw protocol events instead of flattened |
@@ -31,5 +32,5 @@ Send a prompt and display the response
 ## Arguments
 
 | Name | Required | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `prompt` | no | The prompt to send |

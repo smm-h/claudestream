@@ -22,7 +22,7 @@ The `@tool` decorator (`_tools.py`) and agent definitions (`_agent.py`) are cros
 - **claudestream._async_session** (`claudestream/_async_session.py`): Async session manager for the Claude Code stream-json protocol, handling process lifecycle, event parsing, and permission callbacks.
 - **claudestream._cli** (`claudestream/_cli.py`): Command-line interface entry point for claudestream, providing send, listen, and agent commands for interacting with Claude Code.
 - **claudestream._color** (`claudestream/_color.py`): ANSI color output support with automatic TTY detection, NO_COLOR environment variable compliance, and a reusable Colorizer class.
-- **claudestream._options** (`claudestream/_options.py`): Option structs for configuring claudestream sessions, covering session resolution, debug, MCP, plugins, stream output, process limits, budget, tool sche...
+- **claudestream._options** (`claudestream/_options.py`): Option structs for configuring claudestream sessions, covering session resolution, debug, MCP, plugins, stream output, process limits, budget, tool schema, and the unified SessionConfig.
 - **claudestream._process** (`claudestream/_process.py`): Subprocess management for launching and monitoring the Claude Code CLI process, including graceful shutdown and atexit cleanup.
 - **claudestream._protocol** (`claudestream/_protocol.py`): NDJSON protocol layer that reads raw Claude Code stream-json output lines and decodes them into typed Event objects for consumption.
 - **claudestream._sync_session** (`claudestream/_sync_session.py`): Synchronous session wrapper that bridges the async Claude Code stream-json protocol to a blocking iterator-based interface.
@@ -129,9 +129,9 @@ The unified configuration object. Both `model` and `profile` are required; every
 | Field | Type | Default | Description |
 | --- | --- | --- | --- |
 | `name` | `str` |  | Unique tool identifier used in MCP tool calls |
-| `description` | `str` |  | Human-readable summary shown to the model |
-| `input_schema` | `dict` |  | JSON Schema defining the tool's input parameters |
-| `server` | `str` |  | MCP server name that hosts this tool |
+| `description` | `str | None` | `None` | Human-readable summary shown to the model |
+| `input_schema` | `dict | None` | `None` | JSON Schema defining the tool's input parameters |
+| `server` | `str | None` | `None` | MCP server name that hosts this tool |
 
 ## ProcessConfig
 

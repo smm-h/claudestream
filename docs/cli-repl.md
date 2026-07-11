@@ -2,6 +2,7 @@
 title: claudestream repl
 description: "Reference for the claudestream repl command — usage, flags, arguments, and examples for the repl subcommand of the claudestream CLI."
 generated: true
+seeded: true
 nav_group: "CLI Reference"
 nav_order: 6
 ---
@@ -14,7 +15,7 @@ Interactive multi-turn REPL
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
-|------|-------|------|---------|-----|-------------|
+| --- | --- | --- | --- | --- | --- |
 | `--model` | `-m` | str |  |  | Model to use |
 | `--cwd` |  | str |  |  | Working directory for Claude |
 | `--skip-permissions` |  | bool |  |  | Skip all permission prompts |

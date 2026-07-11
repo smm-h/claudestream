@@ -18,7 +18,7 @@ Load an agent definition and run it with the given prompt. Accepts a path to a .
 ### Flags
 
 | Name | Short | Type | Default | Env | Description |
-|------|-------|------|---------|-----|-------------|
+| --- | --- | --- | --- | --- | --- |
 | `--var` |  | str |  |  | Variable in key=value format (repeatable) |
 | `--model` | `-m` | str |  |  | Model override |
 | `--profile` |  | str |  |  | claudewheel profile to use |
@@ -29,7 +29,7 @@ Load an agent definition and run it with the given prompt. Accepts a path to a .
 ### Arguments
 
 | Name | Required | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `prompt` | yes | User message to send to the agent |
 | `definition` | yes | Agent name or path to .agent.json file |
 
@@ -40,7 +40,7 @@ List available agents from .claudestream/agents/. Scans the agents directory in 
 ### Flags
 
 | Name | Short | Type | Default | Env | Description |
-|------|-------|------|---------|-----|-------------|
+| --- | --- | --- | --- | --- | --- |
 | `--cwd` |  | str |  |  | Working directory |
 
 ## agent info
@@ -50,7 +50,7 @@ Display agent definition details for a given agent name or path. Loads the .agen
 ### Arguments
 
 | Name | Required | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `name` | yes | Agent name or path |
 
 ## agent validate
@@ -60,5 +60,5 @@ Validate an agent definition by loading and checking its .agent.json file for st
 ### Arguments
 
 | Name | Required | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `name` | yes | Agent name or path |

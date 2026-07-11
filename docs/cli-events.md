@@ -2,6 +2,7 @@
 title: claudestream events
 description: "Reference for the claudestream events command — usage, flags, arguments, and examples for the events subcommand of the claudestream CLI."
 generated: true
+seeded: true
 nav_group: "CLI Reference"
 nav_order: 5
 ---
@@ -14,7 +15,7 @@ Debug: show all raw protocol events
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
-|------|-------|------|---------|-----|-------------|
+| --- | --- | --- | --- | --- | --- |
 | `--model` | `-m` | str |  |  | Model to use |
 | `--cwd` |  | str |  |  | Working directory for Claude |
 | `--skip-permissions` |  | bool |  |  | Skip all permission prompts |
@@ -29,5 +30,5 @@ Debug: show all raw protocol events
 ## Arguments
 
 | Name | Required | Description |
-|------|----------|-------------|
+| --- | --- | --- |
 | `prompt` | no | The prompt to send |
