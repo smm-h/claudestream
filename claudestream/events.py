@@ -321,8 +321,9 @@ class ControlResponse(Event, frozen=True):
     """Response to a control request (e.g. initialize, mcp_set_servers)."""
 
     request_id: str = ""  # ID of the control request this responds to
-    subtype: str = ""  # Response subtype (e.g. "success")
-    response: dict = {}  # Response payload
+    subtype: str = ""  # Response subtype ("success" or "error")
+    response: dict = {}  # Success response payload (inner "response" object)
+    error: str = ""  # Error text when subtype == "error"
 
 
 # ---------------------------------------------------------------------------

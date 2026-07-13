@@ -13,6 +13,7 @@ __all__ = [
     "McpResponse",
     "McpSetServers",
     "InitializeRequest",
+    "ControlRequest",
 ]
 
 
@@ -124,5 +125,28 @@ class InitializeRequest(msgspec.Struct, frozen=True):
                 "request_id": self.request_id,
                 "hooks": self.hooks,
                 "sdk_mcp_servers": self.sdk_mcp_servers,
+            },
+        }
+
+
+class ControlRequest(msgspec.Struct, frozen=True):
+    """A generic control request sent to the Claude Code CLI (interrupt, set_model, etc.)."""
+
+    request_id: str  # Unique ID correlating this request to its control_response
+    subtype: str  # Control request subtype (e.g. "interrupt", "set_model")
+    payload: dict = {}  # Subtype-specific fields merged into the inner request object
+
+    def to_dict(self) -> dict:
+        # request_id is placed BOTH at the top level and nested inside `request`.
+        # InitializeRequest/McpSetServers (which provably work against the real CLI)
+        # nest it under `request`; the SDK envelope carries it top-level. Emitting
+        # both satisfies every observed CLI form.
+        return {
+            "type": "control_request",
+            "request_id": self.request_id,
+            "request": {
+                "subtype": self.subtype,
+                "request_id": self.request_id,
+                **self.payload,
             },
         }

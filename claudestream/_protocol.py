@@ -39,6 +39,7 @@ from claudestream.events import (
 )
 from claudestream.messages import (
     AllowPermission,
+    ControlRequest,
     DenyPermission,
     InitializeRequest,
     McpResponse,
@@ -49,7 +50,7 @@ from claudestream.messages import (
 log = logging.getLogger("claudestream")
 
 # Type alias for all writable messages
-Writable = Union[UserMessage, AllowPermission, DenyPermission, McpResponse, McpSetServers, InitializeRequest]
+Writable = Union[UserMessage, AllowPermission, DenyPermission, McpResponse, McpSetServers, InitializeRequest, ControlRequest]
 
 
 # ---------------------------------------------------------------------------
@@ -267,6 +268,7 @@ def parse_event(raw: dict) -> Event:
         subtype = resp.get("subtype", "")
         request_id = resp.get("request_id", "")
         response_data = resp.get("response", {})
+        error_text = resp.get("error", "")
         return ControlResponse(
             type="control_response",
             session_id=session_id,
@@ -274,6 +276,7 @@ def parse_event(raw: dict) -> Event:
             request_id=request_id,
             subtype=subtype,
             response=response_data,
+            error=error_text,
         )
 
     # -- unknown -------------------------------------------------------------
