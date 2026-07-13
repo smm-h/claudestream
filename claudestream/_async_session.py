@@ -14,6 +14,8 @@ from claudestream.events import (
     AskResult,
     AssistantMessage,
     AssistantText,
+    ContextCategory,
+    ContextUsage,
     ControlResponse,
     Event,
     FileEdit,
@@ -228,7 +230,7 @@ class AsyncSession:
             cwd=config.cwd,
             model=config.model,
             system_prompt=config.system_prompt,
-            permission_mode=None,  # not exposed via SessionConfig; sandbox handles it
+            permission_mode=config.permission_mode,
             allowed_tools=allowed_tools,
             permission_prompt_tool=permission_prompt_tool,
             resume_session_id=resume_session_id,
@@ -1259,3 +1261,59 @@ class AsyncSession:
         """Deny a permission request that was surfaced to the consumer."""
         msg = DenyPermission(request_id=request_id, message=message)
         await write_message(self._process_mgr.stdin, msg)
+
+    # --- Public control methods ---
+
+    async def interrupt(self, *, timeout: float = 30.0) -> list[str]:
+        """Interrupt the running turn.
+
+        Callable while a turn is active -- that is its purpose. Returns the list
+        of user messages the CLI still had queued (empty on older CLIs that omit
+        the field).
+        """
+        response = await self._control_request("interrupt", timeout=timeout)
+        return response.get("still_queued", [])
+
+    async def set_permission_mode(self, mode: str) -> None:
+        """Change the permission mode mid-session.
+
+        The mode string is passed through unvalidated; the CLI rejects unknown
+        modes with an error response. On success the ``permission_mode`` property
+        is updated to reflect the new mode.
+        """
+        await self._control_request("set_permission_mode", {"mode": mode})
+        self._permission_mode = mode
+
+    async def set_model(self, model: str | None) -> None:
+        """Switch the model mid-session.
+
+        Passing None omits the model field, resetting the CLI to its default. On
+        success the ``model_name`` property is updated (None means the model is
+        unknown until the next SystemInit reports it).
+        """
+        payload = {"model": model} if model is not None else {}
+        await self._control_request("set_model", payload)
+        self._model_name = model
+
+    async def get_context_usage(self, *, timeout: float = 30.0) -> ContextUsage:
+        """Query the model's current context-window usage.
+
+        Raises ClaudeStreamError if the CLI response omits totalTokens/maxTokens.
+        """
+        response = await self._control_request("get_context_usage", timeout=timeout)
+        if "totalTokens" not in response or "maxTokens" not in response:
+            raise ClaudeStreamError(
+                f"get_context_usage response missing totalTokens/maxTokens: {response!r}"
+            )
+        categories = [
+            ContextCategory(name=c.get("name", ""), tokens=c.get("tokens", 0))
+            for c in response.get("categories", [])
+        ]
+        return ContextUsage(
+            total_tokens=response["totalTokens"],
+            max_tokens=response["maxTokens"],
+            percentage=response.get("percentage", 0.0),
+            categories=categories,
+            auto_compact_enabled=response.get("isAutoCompactEnabled", False),
+            raw=response,
+        )

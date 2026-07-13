@@ -116,6 +116,7 @@ class SessionConfig(msgspec.Struct, frozen=True):
     cwd: str | None = None  # Working directory for the Claude Code process; None uses current dir
     binary: str | None = None  # Path to the Claude CLI binary; None uses PATH lookup
     sandbox: Sandbox | None = None  # Tool/filesystem sandbox policy; None means no restrictions
+    permission_mode: str | None = None  # Initial permission mode (e.g. "default", "plan", "acceptEdits"); passed unvalidated to --permission-mode
     system_prompt: str | None = None  # Custom system prompt to prepend to the session
     tools: list[Tool] | None = None  # User-defined tools served via MCP to Claude Code
     extra_args: list[str] | None = None  # Additional raw CLI arguments passed to the process
