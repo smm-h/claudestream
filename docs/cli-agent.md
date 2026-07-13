@@ -1,6 +1,6 @@
 ---
 title: claudestream agent
-description: "Reference for the claudestream agent command group — subcommands, flags, arguments, and usage details for the agent group in the claudestream CLI."
+description: "Reference for the claudestream agent command group: run, list, info, and validate agents defined in .agent.json files with tools, sandbox, and budget limits."
 generated: true
 nav_group: "CLI Reference"
 nav_order: 1
@@ -24,7 +24,7 @@ Load an agent definition and run it with the given prompt. Accepts a path to a .
 | `--profile` |  | str |  |  | claudewheel profile to use |
 | `--cwd` |  | str |  |  | Working directory |
 | `--footer` |  | bool | True |  | Show cost and timing on stderr |
-| `--no-color` |  | bool |  |  | Disable colored output |
+| `--color` |  | bool | True |  | Enable colored output |
 
 ### Arguments
 

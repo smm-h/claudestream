@@ -25,7 +25,7 @@ Send a prompt and display the response
 | `--footer` |  | bool | True |  | Show cost and timing on stderr |
 | `--system-prompt` | `-s` | str |  |  | System prompt for Claude |
 | `--stdin` |  | bool |  |  | Read prompt from stdin |
-| `--no-color` |  | bool |  |  | Disable colored output |
+| `--color` |  | bool | True |  | Enable colored output |
 | `--resume` |  | str |  |  | Resume a previous session by ID |
 | `--from-pr` |  | str |  |  | Resume from a PR |
 
