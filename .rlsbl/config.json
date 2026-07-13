@@ -16,5 +16,6 @@
   },
   "private": false,
   "push_timeout": 120,
+  "check_timeout": 300,
   "coverage_unit": "commit"
 }
