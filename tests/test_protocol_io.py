@@ -4,8 +4,8 @@ import asyncio
 import json
 import logging
 
-from claudestream._protocol import read_events, write_message
-from claudestream.events import SystemInit, UnknownEvent
+from claudestream._protocol import parse_event, read_events, write_message
+from claudestream.events import ControlResponse, SystemInit, UnknownEvent
 from claudestream.messages import UserMessage
 
 
@@ -138,3 +138,37 @@ class TestWriteMessage:
             )
 
         asyncio.run(run())
+
+
+class TestControlResponseParse:
+    def test_success_response(self):
+        raw = {
+            "type": "control_response",
+            "response": {
+                "subtype": "success",
+                "request_id": "ctrl_1",
+                "response": {"still_queued": ["u1"]},
+            },
+        }
+        event = parse_event(raw)
+        assert isinstance(event, ControlResponse)
+        assert event.request_id == "ctrl_1"
+        assert event.subtype == "success"
+        assert event.response == {"still_queued": ["u1"]}
+        assert event.error == ""
+
+    def test_error_response(self):
+        raw = {
+            "type": "control_response",
+            "response": {
+                "subtype": "error",
+                "request_id": "ctrl_2",
+                "error": "unsupported mode",
+            },
+        }
+        event = parse_event(raw)
+        assert isinstance(event, ControlResponse)
+        assert event.request_id == "ctrl_2"
+        assert event.subtype == "error"
+        assert event.error == "unsupported mode"
+        assert event.response == {}

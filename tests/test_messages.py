@@ -2,6 +2,7 @@
 
 from claudestream.messages import (
     UserMessage, AllowPermission, DenyPermission, McpResponse, McpSetServers, InitializeRequest,
+    ControlRequest,
 )
 
 
@@ -96,3 +97,38 @@ class TestInitializeRequest:
         assert d["request"]["request_id"] == "init_1"
         assert d["request"]["hooks"] == {}
         assert d["request"]["sdk_mcp_servers"] == []
+
+
+class TestControlRequest:
+    def test_to_dict_envelope_no_payload(self):
+        msg = ControlRequest(request_id="ctrl_1", subtype="interrupt")
+        assert msg.to_dict() == {
+            "type": "control_request",
+            "request_id": "ctrl_1",
+            "request": {
+                "subtype": "interrupt",
+                "request_id": "ctrl_1",
+            },
+        }
+
+    def test_to_dict_with_payload(self):
+        msg = ControlRequest(
+            request_id="ctrl_2", subtype="set_model", payload={"model": "sonnet"}
+        )
+        assert msg.to_dict() == {
+            "type": "control_request",
+            "request_id": "ctrl_2",
+            "request": {
+                "subtype": "set_model",
+                "request_id": "ctrl_2",
+                "model": "sonnet",
+            },
+        }
+
+    def test_request_id_mirrors_initialize_placement(self):
+        # request_id must appear nested under "request" exactly like the
+        # InitializeRequest envelope that provably works against the real CLI.
+        msg = ControlRequest(request_id="ctrl_3", subtype="get_context_usage")
+        d = msg.to_dict()
+        assert d["request"]["request_id"] == "ctrl_3"
+        assert d["request_id"] == "ctrl_3"
