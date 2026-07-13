@@ -18,6 +18,8 @@ __all__ = [
     # ContentBlock is a type alias (not renderable by selfdoc ref),
     # so it is excluded from __all__. Import it by name if needed.
     "Usage",
+    "ContextCategory",
+    "ContextUsage",
     "AssistantMessage",
     "ToolResultMessage",
     "AssistantText",
@@ -135,6 +137,29 @@ class Usage(msgspec.Struct, frozen=True):
     output_tokens: int = 0  # Cumulative output tokens generated across the session
     cache_creation_input_tokens: int = 0  # Cumulative input tokens written to the prompt cache across the session
     cache_read_input_tokens: int = 0  # Cumulative input tokens read from the prompt cache across the session
+
+
+# ---------------------------------------------------------------------------
+# Context usage (returned by get_context_usage())
+# ---------------------------------------------------------------------------
+
+
+class ContextCategory(msgspec.Struct, frozen=True):
+    """One category of the model's context window (e.g. system prompt, messages, tools)."""
+
+    name: str  # Category label reported by the CLI
+    tokens: int  # Tokens attributed to this category
+
+
+class ContextUsage(msgspec.Struct, frozen=True):
+    """Snapshot of the model's context-window usage, returned by get_context_usage()."""
+
+    total_tokens: int  # Tokens currently occupying the context window
+    max_tokens: int  # Maximum tokens the context window can hold
+    percentage: float = 0.0  # Fraction of the window in use (0.0 to 1.0 or 0-100, per the CLI)
+    categories: list[ContextCategory] = []  # Per-category token breakdown
+    auto_compact_enabled: bool = False  # Whether the CLI auto-compacts history near the limit
+    raw: dict = {}  # Full unmodified response payload for forward compatibility
 
 
 # ---------------------------------------------------------------------------

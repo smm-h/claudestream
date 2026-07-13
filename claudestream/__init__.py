@@ -12,6 +12,8 @@ from claudestream.events import (
     BudgetThreshold,
     CompactBoundary,
     ContentBlock,
+    ContextCategory,
+    ContextUsage,
     ControlResponse,
     Event,
     FileEdit,
@@ -113,6 +115,8 @@ __all__ = [
     "ToolResultBlock",
     "ContentBlock",
     "Usage",
+    "ContextCategory",
+    "ContextUsage",
     # Messages
     "AllowPermission",
     "DenyPermission",
