@@ -164,9 +164,15 @@ def build_completed_result(payload: dict) -> object:
 
 
 class Probe:
-    def __init__(self, scenario: str, model: str):
+    def __init__(self, scenario: str, model: str, answer_key: str = "question"):
         self.scenario = scenario
         self.model = model
+        # answer_key selects how the E_answer scenario keys/shapes the answers it
+        # injects into updatedInput on the can_use_tool gate:
+        #   "question" -> answers is a map {question_text: chosen_label}
+        #   "header"   -> answers is a map {header: chosen_label}
+        #   "list"     -> answers is a list [chosen_label] (positional)
+        self.answer_key = answer_key
         self.lines: list[str] = []
         self.session_id = ""
         self.proc: asyncio.subprocess.Process | None = None
@@ -214,7 +220,12 @@ class Probe:
         self.responded_control_ids.add(req_id)
         # Echo the tool input back as updatedInput (both key spellings observed
         # across CLI versions: tool_input on the wire, input in SDK typings).
-        updated = request.get("input") or request.get("tool_input") or {}
+        updated = dict(request.get("input") or request.get("tool_input") or {})
+        # E_answer: inject the user's answer into updatedInput. The hypothesis is
+        # that AskUserQuestion reads its answers from an `answers` parameter that
+        # the permission component is expected to fill.
+        if self.scenario == "E_answer":
+            updated["answers"] = self._build_answers(updated)
         resp = {
             "type": "control_response",
             "response": {
@@ -224,6 +235,37 @@ class Probe:
             },
         }
         await self._write(resp)
+
+    def _build_answers(self, tool_input: dict):
+        """Build the `answers` value for the AskUserQuestion updatedInput.
+
+        We always choose "Red" for every question. Shape depends on answer_key.
+        """
+        questions = tool_input.get("questions") or []
+        if isinstance(questions, dict):
+            questions = [questions]
+
+        def chosen_label(q: dict) -> str:
+            opts = q.get("options") or []
+            for o in opts:
+                label = o.get("label") if isinstance(o, dict) else o
+                if isinstance(label, str) and "red" in label.lower():
+                    return label
+            if opts:
+                first = opts[0]
+                return first.get("label") if isinstance(first, dict) else first
+            return "Red"
+
+        if self.answer_key == "list":
+            return [chosen_label(q) for q in questions if isinstance(q, dict)]
+        key_field = "header" if self.answer_key == "header" else "question"
+        answers: dict = {}
+        for q in questions:
+            if not isinstance(q, dict):
+                continue
+            key = q.get(key_field) or q.get("question") or q.get("header")
+            answers[key] = chosen_label(q)
+        return answers
 
     async def _handle_control_request(self, raw: dict) -> None:
         request = raw.get("request", {}) or {}
@@ -242,7 +284,7 @@ class Probe:
         # ExitPlanMode) in tools[]. Without it they are stripped and
         # AskUserQuestion errors "not enabled in this context". So every
         # dialog/permission scenario needs it.
-        wants_stdio = self.scenario in ("D", "B", "C_completed", "C_cancelled")
+        wants_stdio = self.scenario in ("D", "B", "C_completed", "C_cancelled", "E_answer")
         argv = build_argv(
             "claude",
             self.model,
@@ -278,7 +320,7 @@ class Probe:
 
         # Scenario D matches claudestream's sandbox path: no self-initialize,
         # just --permission-prompt-tool stdio + a restrictive --allowedTools.
-        do_initialize = self.scenario in ("B", "C_completed", "C_cancelled")
+        do_initialize = self.scenario in ("B", "C_completed", "C_cancelled", "E_answer")
 
         try:
             await asyncio.wait_for(self._drive(do_initialize), timeout=HARD_TIMEOUT)
@@ -381,7 +423,7 @@ class Probe:
 
 
 async def main_async(args: argparse.Namespace) -> None:
-    probe = Probe(args.scenario, args.model)
+    probe = Probe(args.scenario, args.model, answer_key=args.answer_key)
     await probe.run()
     out = CAPTURES_DIR / f"scenario_{args.scenario}.ndjson"
     out.write_text("\n".join(probe.lines) + "\n")
@@ -404,9 +446,15 @@ def main() -> None:
     ap.add_argument(
         "--scenario",
         required=True,
-        choices=["A", "B", "C_completed", "C_cancelled", "D"],
+        choices=["A", "B", "C_completed", "C_cancelled", "D", "E_answer"],
     )
     ap.add_argument("--model", default="haiku")
+    ap.add_argument(
+        "--answer-key",
+        default="question",
+        choices=["question", "header", "list"],
+        help="E_answer: how to key/shape the injected answers on updatedInput",
+    )
     args = ap.parse_args()
     CAPTURES_DIR.mkdir(parents=True, exist_ok=True)
     asyncio.run(main_async(args))
