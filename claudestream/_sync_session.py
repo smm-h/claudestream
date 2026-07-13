@@ -9,7 +9,7 @@ import threading
 from collections.abc import Iterator
 from typing import Any, Callable
 
-from claudestream.events import AskResult, Event, Result
+from claudestream.events import AskResult, ContextUsage, Event, Result
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._options import SessionConfig
 from claudestream._tools import Tool
@@ -304,3 +304,29 @@ class SyncSession:
         if not self._async_session:
             raise RuntimeError("Session not started")
         self._run_coro(self._async_session.respond_deny(request_id, message))
+
+    # --- Control methods ---
+
+    def interrupt(self, *, timeout: float = 30.0) -> list[str]:
+        """Interrupt the running turn. Returns any still-queued user messages."""
+        if not self._async_session:
+            raise RuntimeError("Session not started")
+        return self._run_coro(self._async_session.interrupt(timeout=timeout))
+
+    def set_permission_mode(self, mode: str) -> None:
+        """Change the permission mode mid-session."""
+        if not self._async_session:
+            raise RuntimeError("Session not started")
+        self._run_coro(self._async_session.set_permission_mode(mode))
+
+    def set_model(self, model: str | None) -> None:
+        """Switch the model mid-session. None resets to the CLI default."""
+        if not self._async_session:
+            raise RuntimeError("Session not started")
+        self._run_coro(self._async_session.set_model(model))
+
+    def get_context_usage(self, *, timeout: float = 30.0) -> ContextUsage:
+        """Query the model's current context-window usage."""
+        if not self._async_session:
+            raise RuntimeError("Session not started")
+        return self._run_coro(self._async_session.get_context_usage(timeout=timeout))
