@@ -55,6 +55,19 @@ COLOR_PROMPT_DIRECT = (
 # trigger a prompt). This forces the permission control_request we want to probe.
 BASH_PROMPT = "Run the bash command: whoami"
 
+# multiSelect probe: forces a single multiSelect question with three options so we
+# can wire-verify the exact answer-value encoding (comma-joined string vs JSON
+# array vs array-of-one-string) on the can_use_tool allow response.
+PIZZA_PROMPT = (
+    "Use the AskUserQuestion tool to ask me which toppings I want on a pizza, "
+    "with options Cheese, Mushrooms, Olives, and multiSelect enabled. You MUST "
+    "call AskUserQuestion with multiSelect true. "
+    "IMPORTANT: AskUserQuestion is a built-in tool you can invoke DIRECTLY. Do NOT "
+    "use ToolSearch — call AskUserQuestion directly right now with a single "
+    "question 'Which toppings do you want?' and three options labeled Cheese, "
+    "Mushrooms, and Olives, with multiSelect set to true."
+)
+
 SUPPORTED_DIALOG_KINDS = [
     "AskUserQuestion",
     "ask_user_question",
@@ -92,10 +105,50 @@ def build_argv(
     return argv
 
 
+def _resolve_profile_centralized(name: str) -> dict[str, str]:
+    """Resolve a profile from the current centralized ~/.claudewheel layout.
+
+    The installed claudewheel's `resolve_profile` uses a stale `claude_config_scan`
+    discovery that only finds legacy `~/.claude-*` dirs. Profiles now live under
+    `~/.claudewheel/profiles/<name>/` with tokens in `~/.claudewheel/tokens.json`.
+    This resolves against that documented current layout so the probe authenticates.
+    """
+    from pathlib import Path
+
+    base = Path("~/.claudewheel").expanduser()
+    config_dir = base / "profiles" / name
+    if not (config_dir / ".credentials.json").is_file():
+        raise ValueError(
+            f"Profile {name!r} not found at {config_dir} (no .credentials.json)."
+        )
+    env: dict[str, str] = {"CLAUDE_CONFIG_DIR": str(config_dir)}
+    tokens_file = base / "tokens.json"
+    if tokens_file.is_file():
+        try:
+            entry = json.loads(tokens_file.read_text()).get(name)
+            if isinstance(entry, str):
+                env["CLAUDE_CODE_OAUTH_TOKEN"] = entry
+            elif isinstance(entry, dict) and entry.get("token"):
+                env["CLAUDE_CODE_OAUTH_TOKEN"] = entry["token"]
+        except (json.JSONDecodeError, OSError):
+            pass
+    return env
+
+
 def build_env() -> dict[str, str]:
-    """resolve_profile('personal') merged OVER os.environ (claudestream test pattern)."""
+    """Profile 'personal' env merged OVER os.environ (claudestream test pattern).
+
+    Prefers claudewheel's `resolve_profile`; if its discovery is stale (older
+    installed claudewheel that predates the centralized profile layout), falls back
+    to resolving the current `~/.claudewheel/profiles/<name>/` layout directly. The
+    fallback prints a notice so the switch is never silent.
+    """
     env = dict(os.environ)
-    env.update(resolve_profile("personal"))
+    try:
+        env.update(resolve_profile("personal"))
+    except ValueError as exc:
+        print(f"### resolve_profile stale ({exc}); using centralized layout", file=sys.stderr)
+        env.update(_resolve_profile_centralized("personal"))
     return env
 
 
@@ -164,7 +217,13 @@ def build_completed_result(payload: dict) -> object:
 
 
 class Probe:
-    def __init__(self, scenario: str, model: str, answer_key: str = "question"):
+    def __init__(
+        self,
+        scenario: str,
+        model: str,
+        answer_key: str = "question",
+        multi_format: str = "comma",
+    ):
         self.scenario = scenario
         self.model = model
         # answer_key selects how the E_answer scenario keys/shapes the answers it
@@ -173,6 +232,13 @@ class Probe:
         #   "header"   -> answers is a map {header: chosen_label}
         #   "list"     -> answers is a list [chosen_label] (positional)
         self.answer_key = answer_key
+        # multi_format selects how the F_multi scenario encodes the VALUE of a
+        # multiSelect answer (always keyed by question text). It picks Cheese +
+        # Olives and encodes them as:
+        #   "comma"     -> "Cheese, Olives"          (comma-joined single string)
+        #   "array"     -> ["Cheese", "Olives"]      (JSON array of labels)
+        #   "array-one" -> ["Cheese, Olives"]        (array with one comma-joined string)
+        self.multi_format = multi_format
         self.lines: list[str] = []
         self.session_id = ""
         self.proc: asyncio.subprocess.Process | None = None
@@ -221,11 +287,13 @@ class Probe:
         # Echo the tool input back as updatedInput (both key spellings observed
         # across CLI versions: tool_input on the wire, input in SDK typings).
         updated = dict(request.get("input") or request.get("tool_input") or {})
-        # E_answer: inject the user's answer into updatedInput. The hypothesis is
-        # that AskUserQuestion reads its answers from an `answers` parameter that
-        # the permission component is expected to fill.
+        # E_answer / F_multi: inject the user's answer into updatedInput. The
+        # hypothesis is that AskUserQuestion reads its answers from an `answers`
+        # parameter that the permission component is expected to fill.
         if self.scenario == "E_answer":
             updated["answers"] = self._build_answers(updated)
+        elif self.scenario == "F_multi":
+            updated["answers"] = self._build_multi_answers(updated)
         resp = {
             "type": "control_response",
             "response": {
@@ -267,6 +335,43 @@ class Probe:
             answers[key] = chosen_label(q)
         return answers
 
+    def _build_multi_answers(self, tool_input: dict) -> dict:
+        """Build the multiSelect `answers` map keyed by question text.
+
+        Selects Cheese + Olives for every question and encodes the value per
+        self.multi_format (comma | array | array-one).
+        """
+        questions = tool_input.get("questions") or []
+        if isinstance(questions, dict):
+            questions = [questions]
+
+        def chosen_labels(q: dict) -> list[str]:
+            opts = q.get("options") or []
+            wanted = ("cheese", "olive")
+            picked: list[str] = []
+            for o in opts:
+                label = o.get("label") if isinstance(o, dict) else o
+                if isinstance(label, str) and any(w in label.lower() for w in wanted):
+                    picked.append(label)
+            if not picked and opts:
+                first = opts[0]
+                picked = [first.get("label") if isinstance(first, dict) else first]
+            return picked
+
+        answers: dict = {}
+        for q in questions:
+            if not isinstance(q, dict):
+                continue
+            key = q.get("question") or q.get("header")
+            labels = chosen_labels(q)
+            if self.multi_format == "array":
+                answers[key] = labels
+            elif self.multi_format == "array-one":
+                answers[key] = [", ".join(labels)]
+            else:  # comma
+                answers[key] = ", ".join(labels)
+        return answers
+
     async def _handle_control_request(self, raw: dict) -> None:
         request = raw.get("request", {}) or {}
         subtype = request.get("subtype", "")
@@ -284,7 +389,9 @@ class Probe:
         # ExitPlanMode) in tools[]. Without it they are stripped and
         # AskUserQuestion errors "not enabled in this context". So every
         # dialog/permission scenario needs it.
-        wants_stdio = self.scenario in ("D", "B", "C_completed", "C_cancelled", "E_answer")
+        wants_stdio = self.scenario in (
+            "D", "B", "C_completed", "C_cancelled", "E_answer", "F_multi"
+        )
         argv = build_argv(
             "claude",
             self.model,
@@ -320,7 +427,9 @@ class Probe:
 
         # Scenario D matches claudestream's sandbox path: no self-initialize,
         # just --permission-prompt-tool stdio + a restrictive --allowedTools.
-        do_initialize = self.scenario in ("B", "C_completed", "C_cancelled", "E_answer")
+        do_initialize = self.scenario in (
+            "B", "C_completed", "C_cancelled", "E_answer", "F_multi"
+        )
 
         try:
             await asyncio.wait_for(self._drive(do_initialize), timeout=HARD_TIMEOUT)
@@ -346,6 +455,8 @@ class Probe:
             prompt = BASH_PROMPT
         elif self.scenario == "A":
             prompt = COLOR_PROMPT
+        elif self.scenario == "F_multi":
+            prompt = PIZZA_PROMPT
         else:
             prompt = COLOR_PROMPT_DIRECT
 
@@ -423,9 +534,15 @@ class Probe:
 
 
 async def main_async(args: argparse.Namespace) -> None:
-    probe = Probe(args.scenario, args.model, answer_key=args.answer_key)
+    probe = Probe(
+        args.scenario,
+        args.model,
+        answer_key=args.answer_key,
+        multi_format=args.multi_format,
+    )
     await probe.run()
-    out = CAPTURES_DIR / f"scenario_{args.scenario}.ndjson"
+    suffix = f"_{args.multi_format}" if args.scenario == "F_multi" else ""
+    out = CAPTURES_DIR / f"scenario_{args.scenario}{suffix}.ndjson"
     out.write_text("\n".join(probe.lines) + "\n")
     print(f"scenario={args.scenario} model={args.model}")
     print(f"lines_captured={len(probe.lines)}")
@@ -446,7 +563,7 @@ def main() -> None:
     ap.add_argument(
         "--scenario",
         required=True,
-        choices=["A", "B", "C_completed", "C_cancelled", "D", "E_answer"],
+        choices=["A", "B", "C_completed", "C_cancelled", "D", "E_answer", "F_multi"],
     )
     ap.add_argument("--model", default="haiku")
     ap.add_argument(
@@ -454,6 +571,12 @@ def main() -> None:
         default="question",
         choices=["question", "header", "list"],
         help="E_answer: how to key/shape the injected answers on updatedInput",
+    )
+    ap.add_argument(
+        "--multi-format",
+        default="comma",
+        choices=["comma", "array", "array-one"],
+        help="F_multi: how to encode the multiSelect answer value",
     )
     args = ap.parse_args()
     CAPTURES_DIR.mkdir(parents=True, exist_ok=True)
