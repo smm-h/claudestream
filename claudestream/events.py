@@ -32,6 +32,7 @@ __all__ = [
     "Result",
     "RateLimit",
     "PermissionRequest",
+    "UserDialogRequest",
     "McpRequest",
     "HookEvent",
     "UnknownEvent",
@@ -319,6 +320,21 @@ class PermissionRequest(Event, frozen=True):
     tool_input: dict = {}  # Input arguments the tool wants to execute
     decision_reason: str = ""  # Explanation of why permission is needed
     tool_use_id: str = ""  # ID of the tool_use block that triggered this request
+    permission_suggestions: list[dict] = []  # Suggested permission-rule updates the host may apply on allow
+    title: str = ""  # Permission-display title for structured rendering
+    display_name: str = ""  # Short tool/server label for the permission card
+    description: str = ""  # Permission-display subtitle
+    decision_reason_type: str = ""  # Structured discriminator for why auto-mode escalated (e.g. "rule", "mode", "safetyCheck")
+    requires_user_interaction: bool = False  # True when the tool's approval card is itself the interaction surface
+
+
+class UserDialogRequest(Event, frozen=True):
+    """Blocking user dialog the CLI asks the host to render (e.g. AskUserQuestion). Always surfaced to the consumer; never auto-handled by the sandbox."""
+
+    request_id: str = ""  # Unique ID for responding to this dialog request
+    dialog_kind: str = ""  # Identifier for the dialog the host should render (open string union)
+    payload: dict = {}  # Dialog-specific data for the host renderer; shape defined per dialog_kind
+    tool_use_id: str | None = None  # tool_use block id when the dialog is tied to a tool invocation; None otherwise
 
 
 class McpRequest(Event, frozen=True):

@@ -36,11 +36,14 @@ from claudestream.events import (
     ToolUseBlock,
     UnknownEvent,
     Usage,
+    UserDialogRequest,
 )
 from claudestream.messages import (
     AllowPermission,
     ControlRequest,
     DenyPermission,
+    DialogCancelled,
+    DialogCompleted,
     InitializeRequest,
     McpResponse,
     McpSetServers,
@@ -50,7 +53,17 @@ from claudestream.messages import (
 log = logging.getLogger("claudestream")
 
 # Type alias for all writable messages
-Writable = Union[UserMessage, AllowPermission, DenyPermission, McpResponse, McpSetServers, InitializeRequest, ControlRequest]
+Writable = Union[
+    UserMessage,
+    AllowPermission,
+    DenyPermission,
+    DialogCompleted,
+    DialogCancelled,
+    McpResponse,
+    McpSetServers,
+    InitializeRequest,
+    ControlRequest,
+]
 
 
 # ---------------------------------------------------------------------------
@@ -220,16 +233,36 @@ def parse_event(raw: dict) -> Event:
         request = raw.get("request", {})
         subtype = request.get("subtype", "")
         request_id = raw.get("request_id") or request.get("request_id", "")
-        if subtype == "permission":
+        if subtype in ("permission", "can_use_tool"):
+            # The live CLI (subtype "can_use_tool") carries the tool input under
+            # "input"; the older "permission" form used "tool_input". Read whichever
+            # the wire supplies. The enriched fields below are optional in both.
+            input_key = "input" if subtype == "can_use_tool" else "tool_input"
             return PermissionRequest(
                 type="control_request",
                 session_id=session_id,
                 uuid=uuid,
                 request_id=request_id,
                 tool_name=request.get("tool_name", ""),
-                tool_input=request.get("tool_input", {}),
+                tool_input=request.get(input_key, {}),
                 decision_reason=request.get("decision_reason", ""),
                 tool_use_id=request.get("tool_use_id", ""),
+                permission_suggestions=request.get("permission_suggestions", []),
+                title=request.get("title", ""),
+                display_name=request.get("display_name", ""),
+                description=request.get("description", ""),
+                decision_reason_type=request.get("decision_reason_type", ""),
+                requires_user_interaction=request.get("requires_user_interaction", False),
+            )
+        if subtype == "request_user_dialog":
+            return UserDialogRequest(
+                type="control_request",
+                session_id=session_id,
+                uuid=uuid,
+                request_id=request_id,
+                dialog_kind=request.get("dialog_kind", ""),
+                payload=request.get("payload", {}),
+                tool_use_id=request.get("tool_use_id"),
             )
         if subtype == "mcp_message":
             return McpRequest(
