@@ -9,6 +9,7 @@ from claudestream.events import (
     ControlResponse,
     HookEvent,
     PermissionRequest,
+    Result,
     SystemInit,
     UnknownEvent,
     UserDialogRequest,
@@ -290,3 +291,39 @@ class TestUserDialogParse:
         assert isinstance(event, UserDialogRequest)
         assert event.dialog_kind == "refusal_fallback_prompt"
         assert event.tool_use_id is None
+
+
+class TestResultModelUsage:
+    """Item 12: Result.model_usage parsed from the raw 'modelUsage' key."""
+
+    def test_model_usage_parsed(self):
+        model_usage = {
+            "claude-sonnet-4-5": {
+                "inputTokens": 1200,
+                "outputTokens": 340,
+                "contextWindow": 200000,
+                "costUSD": 0.012,
+            }
+        }
+        raw = {
+            "type": "result",
+            "subtype": "success",
+            "is_error": False,
+            "result": "done",
+            "modelUsage": model_usage,
+        }
+        event = parse_event(raw)
+        assert isinstance(event, Result)
+        assert event.model_usage == model_usage
+
+    def test_model_usage_defaults_empty(self):
+        raw = {"type": "result", "subtype": "success", "is_error": False}
+        event = parse_event(raw)
+        assert isinstance(event, Result)
+        assert event.model_usage == {}
+
+    def test_model_usage_null_coerced_to_empty(self):
+        raw = {"type": "result", "subtype": "success", "modelUsage": None}
+        event = parse_event(raw)
+        assert isinstance(event, Result)
+        assert event.model_usage == {}
