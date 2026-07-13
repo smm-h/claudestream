@@ -1,12 +1,15 @@
 {
+  "schema_version": 1,
   "defaults": {
+    "schema_version": 1,
     "app": {
       "env_prefix": null,
       "config": false,
       "global_flags": [],
       "commands": {},
       "groups": {},
-      "deprecated": {}
+      "deprecated": {},
+      "tag_contracts": {}
     },
     "flag": {
       "short": null,
@@ -14,27 +17,38 @@
       "env": null,
       "choices": null,
       "repeatable": false,
+      "unique": false,
+      "env_separator": null,
       "negatable": null,
       "hidden": false
     },
     "arg": {
+      "type": "str",
       "required": true,
-      "variadic": false
+      "default": null,
+      "variadic": false,
+      "choices": null
     },
     "command": {
       "passthrough": false,
       "flags": [],
-      "args": []
+      "args": [],
+      "tags": [],
+      "constraints": [],
+      "hidden": false,
+      "interactive": false
     },
     "group": {
       "commands": {},
       "groups": {},
-      "deprecated": {}
+      "deprecated": {},
+      "tags": [],
+      "hidden": false
     }
   },
   "project_id": "claudestream",
   "name": "claudestream",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "help": "Stream Claude Code's JSON protocol",
   "commands": {
     "send": {
@@ -124,7 +138,8 @@
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": false
+          "required": false,
+          "default": ""
         }
       ]
     },
@@ -201,7 +216,8 @@
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": false
+          "required": false,
+          "default": ""
         }
       ]
     },
@@ -278,7 +294,8 @@
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": false
+          "required": false,
+          "default": ""
         }
       ]
     },
@@ -412,7 +429,8 @@
         {
           "name": "prompt",
           "help": "The prompt to send",
-          "required": false
+          "required": false,
+          "default": ""
         }
       ]
     },
