@@ -215,6 +215,26 @@ class TestSupportedDialogKindsHandshake:
         stdin = asyncio.run(run())
         assert stdin.write.call_count == 0
 
+    def test_intercept_permissions_forces_initialize(self):
+        """intercept_permissions=True sends the initialize handshake even with no
+        tools, hooks, or dialog kinds (required so the CLI delivers can_use_tool)."""
+
+        async def run():
+            session = make_test_session(intercept_permissions=True)
+            stdin = self._wire_start(session)
+            with patch(
+                "claudestream._async_session.check_version",
+                new_callable=AsyncMock,
+                return_value="2.1.0",
+            ):
+                await session._start()
+            return stdin
+
+        stdin = asyncio.run(run())
+        frames = [json.loads(c.args[0].decode("utf-8")) for c in stdin.write.call_args_list]
+        init_frames = [f for f in frames if f.get("request", {}).get("subtype") == "initialize"]
+        assert len(init_frames) == 1
+
 
 class TestSyncDialogTwins:
     """Item 13 (dialog part): each sync twin delegates to its async method."""

@@ -180,6 +180,12 @@ class AsyncSession:
         if self._tools_by_server:
             permission_prompt_tool = "stdio"
 
+        # Explicit permission interception: route permission prompts (and
+        # interactive tools like AskUserQuestion) to the consumer over the stdio
+        # control channel, independent of any sandbox or SDK-tool config.
+        if config.intercept_permissions:
+            permission_prompt_tool = "stdio"
+
         # --- Option structs → ProcessConfig fields ---
         debug_enabled = False
         debug_filter: str | None = None
@@ -431,9 +437,13 @@ class AsyncSession:
         # declare supported dialog kinds (which forces the handshake even with no
         # tools or hooks -- the CLI treats absence of the declaration as "cannot
         # display" and fails dialog-gated flows closed).
+        # intercept_permissions also forces the handshake: can_use_tool control
+        # requests are only delivered once initialize has been performed, so the
+        # handshake must be sent even when there are no tools, hooks, or dialog
+        # kinds.
         hooks = self._config.hooks or {}
         dialog_kinds = self._config.supported_dialog_kinds
-        if self._user_tools or hooks or dialog_kinds is not None:
+        if self._user_tools or hooks or dialog_kinds is not None or self._config.intercept_permissions:
             server_names = list(self._tools_by_server.keys())
             init_req = InitializeRequest(
                 sdk_mcp_servers=server_names,

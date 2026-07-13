@@ -253,6 +253,23 @@ class TestPermissionModePlumbing:
         assert "--permission-mode" not in argv
 
 
+class TestInterceptPermissionsPlumbing:
+    def test_intercept_permissions_adds_stdio_flag(self):
+        """intercept_permissions=True forces --permission-prompt-tool stdio."""
+        session = make_test_session(intercept_permissions=True)
+        with patch("claudewheel.profile.resolve_profile", return_value={}):
+            argv = session._build_process_config().build_argv()
+        assert "--permission-prompt-tool" in argv
+        assert argv[argv.index("--permission-prompt-tool") + 1] == "stdio"
+
+    def test_permission_prompt_tool_absent_by_default(self):
+        """Without intercept_permissions, sandbox, or SDK tools, no stdio flag."""
+        session = make_test_session()
+        with patch("claudewheel.profile.resolve_profile", return_value={}):
+            argv = session._build_process_config().build_argv()
+        assert "--permission-prompt-tool" not in argv
+
+
 class TestSyncTwins:
     """Item 13 (Stage 2 methods): each sync twin delegates to its async method."""
 
