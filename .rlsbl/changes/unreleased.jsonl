@@ -19,3 +19,4 @@
 {"id":"18c1da9df6a9eb6dc56641c48411421fa1c43ad47093bb5b","commits":["adc3cb18d160e43dee25c6982013b9c8b4343b30"],"user_facing":false}
 {"id":"18c1daae8697effb9e4190fe49c844b6a6537542eafa09b0","commits":["97a1669177495c181bab56f2ed1028003e37053e"],"user_facing":true,"description":"**Permission interception.** New `SessionConfig.intercept_permissions` routes permission prompts and interactive tools like AskUserQuestion to the consumer as PermissionRequest events.","type":"feature"}
 {"id":"18c1dcdd7936aec7d9e546a2cc754288b584673e835f04d6","commits":["01cc6094a4c565d2c64e80dc7115f835935f4a9f"],"user_facing":true,"description":"**Tool error signal.** `ToolResult` and `ToolResultBlock` now expose `is_error`, so consumers can distinguish failed tool executions from successful ones.","type":"feature"}
+{"id":"18c1e36f905109aa1c18c8ddf8704b7abad8ce9d14573346","commits":["3cafd67cb9dab92c69342220045c579f22c87b5e"],"user_facing":false}
