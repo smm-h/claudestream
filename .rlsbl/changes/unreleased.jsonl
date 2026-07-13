@@ -8,3 +8,4 @@
 {"id":"18c1d83618d425545390aec6066844899de0cc8158cd2bf0","commits":["e7041722dd8089adc5405ef0dda1e8b097b84a56"],"user_facing":true,"description":"**Control-request correlation.** Sessions can issue correlated control requests with pending-future tracking, turn-loop and between-turns response resolution, timeouts, and restart/close safety.","type":"feature"}
 {"id":"18c1d836ec6e2fe182ccbc7f3aaf4e94862066b7027e5336","commits":["c210ccf32b58575cc61b57f859410c7a76015084"],"user_facing":false}
 {"id":"18c1d873e02adcc7e241bdf8126c4eaf9cad9989eb98edce","commits":["3332b0702a4eb5f27fa4469717fde795b88c20b8"],"user_facing":false,"description":"Update ToolSchema tests for name-only construction (test-only)"}
+{"id":"18c1d8aa5074147adc834552d36847c1924dc98f3dc09b08","commits":["1cdf269690145f3717bbdc2a4a1b8cd4c7302fe6"],"user_facing":false}
