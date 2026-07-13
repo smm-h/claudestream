@@ -29,7 +29,7 @@ from claudestream.events import (
     ToolUse,
     UnknownEvent,
 )
-from claudestream.messages import AllowPermission, DenyPermission, InitializeRequest, McpResponse, McpSetServers, UserMessage
+from claudestream.messages import AllowPermission, ControlRequest, DenyPermission, InitializeRequest, McpResponse, McpSetServers, UserMessage
 from claudestream._options import SessionConfig, validate_budget
 from claudestream.policy import Allow, Deny, Sandbox, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
@@ -98,6 +98,14 @@ class AsyncSession:
 
         # Events captured during startup handshake (before first send())
         self._startup_events: list[Event] = []
+
+        # Control-request correlation: pending futures keyed by request_id, plus a
+        # monotonic counter for generating collision-free ids ("ctrl_<n>").
+        self._pending_controls: dict[str, asyncio.Future] = {}
+        self._control_counter: int = 0
+        # INVARIANT: exactly one stdout reader at any time. Both the turn loop and
+        # a between-turns control read acquire this lock before reading stdout.
+        self._stdout_lock: asyncio.Lock = asyncio.Lock()
 
         # Health timeout for _read_turn (default 30s, overridden by ProcessLimits)
         self._health_timeout: float = 30.0
@@ -499,6 +507,7 @@ class AsyncSession:
 
     async def close(self) -> None:
         """Shut down the session and kill the subprocess."""
+        self._fail_pending_controls("session closed; control request lost")
         await self._fire_hooks(self._on_close, self)
         await self._process_mgr.close()
 
@@ -628,6 +637,9 @@ class AsyncSession:
                 exit_code=self._process_mgr._process.returncode,
             )
 
+        # Hold the stdout lock for the whole turn so a between-turns control read
+        # can never race the turn loop for stdout lines.
+        await self._stdout_lock.acquire()
         try:
             # Drain events captured during the startup MCP handshake
             if self._startup_events:
@@ -698,6 +710,12 @@ class AsyncSession:
 
                 if self._cancelled:
                     raise ClaudeStreamError("Session cancelled")
+
+                # Resolve a pending control request and swallow its response.
+                # Unmatched ControlResponses fall through and are yielded as before.
+                if isinstance(event, ControlResponse) and event.request_id in self._pending_controls:
+                    self._resolve_control(event)
+                    continue
 
                 # Capture SystemInit (sent after first user message)
                 if isinstance(event, SystemInit):
@@ -821,7 +839,7 @@ class AsyncSession:
                 exit_code=rc,
             )
         finally:
-            pass
+            self._stdout_lock.release()
 
     async def _liveness_probe(self) -> None:
         """Check if the subprocess is still alive.
@@ -837,6 +855,9 @@ class AsyncSession:
         """Kill the stuck subprocess and restart with --resume to preserve session."""
         saved_session_id = self._session_id
         log.info("subprocess_restart_begin", extra={"session_id": saved_session_id})
+
+        # Any control request issued to the dead process is unrecoverable.
+        self._fail_pending_controls("subprocess restarted; control request lost")
 
         # Close the dead process
         await self._process_mgr.close()
@@ -1006,6 +1027,118 @@ class AsyncSession:
 
         # Unknown JSON-RPC method
         return False
+
+    # --- Control-request correlation ---
+
+    def _resolve_control(self, event: ControlResponse) -> bool:
+        """Resolve the pending future for a control response. Returns True if matched."""
+        future = self._pending_controls.pop(event.request_id, None)
+        if future is None:
+            return False
+        if not future.done():
+            if event.subtype == "error":
+                future.set_exception(
+                    ClaudeStreamError(f"Control request failed: {event.error or 'unknown error'}")
+                )
+            else:
+                future.set_result(event.response or {})
+        return True
+
+    def _fail_pending_controls(self, message: str) -> None:
+        """Fail every pending control future with ClaudeStreamError and clear the registry."""
+        for future in list(self._pending_controls.values()):
+            if not future.done():
+                future.set_exception(ClaudeStreamError(message))
+        self._pending_controls.clear()
+
+    async def _control_request(
+        self, subtype: str, payload: dict | None = None, *, timeout: float = 30.0
+    ) -> dict:
+        """Issue a control request and await its correlated control_response.
+
+        During an active turn the turn loop resolves the future (no stdout read
+        happens here). Between turns this drives its own scoped stdout read loop,
+        buffering unrelated events for the next turn.
+
+        Returns the inner ``response`` dict on success. Raises ClaudeStreamError
+        on process death, CLI error response, or timeout.
+        """
+        if not self._process_mgr.is_alive:
+            raise ClaudeStreamError("Claude subprocess is not running")
+
+        self._control_counter += 1
+        request_id = f"ctrl_{self._control_counter}"
+        loop = asyncio.get_running_loop()
+        future: asyncio.Future = loop.create_future()
+        self._pending_controls[request_id] = future
+
+        req = ControlRequest(request_id=request_id, subtype=subtype, payload=payload or {})
+        try:
+            await write_message(self._process_mgr.stdin, req)
+        except Exception:
+            self._pending_controls.pop(request_id, None)
+            raise
+
+        if self._active_turn:
+            # A turn loop is reading stdout and will resolve the future.
+            try:
+                return await asyncio.wait_for(future, timeout)
+            except asyncio.TimeoutError:
+                self._pending_controls.pop(request_id, None)
+                raise ClaudeStreamError(
+                    f"Control request '{subtype}' timed out after {timeout}s"
+                )
+        else:
+            # No turn active: drive a scoped stdout read loop ourselves.
+            try:
+                return await self._read_control_result(request_id, future, timeout)
+            finally:
+                self._pending_controls.pop(request_id, None)
+
+    async def _read_control_result(
+        self, request_id: str, future: asyncio.Future, timeout: float
+    ) -> dict:
+        """Read stdout until the matching control_response resolves the future.
+
+        Non-matching events are buffered into _startup_events for the next turn.
+        Respects the per-read health timeout and the overall operation timeout;
+        raises ClaudeStreamError on EOF.
+        """
+        import json as _json
+
+        deadline = time.monotonic() + timeout
+        async with self._stdout_lock:
+            while not future.done():
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise ClaudeStreamError(
+                        f"Control request timed out after {timeout}s"
+                    )
+                read_timeout = min(remaining, self._health_timeout)
+                try:
+                    line = await asyncio.wait_for(
+                        self._process_mgr.stdout.readline(), timeout=read_timeout
+                    )
+                except asyncio.TimeoutError:
+                    continue  # deadline check above enforces the overall timeout
+                if not line:
+                    raise ClaudeStreamError(
+                        "Subprocess closed stdout while waiting for control response"
+                    )
+                text = line.decode("utf-8", errors="replace").strip()
+                if not text:
+                    continue
+                try:
+                    raw = _json.loads(text)
+                except _json.JSONDecodeError:
+                    log.warning("skipping non-JSON line during control read: %s", text[:200])
+                    continue
+                event = parse_event(raw)
+                if isinstance(event, ControlResponse) and event.request_id in self._pending_controls:
+                    self._resolve_control(event)
+                else:
+                    self._startup_events.append(event)
+        return future.result()
 
     # --- Budget observation ---
 
