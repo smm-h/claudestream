@@ -220,6 +220,7 @@ class ToolResult(Event, frozen=True):
     tool_use_id: str = ""  # ID of the tool_use this result corresponds to
     content: str | list[Any] = ""  # Result payload: plain text or structured content blocks
     parent_tool_use_id: str | None = None  # ID of the parent tool_use that triggered this event; None at top level
+    tool_name: str | None = None  # Name of the tool that produced this result; enriched by the session from the matching ToolUse, None if unknown
 
 
 # ---------------------------------------------------------------------------
@@ -292,6 +293,7 @@ class Result(Event, frozen=True):
     total_cost_usd: float = 0.0  # Cumulative API cost for the session in US dollars
     usage: Usage | None = None  # Cumulative token usage for the session
     api_error_status: int | None = None  # HTTP status code if the turn ended with an API error
+    model_usage: dict = {}  # Per-model usage breakdown from the raw "modelUsage" key (inputTokens, outputTokens, contextWindow, costUSD...); empty when absent
 
 
 class BudgetThreshold(Event, frozen=True):

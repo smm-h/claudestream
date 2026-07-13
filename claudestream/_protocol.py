@@ -216,6 +216,7 @@ def parse_event(raw: dict) -> Event:
             total_cost_usd=raw.get("total_cost_usd", 0.0),
             usage=usage,
             api_error_status=raw.get("api_error_status"),
+            model_usage=raw.get("modelUsage", {}) or {},
         )
 
     # -- stream event --------------------------------------------------------

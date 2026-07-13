@@ -6,6 +6,8 @@ import asyncio
 import logging
 import random
 import time
+
+import msgspec
 from collections.abc import AsyncIterator
 from typing import Any, Callable
 
@@ -127,6 +129,24 @@ class AsyncSession:
         self._cwd: str = ""
         self._mcp_servers: list[str] = []
         self._permission_mode: str = ""
+
+        # Maps a flattened ToolUse's tool_use_id to its tool name, so a later
+        # ToolResult can be enriched with tool_name for renderers. flatten_event
+        # stays pure; this correlation lives at the session level.
+        self._tool_names: dict[str, str] = {}
+
+    def _enrich_flattened(self, evt: Event) -> Event:
+        """Correlate flattened tool events: record ToolUse names and stamp the
+        matching name onto a ToolResult. Returns the (possibly replaced) event.
+        """
+        if isinstance(evt, ToolUse):
+            if evt.tool_use_id:
+                self._tool_names[evt.tool_use_id] = evt.name
+        elif isinstance(evt, ToolResult) and evt.tool_name is None:
+            name = self._tool_names.get(evt.tool_use_id)
+            if name is not None:
+                return msgspec.structs.replace(evt, tool_name=name)
+        return evt
 
     def _build_process_config(self) -> ProcessConfig:
         """Build a ProcessConfig from the stored SessionConfig.
@@ -678,6 +698,7 @@ class AsyncSession:
                         events_to_yield = flatten_event(event, cwd=self._cwd or None)
 
                     for evt in events_to_yield:
+                        evt = self._enrich_flattened(evt)
                         if isinstance(evt, (FileWrite, FileEdit)):
                             if evt.path:
                                 self._files_modified.add(evt.path)
@@ -811,6 +832,7 @@ class AsyncSession:
                     events_to_yield = flatten_event(event, cwd=self._cwd or None)
 
                 for evt in events_to_yield:
+                    evt = self._enrich_flattened(evt)
                     # Log flattened events
                     if isinstance(evt, ToolUse):
                         log.info("event: ToolUse (%s)", evt.name)
