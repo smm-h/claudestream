@@ -34,7 +34,7 @@
   },
   "project_id": "claudestream",
   "name": "claudestream",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "help": "Stream Claude Code's JSON protocol",
   "commands": {
     "send": {
@@ -101,10 +101,10 @@
           "negatable": true
         },
         {
-          "name": "no-color",
+          "name": "color",
           "type": "bool",
-          "help": "Disable colored output",
-          "default": false,
+          "help": "Enable colored output",
+          "default": true,
           "negatable": true
         },
         {
@@ -178,10 +178,10 @@
           "negatable": true
         },
         {
-          "name": "no-color",
+          "name": "color",
           "type": "bool",
-          "help": "Disable colored output",
-          "default": false,
+          "help": "Enable colored output",
+          "default": true,
           "negatable": true
         },
         {
@@ -255,10 +255,10 @@
           "negatable": true
         },
         {
-          "name": "no-color",
+          "name": "color",
           "type": "bool",
-          "help": "Disable colored output",
-          "default": false,
+          "help": "Enable colored output",
+          "default": true,
           "negatable": true
         },
         {
@@ -325,10 +325,10 @@
           "default": ""
         },
         {
-          "name": "no-color",
+          "name": "color",
           "type": "bool",
-          "help": "Disable colored output",
-          "default": false,
+          "help": "Enable colored output",
+          "default": true,
           "negatable": true
         },
         {
@@ -395,10 +395,10 @@
           "negatable": true
         },
         {
-          "name": "no-color",
+          "name": "color",
           "type": "bool",
-          "help": "Disable colored output",
-          "default": false,
+          "help": "Enable colored output",
+          "default": true,
           "negatable": true
         },
         {
@@ -483,10 +483,10 @@
               "negatable": true
             },
             {
-              "name": "no-color",
+              "name": "color",
               "type": "bool",
-              "help": "Disable colored output",
-              "default": false,
+              "help": "Enable colored output",
+              "default": true,
               "negatable": true
             }
           ],

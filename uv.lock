@@ -1,6 +1,10 @@
 version = 1
 revision = 3
 requires-python = ">=3.11"
+resolution-markers = [
+    "python_full_version >= '3.12'",
+    "python_full_version < '3.12'",
+]
 
 [[package]]
 name = "claudestream"
@@ -9,7 +13,8 @@ source = { editable = "." }
 dependencies = [
     { name = "claudewheel" },
     { name = "msgspec" },
-    { name = "selfdoc" },
+    { name = "selfdoc", version = "0.24.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "selfdoc", version = "0.33.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "strictcli" },
 ]
 
@@ -35,14 +40,14 @@ dev = [
 
 [[package]]
 name = "claudewheel"
-version = "0.4.5"
+version = "0.22.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "strictcli" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/01/54/4660524f2b7c316bc805e182e2352db20f50aca068021811144a0115d476/claudewheel-0.4.5.tar.gz", hash = "sha256:9e3977932ec37e86da5bce2a6a4bcfbe6910b7f1a16d71061ae94815c064eb96", size = 2556935, upload-time = "2026-05-18T19:58:39.937Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c0/29/19a5732b8cab9301033334bb97c2f1547764058fdc399fdfe87e6e8d9f81/claudewheel-0.22.1.tar.gz", hash = "sha256:9c9ec4783fb44b1c7addea2f3e12fd96f934ef1c5359d47d46b2ff202cd07396", size = 2895889, upload-time = "2026-07-11T10:50:35.628Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7e/5b/663b8dd3e23361ccdd17d229eb0861b67ba749d41dcf06b6a5f2acafc377/claudewheel-0.4.5-py3-none-any.whl", hash = "sha256:1ba78cde760a01495726b0c88ce7c2760a7ea0dd5f3146a7a70343a8956e7101", size = 59427, upload-time = "2026-05-18T19:58:38.585Z" },
+    { url = "https://files.pythonhosted.org/packages/e4/8f/3b4149108374e0bc136432c2b5fef0f0f35fc9d24c09e1121c5480d93d74/claudewheel-0.22.1-py3-none-any.whl", hash = "sha256:88ee631276b0332176d2ace7edd93830fcb8ed76bb8c5a371854f5126b94889b", size = 150333, upload-time = "2026-07-11T10:50:33.651Z" },
 ]
 
 [[package]]
@@ -168,21 +173,49 @@ wheels = [
 
 [[package]]
 name = "selfdoc"
-version = "0.14.1"
+version = "0.24.0"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "strictcli" },
+resolution-markers = [
+    "python_full_version < '3.12'",
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/76/0e/8f7f3c355b7d60c9474f6e86950f49fd5be4d65c084373c954958e2b092e/selfdoc-0.14.1.tar.gz", hash = "sha256:b4a527ab3ba9362e5eefc62520b38e6ef4d6cd05a7852e5481641c1f6fd7ec47", size = 550401, upload-time = "2026-06-03T07:38:04.43Z" }
+dependencies = [
+    { name = "strictcli", marker = "python_full_version < '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/e9/7b/f1e404da6ccc31ae01335ead3896682b23caf97e6b4f977519549d6279be/selfdoc-0.24.0.tar.gz", hash = "sha256:9399498167a37aed7757029c425b634c77c73249b4f16b782d9cc12ed1146614", size = 772693, upload-time = "2026-07-02T13:37:03.608Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a8/7b/7351fbe92a3fef18ff2fd9ba22b88cf77b0daf30b3d8b2557fb367e5f2a3/selfdoc-0.14.1-py3-none-any.whl", hash = "sha256:c5556b5189bcdf1b9647ef4d3c54ba417af05b12041850f62f55396701c3bdd8", size = 203651, upload-time = "2026-06-03T07:38:02.829Z" },
+    { url = "https://files.pythonhosted.org/packages/94/50/36d1f876449964d28680ecd11a55b891b6661d476b0c9fac754ff8d1ae77/selfdoc-0.24.0-py3-none-any.whl", hash = "sha256:2d9479b9d352d903b69cee9cd4d964ac3b9871410e61e113ca662a16598de177", size = 292215, upload-time = "2026-07-02T13:37:01.799Z" },
+]
+
+[[package]]
+name = "selfdoc"
+version = "0.33.0"
+source = { registry = "https://pypi.org/simple" }
+resolution-markers = [
+    "python_full_version >= '3.12'",
+]
+dependencies = [
+    { name = "selfdoc-core", marker = "python_full_version >= '3.12'" },
+    { name = "strictcli", marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/49/9c/2d0471ef6f5470223bd2369a472b1f5f936f55f7af8472a885b3c60d7a91/selfdoc-0.33.0.tar.gz", hash = "sha256:0cfd37d4a2cf7ac0de807c3fa3b56f6f9cc101c6a687b3c010456f7e2bbfdb77", size = 79305, upload-time = "2026-07-11T14:40:20.037Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e3/e4/8ae68345e3b14100d093327ecf49c3e4fdb22a03b6b7abec3774731a5d95/selfdoc-0.33.0-py3-none-any.whl", hash = "sha256:138e64c8a850f68f6a4d75777bea21e98a109f09d696ebdbf102fb3a1cffe82b", size = 99918, upload-time = "2026-07-11T14:40:18.778Z" },
+]
+
+[[package]]
+name = "selfdoc-core"
+version = "0.5.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/a9/694ae9a4e1193ce58144ac5cebdafd8e2e49a1f4a34f90fbe759bf9f38a6/selfdoc_core-0.5.0.tar.gz", hash = "sha256:161e14f5fba878b3aedf2d69a2e40d7691e923bc130aee94ff005c660b3f12f1", size = 212313, upload-time = "2026-07-11T14:38:33.674Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/db/86/f9e650015d7b7137d71d8b642167d62677342b4a6e5109e36720b7721b9a/selfdoc_core-0.5.0-py3-none-any.whl", hash = "sha256:6a863f1f5d3912f3c314e14e4b890e71e08e82a3146390ebdefde02cc13ae42c", size = 243794, upload-time = "2026-07-11T14:38:32.239Z" },
 ]
 
 [[package]]
 name = "strictcli"
-version = "0.14.0"
+version = "0.27.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/96/31/5e6428dbb161ee677e1f250f54e4455c9b7ed9424804e07b89208efc84da/strictcli-0.14.0.tar.gz", hash = "sha256:f6af5ddbb666abc9dbd3c8ff722ad6371ca76eefb1bac13ea2c1f9284b7d5057", size = 104372, upload-time = "2026-06-03T16:02:26.411Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/fc/c4/3ccc7e7aa2f77c7bc66a3b0d63c3b82c6cb1cf6754138e3de9f390e0514a/strictcli-0.27.0.tar.gz", hash = "sha256:84458e8e768991f0d82e2672a5ee11280e0e37b79ddcce4a764c583cc64228b5", size = 171030, upload-time = "2026-07-11T14:32:47.255Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/1a/fd2be861974518011157b49b6c4bae6ebff5218d4969c55216ca58f427c6/strictcli-0.14.0-py3-none-any.whl", hash = "sha256:772f4af6ee02b8d3f4eb4fad572a866cc207fa174635437e4334751bd86d477c", size = 30344, upload-time = "2026-06-03T16:02:25.244Z" },
+    { url = "https://files.pythonhosted.org/packages/58/10/7b095a480a4b29570da399b67eb96222e23d449549a3c80af259e220c30f/strictcli-0.27.0-py3-none-any.whl", hash = "sha256:30bf77912391c9479667f2ab501a0b43fc0f42f77078a1a40357e8ab5f3d9a1b", size = 59316, upload-time = "2026-07-11T14:32:46.113Z" },
 ]
