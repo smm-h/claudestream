@@ -10,6 +10,8 @@ __all__ = [
     "UserMessage",
     "AllowPermission",
     "DenyPermission",
+    "DialogCompleted",
+    "DialogCancelled",
     "McpResponse",
     "McpSetServers",
     "InitializeRequest",
@@ -39,6 +41,30 @@ class AllowPermission(msgspec.Struct, frozen=True):
 
     request_id: str  # ID of the PermissionRequest being allowed
     updated_input: dict  # Optionally modified tool input to use instead of the original
+    updated_permissions: list[dict] | None = None  # Permission-rule updates to apply alongside the allow; omitted when None
+
+    def to_dict(self) -> dict:
+        response: dict = {
+            "behavior": "allow",
+            "updatedInput": self.updated_input,
+        }
+        if self.updated_permissions is not None:
+            response["updatedPermissions"] = self.updated_permissions
+        return {
+            "type": "control_response",
+            "response": {
+                "subtype": "success",
+                "request_id": self.request_id,
+                "response": response,
+            },
+        }
+
+
+class DialogCompleted(msgspec.Struct, frozen=True):
+    """Complete a user dialog request with the user's chosen result."""
+
+    request_id: str  # ID of the UserDialogRequest being answered
+    result: Any  # Dialog-specific result payload; shape defined per dialog_kind
 
     def to_dict(self) -> dict:
         return {
@@ -47,8 +73,26 @@ class AllowPermission(msgspec.Struct, frozen=True):
                 "subtype": "success",
                 "request_id": self.request_id,
                 "response": {
-                    "behavior": "allow",
-                    "updatedInput": self.updated_input,
+                    "behavior": "completed",
+                    "result": self.result,
+                },
+            },
+        }
+
+
+class DialogCancelled(msgspec.Struct, frozen=True):
+    """Cancel a user dialog request; the CLI applies the dialog's default behavior."""
+
+    request_id: str  # ID of the UserDialogRequest being cancelled
+
+    def to_dict(self) -> dict:
+        return {
+            "type": "control_response",
+            "response": {
+                "subtype": "success",
+                "request_id": self.request_id,
+                "response": {
+                    "behavior": "cancelled",
                 },
             },
         }
@@ -116,16 +160,20 @@ class InitializeRequest(msgspec.Struct, frozen=True):
     request_id: str = "init_1"  # Unique ID for this initialization request
     hooks: dict = {}  # Hook configuration mapping hook names to handlers
     sdk_mcp_servers: list[str] = []  # MCP server names to connect at session start
+    supported_dialog_kinds: list[str] | None = None  # Dialog kinds this consumer can render; omitted when None
 
     def to_dict(self) -> dict:
+        request: dict = {
+            "subtype": "initialize",
+            "request_id": self.request_id,
+            "hooks": self.hooks,
+            "sdk_mcp_servers": self.sdk_mcp_servers,
+        }
+        if self.supported_dialog_kinds is not None:
+            request["supportedDialogKinds"] = self.supported_dialog_kinds
         return {
             "type": "control_request",
-            "request": {
-                "subtype": "initialize",
-                "request_id": self.request_id,
-                "hooks": self.hooks,
-                "sdk_mcp_servers": self.sdk_mcp_servers,
-            },
+            "request": request,
         }
 
 

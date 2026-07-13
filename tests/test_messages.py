@@ -2,7 +2,7 @@
 
 from claudestream.messages import (
     UserMessage, AllowPermission, DenyPermission, McpResponse, McpSetServers, InitializeRequest,
-    ControlRequest,
+    ControlRequest, DialogCompleted, DialogCancelled,
 )
 
 
@@ -37,6 +37,75 @@ class TestAllowPermission:
         assert d["response"]["request_id"] == "perm_1"
         assert d["response"]["response"]["behavior"] == "allow"
         assert d["response"]["response"]["updatedInput"] == {"command": "ls"}
+
+    def test_updated_permissions_omitted_when_none(self):
+        """Item 11: no updatedPermissions key when updated_permissions is None."""
+        msg = AllowPermission(request_id="perm_1", updated_input={"command": "ls"})
+        assert "updatedPermissions" not in msg.to_dict()["response"]["response"]
+
+    def test_updated_permissions_serialized_as_camelcase(self):
+        """Item 11: updated_permissions -> updatedPermissions when provided."""
+        rules = [{"type": "addRule", "rule": {"toolName": "Bash"}}]
+        msg = AllowPermission(
+            request_id="perm_1", updated_input={"command": "ls"}, updated_permissions=rules
+        )
+        inner = msg.to_dict()["response"]["response"]
+        assert inner["behavior"] == "allow"
+        assert inner["updatedInput"] == {"command": "ls"}
+        assert inner["updatedPermissions"] == rules
+
+    def test_empty_updated_permissions_list_is_serialized(self):
+        """An explicit empty list is still present (only None omits the key)."""
+        msg = AllowPermission(
+            request_id="perm_1", updated_input={}, updated_permissions=[]
+        )
+        assert msg.to_dict()["response"]["response"]["updatedPermissions"] == []
+
+
+class TestDialogCompleted:
+    def test_to_dict(self):
+        """Item 9: DialogCompleted wire shape -> behavior 'completed' + result."""
+        result = {"questions": [{"answer": "Blue"}]}
+        msg = DialogCompleted(request_id="dlg_1", result=result)
+        d = msg.to_dict()
+        assert d["type"] == "control_response"
+        assert d["response"]["subtype"] == "success"
+        assert d["response"]["request_id"] == "dlg_1"
+        assert d["response"]["response"] == {"behavior": "completed", "result": result}
+
+    def test_result_can_be_any_json_value(self):
+        msg = DialogCompleted(request_id="dlg_2", result="just a string")
+        assert msg.to_dict()["response"]["response"]["result"] == "just a string"
+
+
+class TestDialogCancelled:
+    def test_to_dict(self):
+        """Item 9: DialogCancelled wire shape -> behavior 'cancelled', no result."""
+        msg = DialogCancelled(request_id="dlg_1")
+        d = msg.to_dict()
+        assert d["type"] == "control_response"
+        assert d["response"]["subtype"] == "success"
+        assert d["response"]["request_id"] == "dlg_1"
+        assert d["response"]["response"] == {"behavior": "cancelled"}
+
+
+class TestInitializeSupportedDialogKinds:
+    def test_omitted_when_none(self):
+        """Item 10: no supportedDialogKinds key when not declared."""
+        d = InitializeRequest().to_dict()
+        assert "supportedDialogKinds" not in d["request"]
+
+    def test_serialized_as_camelcase(self):
+        """Item 10: supported_dialog_kinds -> supportedDialogKinds in the request."""
+        kinds = ["AskUserQuestion", "refusal_fallback_prompt"]
+        d = InitializeRequest(supported_dialog_kinds=kinds).to_dict()
+        assert d["request"]["subtype"] == "initialize"
+        assert d["request"]["supportedDialogKinds"] == kinds
+
+    def test_empty_list_is_serialized(self):
+        """An explicit empty list is present (only None omits the key)."""
+        d = InitializeRequest(supported_dialog_kinds=[]).to_dict()
+        assert d["request"]["supportedDialogKinds"] == []
 
 
 class TestDenyPermission:
