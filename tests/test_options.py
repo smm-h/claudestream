@@ -212,9 +212,17 @@ class TestToolSchema:
         assert t.input_schema == {"type": "object"}
         assert t.server == "my_server"
 
-    def test_missing_field(self):
+    def test_name_only(self):
+        # description/input_schema/server are optional; a bare name is a valid entry.
+        t = ToolSchema(name="x")
+        assert t.name == "x"
+        assert t.description is None
+        assert t.input_schema is None
+        assert t.server is None
+
+    def test_missing_required_name(self):
         with pytest.raises(TypeError):
-            ToolSchema(name="x")  # type: ignore[call-arg]
+            ToolSchema()  # type: ignore[call-arg]
 
     def test_frozen(self):
         t = ToolSchema(name="x", description="y", input_schema={}, server="s")
