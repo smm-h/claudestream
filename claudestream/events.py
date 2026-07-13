@@ -121,6 +121,7 @@ class ToolResultBlock(msgspec.Struct, frozen=True):
     type: str = "tool_result"  # Block discriminator
     tool_use_id: str = ""  # ID of the tool_use this result corresponds to
     content: str | list[Any] = ""  # Result payload: plain text or structured content blocks
+    is_error: bool = False  # True when the tool execution failed (from the wire tool_result block)
 
 
 ContentBlock = TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock
@@ -221,6 +222,7 @@ class ToolResult(Event, frozen=True):
     content: str | list[Any] = ""  # Result payload: plain text or structured content blocks
     parent_tool_use_id: str | None = None  # ID of the parent tool_use that triggered this event; None at top level
     tool_name: str | None = None  # Name of the tool that produced this result; enriched by the session from the matching ToolUse, None if unknown
+    is_error: bool = False  # True when the tool execution failed (from the wire tool_result block)
 
 
 # ---------------------------------------------------------------------------

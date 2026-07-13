@@ -88,6 +88,7 @@ def parse_content_block(raw: dict) -> ContentBlock:
         return ToolResultBlock(
             tool_use_id=raw.get("tool_use_id", ""),
             content=raw.get("content", ""),
+            is_error=raw.get("is_error", False),
         )
     # Unknown block type -- treat as text with empty content
     log.warning("Unknown content block type: %s", raw.get("type"))
@@ -449,6 +450,7 @@ def flatten_event(event: Event, cwd: str | None = None) -> list[Event]:
                     tool_use_id=block.tool_use_id,
                     content=block.content,
                     parent_tool_use_id=event.parent_tool_use_id,
+                    is_error=block.is_error,
                 )
             )
         return results

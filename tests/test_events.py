@@ -338,6 +338,14 @@ class TestParseContentBlock:
         block = parse_content_block({"type": "tool_result", "tool_use_id": "t1", "content": "output"})
         assert isinstance(block, ToolResultBlock)
         assert block.tool_use_id == "t1"
+        assert block.is_error is False
+
+    def test_tool_result_block_is_error(self):
+        block = parse_content_block(
+            {"type": "tool_result", "tool_use_id": "t1", "content": "boom", "is_error": True}
+        )
+        assert isinstance(block, ToolResultBlock)
+        assert block.is_error is True
 
 
 class TestParseUsage:
@@ -391,6 +399,21 @@ class TestFlattenEvent:
         assert all(isinstance(e, ToolResult) for e in flat)
         assert flat[0].tool_use_id == "t1"
         assert flat[1].tool_use_id == "t2"
+        assert flat[0].is_error is False
+        assert flat[1].is_error is False
+
+    def test_tool_result_message_flattens_is_error(self):
+        event = ToolResultMessage(
+            type="user",
+            session_id="abc",
+            content=[
+                ToolResultBlock(tool_use_id="t1", content="ok"),
+                ToolResultBlock(tool_use_id="t2", content="boom", is_error=True),
+            ],
+        )
+        flat = flatten_event(event)
+        assert flat[0].is_error is False
+        assert flat[1].is_error is True
 
     def test_other_events_passthrough(self):
         event = Result(type="result", is_error=False, result="done")
