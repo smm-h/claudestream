@@ -2,6 +2,29 @@
 
 # Changelog
 
+## 0.13.1
+
+Real-CLI integration tests now skip gracefully when the claude binary or a claudewheel profile is unavailable, so CI and credential-less environments no longer fail the suite.
+
+<details>
+<summary>Context</summary>
+
+The 0.13.0 release tagged and pushed successfully but its PyPI and npm publish
+was blocked because the CI test suite failed on the GitHub runner: the newly
+scaffolded full-suite CI ran the real-CLI integration tests in a credential-less
+environment with no claude binary and no claudewheel profiles, and claudewheel
+0.22's resolve_profile raises instead of failing soft, turning what should be
+skips into 20 hard errors. This hotfix adds a shared skip guard so those tests
+skip gracefully when their external prerequisites are absent, unblocking the
+publish that the 0.13.0 CI gate held back. bump = hotfix because the change is
+test-infrastructure only (no user-facing changelog entries).
+
+</details>
+
+### Hotfix
+
+- Real-CLI integration tests now skip gracefully when the claude binary or a claudewheel profile is unavailable, so CI and credential-less environments no longer fail the suite.
+
 ## 0.13.0
 
 Control-protocol extensions for interactive clients: interrupt, live model and permission-mode switching, context usage, user dialogs, enriched permission prompts, and renderer observability.

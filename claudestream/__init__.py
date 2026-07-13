@@ -1,6 +1,6 @@
 """A Python library and CLI for streaming Claude Code's JSON protocol, providing typed events, async/sync sessions, and tool registration."""
 
-__version__ = "0.13.0"
+__version__ = "0.13.1"
 
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._sync_session import SyncSession
