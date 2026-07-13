@@ -35,10 +35,13 @@ from claudestream.events import (
     ToolUseBlock,
     UnknownEvent,
     Usage,
+    UserDialogRequest,
 )
 from claudestream.messages import (
     AllowPermission,
     DenyPermission,
+    DialogCancelled,
+    DialogCompleted,
     InitializeRequest,
     McpResponse,
     McpSetServers,
@@ -104,6 +107,7 @@ __all__ = [
     "Result",
     "RateLimit",
     "PermissionRequest",
+    "UserDialogRequest",
     "McpRequest",
     "HookEvent",
     "UnknownEvent",
@@ -120,6 +124,8 @@ __all__ = [
     # Messages
     "AllowPermission",
     "DenyPermission",
+    "DialogCompleted",
+    "DialogCancelled",
     "InitializeRequest",
     "McpResponse",
     "McpSetServers",

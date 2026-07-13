@@ -293,17 +293,39 @@ class SyncSession:
 
     # --- Permission responses ---
 
-    def respond_allow(self, request_id: str, updated_input: dict) -> None:
-        """Allow a permission request."""
+    def respond_allow(
+        self,
+        request_id: str,
+        updated_input: dict,
+        *,
+        updated_permissions: list[dict] | None = None,
+    ) -> None:
+        """Allow a permission request, optionally applying permission-rule updates."""
         if not self._async_session:
             raise RuntimeError("Session not started")
-        self._run_coro(self._async_session.respond_allow(request_id, updated_input))
+        self._run_coro(
+            self._async_session.respond_allow(
+                request_id, updated_input, updated_permissions=updated_permissions
+            )
+        )
 
     def respond_deny(self, request_id: str, message: str = "Denied by user") -> None:
         """Deny a permission request."""
         if not self._async_session:
             raise RuntimeError("Session not started")
         self._run_coro(self._async_session.respond_deny(request_id, message))
+
+    def respond_dialog(self, request_id: str, result: Any) -> None:
+        """Complete a user dialog request with the user's chosen result."""
+        if not self._async_session:
+            raise RuntimeError("Session not started")
+        self._run_coro(self._async_session.respond_dialog(request_id, result))
+
+    def respond_dialog_cancelled(self, request_id: str) -> None:
+        """Cancel a user dialog request; the CLI applies the dialog's default behavior."""
+        if not self._async_session:
+            raise RuntimeError("Session not started")
+        self._run_coro(self._async_session.respond_dialog_cancelled(request_id))
 
     # --- Control methods ---
 

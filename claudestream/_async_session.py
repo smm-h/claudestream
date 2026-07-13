@@ -31,7 +31,7 @@ from claudestream.events import (
     ToolUse,
     UnknownEvent,
 )
-from claudestream.messages import AllowPermission, ControlRequest, DenyPermission, InitializeRequest, McpResponse, McpSetServers, UserMessage
+from claudestream.messages import AllowPermission, ControlRequest, DenyPermission, DialogCancelled, DialogCompleted, InitializeRequest, McpResponse, McpSetServers, UserMessage
 from claudestream._options import SessionConfig, validate_budget
 from claudestream.policy import Allow, Deny, Sandbox, sandbox_decide
 from claudestream._process import ProcessConfig, ProcessManager, find_binary, check_version
@@ -407,11 +407,19 @@ class AsyncSession:
 
         await self._process_mgr.start()
 
-        # Send InitializeRequest to register SDK MCP servers and/or hooks
+        # Send InitializeRequest to register SDK MCP servers and/or hooks, or to
+        # declare supported dialog kinds (which forces the handshake even with no
+        # tools or hooks -- the CLI treats absence of the declaration as "cannot
+        # display" and fails dialog-gated flows closed).
         hooks = self._config.hooks or {}
-        if self._user_tools or hooks:
+        dialog_kinds = self._config.supported_dialog_kinds
+        if self._user_tools or hooks or dialog_kinds is not None:
             server_names = list(self._tools_by_server.keys())
-            init_req = InitializeRequest(sdk_mcp_servers=server_names, hooks=hooks)
+            init_req = InitializeRequest(
+                sdk_mcp_servers=server_names,
+                hooks=hooks,
+                supported_dialog_kinds=dialog_kinds,
+            )
             await write_message(self._process_mgr.stdin, init_req)
 
         if self._user_tools:
@@ -1252,14 +1260,41 @@ class AsyncSession:
 
     # --- Permission response (for consumer-handled requests) ---
 
-    async def respond_allow(self, request_id: str, updated_input: dict) -> None:
-        """Allow a permission request that was surfaced to the consumer."""
-        msg = AllowPermission(request_id=request_id, updated_input=updated_input)
+    async def respond_allow(
+        self,
+        request_id: str,
+        updated_input: dict,
+        *,
+        updated_permissions: list[dict] | None = None,
+    ) -> None:
+        """Allow a permission request that was surfaced to the consumer.
+
+        ``updated_permissions`` optionally carries permission-rule updates to
+        apply alongside the allow; it is omitted from the wire frame when None.
+        """
+        msg = AllowPermission(
+            request_id=request_id,
+            updated_input=updated_input,
+            updated_permissions=updated_permissions,
+        )
         await write_message(self._process_mgr.stdin, msg)
 
     async def respond_deny(self, request_id: str, message: str = "Denied by user") -> None:
         """Deny a permission request that was surfaced to the consumer."""
         msg = DenyPermission(request_id=request_id, message=message)
+        await write_message(self._process_mgr.stdin, msg)
+
+    async def respond_dialog(self, request_id: str, result: Any) -> None:
+        """Complete a user dialog request with the user's chosen result.
+
+        ``result`` is transported opaquely; its shape is defined per dialog_kind.
+        """
+        msg = DialogCompleted(request_id=request_id, result=result)
+        await write_message(self._process_mgr.stdin, msg)
+
+    async def respond_dialog_cancelled(self, request_id: str) -> None:
+        """Cancel a user dialog request; the CLI applies the dialog's default behavior."""
+        msg = DialogCancelled(request_id=request_id)
         await write_message(self._process_mgr.stdin, msg)
 
     # --- Public control methods ---

@@ -117,6 +117,7 @@ class SessionConfig(msgspec.Struct, frozen=True):
     binary: str | None = None  # Path to the Claude CLI binary; None uses PATH lookup
     sandbox: Sandbox | None = None  # Tool/filesystem sandbox policy; None means no restrictions
     permission_mode: str | None = None  # Initial permission mode (e.g. "default", "plan", "acceptEdits"); passed unvalidated to --permission-mode
+    supported_dialog_kinds: list[str] | None = None  # Dialog kinds the consumer can render; when set, the initialize handshake is always sent and declares supportedDialogKinds
     system_prompt: str | None = None  # Custom system prompt to prepend to the session
     tools: list[Tool] | None = None  # User-defined tools served via MCP to Claude Code
     extra_args: list[str] | None = None  # Additional raw CLI arguments passed to the process
