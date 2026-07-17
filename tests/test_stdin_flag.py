@@ -28,7 +28,7 @@ class TestStdinReadsInput:
     def test_stdin_reads_from_stdin(self, mock_cls, cmd_func, capsys):
         mock_cls.return_value = _mock_sync_session()
         with patch("sys.stdin", StringIO("hello from pipe\n")):
-            result = cmd_func(stdin=True, model="sonnet", profile="test")
+            result = cmd_func(None, stdin=True, model="sonnet", profile="test")
         assert result != 1
         # Verify the prompt was passed to session.send
         mock_cls.return_value.__enter__.return_value.send.assert_called_once()
@@ -39,7 +39,7 @@ class TestStdinReadsInput:
 class TestStdinAndPromptConflict:
     @pytest.mark.parametrize("cmd_func", CMD_FUNCS, ids=COMMANDS)
     def test_error_when_both_prompt_and_stdin(self, cmd_func, capsys):
-        result = cmd_func(prompt="hello", stdin=True, model="sonnet", profile="test")
+        result = cmd_func(None, prompt="hello", stdin=True, model="sonnet", profile="test")
         assert result == 1
         assert "cannot use both prompt argument and --stdin" in capsys.readouterr().err
 
@@ -48,14 +48,14 @@ class TestStdinEmpty:
     @pytest.mark.parametrize("cmd_func", CMD_FUNCS, ids=COMMANDS)
     def test_error_when_stdin_is_empty(self, cmd_func, capsys):
         with patch("sys.stdin", StringIO("")):
-            result = cmd_func(stdin=True, model="sonnet", profile="test")
+            result = cmd_func(None, stdin=True, model="sonnet", profile="test")
         assert result == 1
         assert "--stdin provided but stdin is empty" in capsys.readouterr().err
 
     @pytest.mark.parametrize("cmd_func", CMD_FUNCS, ids=COMMANDS)
     def test_error_when_stdin_is_whitespace_only(self, cmd_func, capsys):
         with patch("sys.stdin", StringIO("   \n\n  ")):
-            result = cmd_func(stdin=True, model="sonnet", profile="test")
+            result = cmd_func(None, stdin=True, model="sonnet", profile="test")
         assert result == 1
         assert "--stdin provided but stdin is empty" in capsys.readouterr().err
 
@@ -63,7 +63,7 @@ class TestStdinEmpty:
 class TestNoPromptNoStdin:
     @pytest.mark.parametrize("cmd_func", CMD_FUNCS, ids=COMMANDS)
     def test_error_when_no_prompt_and_no_stdin(self, cmd_func, capsys):
-        result = cmd_func(model="sonnet", profile="test")
+        result = cmd_func(None, model="sonnet", profile="test")
         assert result == 1
         assert "prompt argument required (or use --stdin)" in capsys.readouterr().err
 
@@ -73,7 +73,7 @@ class TestNormalPromptStillWorks:
     @patch("claudestream._cli.SyncSession")
     def test_prompt_argument_works(self, mock_cls, cmd_func, capsys):
         mock_cls.return_value = _mock_sync_session()
-        result = cmd_func(prompt="hello", model="sonnet", profile="test")
+        result = cmd_func(None, prompt="hello", model="sonnet", profile="test")
         assert result != 1
         mock_cls.return_value.__enter__.return_value.send.assert_called_once()
         call_args = mock_cls.return_value.__enter__.return_value.send.call_args

@@ -35,7 +35,7 @@ class TestModelDisplay:
         events = [_make_assistant_text("hi"), _make_result()]
         mock_cls.return_value = _mock_session("claude-sonnet-4-20250514", events)
 
-        cmd_repl(model="sonnet", profile="test", footer=False)
+        cmd_repl(None, model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert "Connected: claude-sonnet-4-20250514" in captured.err
@@ -49,7 +49,7 @@ class TestModelDisplay:
         events = [_make_assistant_text("hi"), _make_result()]
         mock_cls.return_value = _mock_session("claude-sonnet-4-20250514", events)
 
-        cmd_repl(model="sonnet", profile="test", footer=False)
+        cmd_repl(None, model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert captured.err.count("Connected:") == 1
@@ -63,7 +63,7 @@ class TestModelDisplay:
         events = [_make_assistant_text("hi"), _make_result()]
         mock_cls.return_value = _mock_session(None, events)
 
-        cmd_repl(model="sonnet", profile="test", footer=False)
+        cmd_repl(None, model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert "Connected:" not in captured.err

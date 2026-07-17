@@ -31,7 +31,7 @@ class TestSystemPromptPassedThrough:
     @patch("claudestream._cli.SyncSession")
     def test_cmd_send_passes_system_prompt(self, mock_cls):
         mock_cls.return_value = _mock_sync_session()
-        cmd_send("hello", model="sonnet", profile="test", system_prompt="Be concise")
+        cmd_send(None, "hello", model="sonnet", profile="test", system_prompt="Be concise")
 
         config = _get_config(mock_cls)
         assert config.system_prompt == "Be concise"
@@ -39,7 +39,7 @@ class TestSystemPromptPassedThrough:
     @patch("claudestream._cli.SyncSession")
     def test_cmd_stream_passes_system_prompt(self, mock_cls):
         mock_cls.return_value = _mock_sync_session()
-        cmd_stream("hello", model="sonnet", profile="test", system_prompt="Be concise")
+        cmd_stream(None, "hello", model="sonnet", profile="test", system_prompt="Be concise")
 
         config = _get_config(mock_cls)
         assert config.system_prompt == "Be concise"
@@ -47,7 +47,7 @@ class TestSystemPromptPassedThrough:
     @patch("claudestream._cli.SyncSession")
     def test_cmd_events_passes_system_prompt(self, mock_cls):
         mock_cls.return_value = _mock_sync_session()
-        cmd_events("hello", model="sonnet", profile="test", system_prompt="Be concise")
+        cmd_events(None, "hello", model="sonnet", profile="test", system_prompt="Be concise")
 
         config = _get_config(mock_cls)
         assert config.system_prompt == "Be concise"
@@ -56,7 +56,7 @@ class TestSystemPromptPassedThrough:
     @patch("builtins.input", side_effect=EOFError)
     def test_cmd_repl_passes_system_prompt(self, mock_input, mock_cls):
         mock_cls.return_value = _mock_sync_session()
-        cmd_repl(model="sonnet", profile="test", system_prompt="Be concise")
+        cmd_repl(None, model="sonnet", profile="test", system_prompt="Be concise")
 
         config = _get_config(mock_cls)
         assert config.system_prompt == "Be concise"
@@ -68,7 +68,7 @@ class TestSystemPromptNoneWhenEmpty:
     @patch("claudestream._cli.SyncSession")
     def test_cmd_send_default_is_none(self, mock_cls):
         mock_cls.return_value = _mock_sync_session()
-        cmd_send("hello", model="sonnet", profile="test")
+        cmd_send(None, "hello", model="sonnet", profile="test")
 
         config = _get_config(mock_cls)
         assert config.system_prompt is None
@@ -76,7 +76,7 @@ class TestSystemPromptNoneWhenEmpty:
     @patch("claudestream._cli.SyncSession")
     def test_cmd_stream_default_is_none(self, mock_cls):
         mock_cls.return_value = _mock_sync_session()
-        cmd_stream("hello", model="sonnet", profile="test")
+        cmd_stream(None, "hello", model="sonnet", profile="test")
 
         config = _get_config(mock_cls)
         assert config.system_prompt is None
@@ -84,7 +84,7 @@ class TestSystemPromptNoneWhenEmpty:
     @patch("claudestream._cli.SyncSession")
     def test_cmd_events_default_is_none(self, mock_cls):
         mock_cls.return_value = _mock_sync_session()
-        cmd_events("hello", model="sonnet", profile="test")
+        cmd_events(None, "hello", model="sonnet", profile="test")
 
         config = _get_config(mock_cls)
         assert config.system_prompt is None
@@ -93,7 +93,7 @@ class TestSystemPromptNoneWhenEmpty:
     @patch("builtins.input", side_effect=EOFError)
     def test_cmd_repl_default_is_none(self, mock_input, mock_cls):
         mock_cls.return_value = _mock_sync_session()
-        cmd_repl(model="sonnet", profile="test")
+        cmd_repl(None, model="sonnet", profile="test")
 
         config = _get_config(mock_cls)
         assert config.system_prompt is None

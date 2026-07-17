@@ -213,7 +213,7 @@ class TestColorFlag:
             Result(type="result", duration_ms=100.0, total_cost_usd=0.001),
         ]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello", model="sonnet", profile="test", footer=True, color=False)
+        cmd_stream(None, "hello", model="sonnet", profile="test", footer=True, color=False)
 
         captured = capsys.readouterr()
         assert "\033[" not in captured.err

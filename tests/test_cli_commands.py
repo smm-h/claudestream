@@ -34,7 +34,7 @@ class TestCmdAskTextOutput:
     def test_prints_text(self, mock_cls, capsys):
         result = AskResult(text="Hello world", cost_usd=0.01, duration_ms=100.0)
         mock_cls.return_value = _mock_sync_session_with_ask(result)
-        ret = cmd_ask(prompt="hi", model="sonnet", profile="test")
+        ret = cmd_ask(None, prompt="hi", model="sonnet", profile="test")
         assert ret is None
         assert capsys.readouterr().out.strip() == "Hello world"
 
@@ -42,7 +42,7 @@ class TestCmdAskTextOutput:
     def test_json_output(self, mock_cls, capsys):
         result = AskResult(text="Hello", cost_usd=0.005, duration_ms=50.0)
         mock_cls.return_value = _mock_sync_session_with_ask(result)
-        ret = cmd_ask(prompt="hi", model="sonnet", profile="test", json_output=True)
+        ret = cmd_ask(None, prompt="hi", model="sonnet", profile="test", json_output=True)
         assert ret is None
         import json
         output = json.loads(capsys.readouterr().out)
@@ -54,7 +54,7 @@ class TestCmdAskErrorHandling:
     @patch("claudestream._cli.SyncSession")
     def test_claude_stream_error(self, mock_cls, capsys):
         mock_cls.side_effect = ClaudeStreamError("bad config")
-        ret = cmd_ask(prompt="hi", model="sonnet", profile="test")
+        ret = cmd_ask(None, prompt="hi", model="sonnet", profile="test")
         assert ret == 1
         assert "error: bad config" in capsys.readouterr().err
 
@@ -66,12 +66,12 @@ class TestCmdAskErrorHandling:
         ctx.__enter__ = MagicMock(return_value=session)
         ctx.__exit__ = MagicMock(return_value=False)
         mock_cls.return_value = ctx
-        ret = cmd_ask(prompt="hi", model="sonnet", profile="test")
+        ret = cmd_ask(None, prompt="hi", model="sonnet", profile="test")
         assert ret == 1
         assert "Interrupted." in capsys.readouterr().err
 
     def test_no_prompt(self, capsys):
-        ret = cmd_ask(model="sonnet", profile="test")
+        ret = cmd_ask(None, model="sonnet", profile="test")
         assert ret == 1
         assert "prompt argument required" in capsys.readouterr().err
 
@@ -83,7 +83,7 @@ class TestCmdAskStdin:
         result = AskResult(text="response")
         mock_cls.return_value = _mock_sync_session_with_ask(result)
         with patch("sys.stdin", StringIO("piped prompt\n")):
-            ret = cmd_ask(stdin=True, model="sonnet", profile="test")
+            ret = cmd_ask(None, stdin=True, model="sonnet", profile="test")
         assert ret is None
         mock_cls.return_value.__enter__.return_value.ask.assert_called_once_with("piped prompt")
 
@@ -97,7 +97,7 @@ class TestCmdDoctor:
     @patch("claudestream._cli.check_version", new_callable=AsyncMock, return_value="2.5.0")
     @patch("claudestream._cli.find_binary", return_value="/usr/bin/claude")
     def test_all_ok(self, mock_find, mock_version, capsys):
-        ret = cmd_doctor()
+        ret = cmd_doctor(None)
         assert ret == 0
         out = capsys.readouterr().out
         assert "[ok] Binary found: /usr/bin/claude" in out
@@ -105,7 +105,7 @@ class TestCmdDoctor:
 
     @patch("claudestream._cli.find_binary", side_effect=FileNotFoundError("not found"))
     def test_binary_not_found(self, mock_find, capsys):
-        ret = cmd_doctor()
+        ret = cmd_doctor(None)
         assert ret == 1
         out = capsys.readouterr().out
         assert "[FAIL] Binary not found" in out
@@ -113,7 +113,7 @@ class TestCmdDoctor:
     @patch("claudestream._cli.check_version", new_callable=AsyncMock, return_value=None)
     @patch("claudestream._cli.find_binary", return_value="/usr/bin/claude")
     def test_version_unknown(self, mock_find, mock_version, capsys):
-        ret = cmd_doctor()
+        ret = cmd_doctor(None)
         assert ret == 1
         out = capsys.readouterr().out
         assert "[FAIL] Could not determine version" in out
@@ -121,7 +121,7 @@ class TestCmdDoctor:
     @patch("claudestream._cli.check_version", new_callable=AsyncMock, return_value="1.0.0")
     @patch("claudestream._cli.find_binary", return_value="/usr/bin/claude")
     def test_version_below_minimum(self, mock_find, mock_version, capsys):
-        ret = cmd_doctor()
+        ret = cmd_doctor(None)
         assert ret == 1
         out = capsys.readouterr().out
         assert "WARNING: below minimum" in out
@@ -130,7 +130,7 @@ class TestCmdDoctor:
     @patch("claudestream._cli.check_version", new_callable=AsyncMock, return_value="2.5.0")
     @patch("claudestream._cli.find_binary", return_value="/usr/bin/claude")
     def test_profile_resolution(self, mock_find, mock_version, mock_profile, capsys):
-        ret = cmd_doctor(profile="test")
+        ret = cmd_doctor(None, profile="test")
         assert ret == 0
         out = capsys.readouterr().out
         assert "[ok] Profile 'test'" in out
@@ -139,7 +139,7 @@ class TestCmdDoctor:
     @patch("claudestream._cli.check_version", new_callable=AsyncMock, return_value="2.5.0")
     @patch("claudestream._cli.find_binary", return_value="/usr/bin/claude")
     def test_profile_error(self, mock_find, mock_version, mock_profile, capsys):
-        ret = cmd_doctor(profile="badprofile")
+        ret = cmd_doctor(None, profile="badprofile")
         assert ret == 1
         out = capsys.readouterr().out
         assert "[FAIL] Profile 'badprofile'" in out
@@ -154,7 +154,7 @@ class TestCmdConfig:
     @patch("claudestream._cli.check_version", new_callable=AsyncMock, return_value="2.5.0")
     @patch("claudestream._cli.find_binary", return_value="/usr/bin/claude")
     def test_shows_binary_and_version(self, mock_find, mock_version, capsys):
-        ret = cmd_config()
+        ret = cmd_config(None)
         assert ret is None
         out = capsys.readouterr().out
         assert "Binary: /usr/bin/claude" in out
@@ -163,7 +163,7 @@ class TestCmdConfig:
 
     @patch("claudestream._cli.find_binary", side_effect=FileNotFoundError("not found"))
     def test_binary_not_found(self, mock_find, capsys):
-        ret = cmd_config()
+        ret = cmd_config(None)
         assert ret is None
         out = capsys.readouterr().out
         assert "Binary: not found" in out
@@ -172,7 +172,7 @@ class TestCmdConfig:
     @patch("claudestream._cli.check_version", new_callable=AsyncMock, return_value="2.5.0")
     @patch("claudestream._cli.find_binary", return_value="/usr/bin/claude")
     def test_shows_profile(self, mock_find, mock_version, mock_profile, capsys):
-        ret = cmd_config(profile="myprofile")
+        ret = cmd_config(None, profile="myprofile")
         assert ret is None
         out = capsys.readouterr().out
         assert "Profile: myprofile" in out
@@ -182,7 +182,7 @@ class TestCmdConfig:
     @patch("claudestream._cli.check_version", new_callable=AsyncMock, return_value=None)
     @patch("claudestream._cli.find_binary", return_value="/usr/bin/claude")
     def test_version_unknown(self, mock_find, mock_version, capsys):
-        ret = cmd_config()
+        ret = cmd_config(None)
         assert ret is None
         out = capsys.readouterr().out
         assert "Version: unknown" in out

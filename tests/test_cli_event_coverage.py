@@ -105,7 +105,7 @@ class TestCmdStreamEventCoverage:
         """cmd_stream prints retry info to stderr."""
         events = [_make_api_retry(attempt=2, max_retries=5, error="overloaded")]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello", model="sonnet", profile="test", footer=False)
+        cmd_stream(None, "hello", model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert "[retry 2/5: overloaded]" in captured.err
@@ -115,7 +115,7 @@ class TestCmdStreamEventCoverage:
         """cmd_stream prints rate limit status to stderr."""
         events = [_make_rate_limit("rate_limited")]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_stream("hello", model="sonnet", profile="test", footer=False)
+        cmd_stream(None, "hello", model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert "[rate limit: rate_limited]" in captured.err
@@ -133,7 +133,7 @@ class TestCmdReplEventCoverage:
         """cmd_repl prints retry info to stderr."""
         events = [_make_api_retry(attempt=1, max_retries=3, error="server error")]
         mock_cls.return_value = _mock_sync_session(events)
-        cmd_repl(model="sonnet", profile="test", footer=False)
+        cmd_repl(None, model="sonnet", profile="test", footer=False)
 
         captured = capsys.readouterr()
         assert "[retry 1/3: server error]" in captured.err

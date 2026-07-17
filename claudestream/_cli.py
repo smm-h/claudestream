@@ -166,6 +166,7 @@ def _stream_events(session: SyncSession, prompt: str, footer: bool, color: Color
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_send(
+    ctx,
     prompt: str = "",
     model: str = "",
     profile: str = "",
@@ -214,6 +215,7 @@ def cmd_send(
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_stream(
+    ctx,
     prompt: str = "",
     model: str = "",
     profile: str = "",
@@ -255,6 +257,7 @@ def cmd_stream(
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_events(
+    ctx,
     prompt: str = "",
     model: str = "",
     profile: str = "",
@@ -297,6 +300,7 @@ def cmd_events(
 @strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_repl(
+    ctx,
     model: str,
     profile: str,
     cwd: str = "",
@@ -369,6 +373,7 @@ agent_group = app.group("agent", help="Manage and run agents defined in .agent.j
 @strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
 @strictcli.flag("color", type=bool, default=True, help="Enable colored output")
 def cmd_agent_run(
+    ctx,
     definition: str,
     prompt: str,
     var: list[str],
@@ -425,7 +430,7 @@ def cmd_agent_run(
 
 @agent_group.command("list", help="List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'.")
 @strictcli.flag("cwd", type=str, default="", help="Working directory")
-def cmd_agent_list(cwd: str = "") -> int | None:
+def cmd_agent_list(ctx, cwd: str = "") -> int | None:
     agents = discover_agents(cwd or None)
     if not agents:
         print("No agents found in .claudestream/agents/")
@@ -443,7 +448,7 @@ def cmd_agent_list(cwd: str = "") -> int | None:
 
 @agent_group.command("info", help="Display agent definition details for a given agent name or path. Loads the .agent.json file, parses it, and prints every configured field: name, version, description, model, budget limits, sandbox policy, tool schemas, MCP server config, and stream options. Use this to inspect an agent's full configuration before invoking it.")
 @strictcli.arg("name", help="Agent name or path")
-def cmd_agent_info(name: str) -> int | None:
+def cmd_agent_info(ctx, name: str) -> int | None:
     try:
         agent = load_agent(name)
     except (FileNotFoundError, Exception) as e:
@@ -477,7 +482,7 @@ def cmd_agent_info(name: str) -> int | None:
 
 @agent_group.command("validate", help="Validate an agent definition by loading and checking its .agent.json file for structural and semantic correctness. Verifies that budget values are non-negative, the prompt template is non-empty, tool schemas are well-formed, and required fields are present. Reports specific errors on failure or prints a success confirmation.")
 @strictcli.arg("name", help="Agent name or path")
-def cmd_agent_validate(name: str) -> int | None:
+def cmd_agent_validate(ctx, name: str) -> int | None:
     try:
         agent = load_agent(name)
     except (FileNotFoundError, Exception) as e:
@@ -515,6 +520,7 @@ def cmd_agent_validate(name: str) -> int | None:
 @strictcli.flag("color", type=bool, default=True, help="Enable colored output")
 @strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
 def cmd_ask(
+    ctx,
     prompt: str = "",
     model: str = "",
     profile: str = "",
@@ -555,7 +561,7 @@ def cmd_ask(
 
 @app.command("doctor", help="Check claudestream environment health")
 @strictcli.flag("profile", type=str, default="", help="Profile to check")
-def cmd_doctor(profile: str = "") -> int | None:
+def cmd_doctor(ctx, profile: str = "") -> int | None:
     import asyncio
 
     ok = True
@@ -599,7 +605,7 @@ def cmd_doctor(profile: str = "") -> int | None:
 
 @app.command("config", help="Show resolved configuration")
 @strictcli.flag("profile", type=str, default="", help="Profile to show")
-def cmd_config(profile: str = "") -> int | None:
+def cmd_config(ctx, profile: str = "") -> int | None:
     import asyncio
 
     # 1. Binary path
