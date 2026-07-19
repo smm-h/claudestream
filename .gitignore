@@ -17,3 +17,6 @@ docs/_build/
 .wrangler/
 
 .rlsbl-monorepo/lock
+
+build/
+target/
