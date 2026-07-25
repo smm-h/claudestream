@@ -2,6 +2,10 @@
 
 # Changelog
 
+## Unreleased
+
+- No user-facing changes.
+
 ## 0.13.1
 
 Real-CLI integration tests now skip gracefully when the claude binary or a claudewheel profile is unavailable, so CI and credential-less environments no longer fail the suite.
@@ -21,7 +25,7 @@ test-infrastructure only (no user-facing changelog entries).
 
 </details>
 
-### Hotfix
+### Infrastructure
 
 - Real-CLI integration tests now skip gracefully when the claude binary or a claudewheel profile is unavailable, so CI and credential-less environments no longer fail the suite.
 
