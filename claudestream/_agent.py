@@ -19,6 +19,16 @@ from claudestream.policy import Sandbox
 log = logging.getLogger("claudestream")
 
 
+class AgentValidationError(ValueError):
+    """Raised when an at-rest ``.agent.json`` document fails strictspec schema
+    validation (the integer ``format_version`` gate, closed-record unknown-key
+    rejection, or a per-field type check).
+
+    Guards the AT-REST boundary only. In-memory :class:`AgentDefinition`
+    construction is never routed through the schema.
+    """
+
+
 class AgentDefinition(msgspec.Struct, frozen=True):
     """A complete agent definition, loadable from a .agent.json file."""
 
@@ -32,6 +42,26 @@ class AgentDefinition(msgspec.Struct, frozen=True):
     model: str | None = None  # Model override; None falls back to SessionConfig.model
     mcp: McpOptions | None = None  # External MCP server config; overrides SessionConfig
     stream: StreamOptions | None = None  # Stream output config; overrides SessionConfig
+
+
+def _decode_agent_document(data: bytes, source: str) -> AgentDefinition:
+    """Validate raw ``.agent.json`` bytes against the generated strictspec schema,
+    then msgspec-decode into an :class:`AgentDefinition`.
+
+    The strictspec gate runs FIRST: a missing/wrong-typed integer
+    ``format_version``, an unknown key, or a wrong-typed field is a hard error
+    (:class:`AgentValidationError`) carrying the pinned diagnostic code, path, and
+    remediation text. msgspec decode runs only on a document that already passed.
+    """
+    from claudestream import _agent_schema
+
+    _root, diags = _agent_schema.validate_bytes(data, "json")
+    if diags:
+        detail = "\n".join(f"  [{d.code}] {d.path}: {d.message}" for d in diags)
+        raise AgentValidationError(
+            f"Agent document '{source}' failed schema validation:\n{detail}"
+        )
+    return msgspec.json.decode(data, type=AgentDefinition)
 
 
 def resolve_prompt(template: str, variables: dict[str, str]) -> str:
@@ -78,21 +108,27 @@ def load_agent(path: str | Path, cwd: str | None = None) -> AgentDefinition:
         data = expected.read_bytes()
     else:
         data = Path(path).read_bytes()
-    agent_def = msgspec.json.decode(data, type=AgentDefinition)
 
-    # Check for deprecated budget fields
-    raw = _json_mod.loads(data)
-    budget_dict = raw.get("budget")
-    if isinstance(budget_dict, dict):
-        deprecated = {"max_cost_usd", "max_turns", "max_tokens"}
-        for field in sorted(deprecated & budget_dict.keys()):
-            raise ValueError(
-                f"Agent '{agent_def.name}' uses deprecated budget field '{field}'. "
-                "Replace with threshold fields: cost_thresholds, turn_thresholds, "
-                "token_thresholds. See migration guide."
-            )
+    # Deprecated-budget migration hint (claudestream-owned). The budget rename has
+    # no live strictspec migration -- it ships only as a conformance fixture -- so
+    # this targeted pre-check runs BEFORE the structural schema gate to give a
+    # remediation message the schema's generic unknown-key error cannot.
+    try:
+        raw = _json_mod.loads(data)
+    except ValueError:
+        raw = None
+    if isinstance(raw, dict):
+        budget_dict = raw.get("budget")
+        if isinstance(budget_dict, dict):
+            deprecated = {"max_cost_usd", "max_turns", "max_tokens"}
+            for field in sorted(deprecated & budget_dict.keys()):
+                raise ValueError(
+                    f"Agent '{raw.get('name', '<unknown>')}' uses deprecated budget field '{field}'. "
+                    "Replace with threshold fields: cost_thresholds, turn_thresholds, "
+                    "token_thresholds. See migration guide."
+                )
 
-    return agent_def
+    return _decode_agent_document(data, str(path))
 
 
 def discover_agents(
@@ -129,7 +165,7 @@ def discover_agents(
     agents_dir = base / ".claudestream" / "agents"
     if agents_dir.is_dir():
         for f in sorted(agents_dir.glob("*.agent.json")):
-            _add(msgspec.json.decode(f.read_bytes(), type=AgentDefinition), str(f))
+            _add(_decode_agent_document(f.read_bytes(), str(f)), str(f))
 
     # 2. Custom paths
     if paths:
@@ -140,7 +176,7 @@ def discover_agents(
             if not d.is_dir():
                 continue
             for f in sorted(d.glob("*.agent.json")):
-                _add(msgspec.json.decode(f.read_bytes(), type=AgentDefinition), str(f))
+                _add(_decode_agent_document(f.read_bytes(), str(f)), str(f))
 
     # 3. Package resources
     if packages:
@@ -159,7 +195,7 @@ def discover_agents(
                 if item.name.endswith(".agent.json"):
                     data = item.read_bytes()
                     _add(
-                        msgspec.json.decode(data, type=AgentDefinition),
+                        _decode_agent_document(data, f"{package_name}/{item.name}"),
                         f"{package_name}/{item.name}",
                     )
 
