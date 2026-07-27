@@ -360,6 +360,7 @@ class TestAgentDefinition:
 
         # Create a minimal agent definition
         defn = {
+            "format_version": 1,
             "name": "test-agent",
             "prompt_template": "You are a helpful assistant. Always respond with exactly: {greeting}",
             "version": "1.0",

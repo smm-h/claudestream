@@ -14,6 +14,7 @@ import pytest
 
 from claudestream._agent import (
     AgentDefinition,
+    AgentValidationError,
     Budget,
     ToolSchema,
     _build_tools,
@@ -132,7 +133,7 @@ class TestResolvePrompt:
 
 class TestLoadAgent:
     def test_load_agent_minimal(self, tmp_path):
-        data = {"name": "bot", "prompt_template": "Be helpful.", "version": "1.0"}
+        data = {"format_version": 1, "name": "bot", "prompt_template": "Be helpful.", "version": "1.0"}
         path = tmp_path / "bot.agent.json"
         path.write_text(json.dumps(data))
 
@@ -144,6 +145,7 @@ class TestLoadAgent:
 
     def test_load_agent_full(self, tmp_path):
         data = {
+            "format_version": 1,
             "name": "shop",
             "prompt_template": "Help with {product}.",
             "version": "3.0",
@@ -180,18 +182,22 @@ class TestLoadAgent:
         assert ad.model == "haiku"
 
     def test_load_agent_invalid_json(self, tmp_path):
+        # Malformed JSON is now caught at the strictspec schema boundary, which
+        # parses before msgspec decode.
         path = tmp_path / "bad.agent.json"
         path.write_text("not json {{{")
 
-        with pytest.raises(msgspec.DecodeError):
+        with pytest.raises(AgentValidationError):
             load_agent(path)
 
     def test_load_agent_missing_required(self, tmp_path):
-        data = {"prompt_template": "no name"}
+        # Missing required field (name) is a hard schema error. format_version is
+        # present so the missing-name check (not the gate) is what fires.
+        data = {"format_version": 1, "prompt_template": "no name"}
         path = tmp_path / "no_name.agent.json"
         path.write_text(json.dumps(data))
 
-        with pytest.raises(msgspec.DecodeError):
+        with pytest.raises(AgentValidationError, match="name"):
             load_agent(path)
 
     def test_roundtrip(self):
@@ -210,6 +216,108 @@ class TestLoadAgent:
         encoded = msgspec.json.encode(ad)
         decoded = msgspec.json.decode(encoded, type=AgentDefinition)
         assert decoded == ad
+
+
+class TestLoadAgentSchemaValidation:
+    """The at-rest .agent.json boundary is schema-validated (strictspec) with hard
+    errors BEFORE msgspec decode. In-memory AgentDefinition constructors are not
+    affected -- the gate guards the at-rest document only.
+    """
+
+    def test_missing_format_version_gate_error(self, tmp_path):
+        # A structurally-valid agent document that omits the net-new integer
+        # format_version gate is rejected with the strictspec gate remediation.
+        data = {"name": "bot", "prompt_template": "Be helpful.", "version": "1.0"}
+        path = tmp_path / "bot.agent.json"
+        path.write_text(json.dumps(data))
+
+        with pytest.raises(AgentValidationError) as exc:
+            load_agent(path)
+        msg = str(exc.value)
+        assert "STRICTSPEC_GATE_ABSENT" in msg
+        assert "format_version" in msg
+        # Remediation invocation is carried through verbatim.
+        assert "strictspec migrate" in msg
+
+    def test_unknown_key_hard_error_with_suggestion(self, tmp_path):
+        # An unknown top-level key is a hard error carrying a did-you-mean suggestion.
+        data = {
+            "format_version": 1,
+            "name": "bot",
+            "prompt_template": "p",
+            "version": "1.0",
+            "moddel": "haiku",  # typo of "model"
+        }
+        path = tmp_path / "typo.agent.json"
+        path.write_text(json.dumps(data))
+
+        with pytest.raises(AgentValidationError) as exc:
+            load_agent(path)
+        msg = str(exc.value)
+        assert "STRICTSPEC_KEY_UNKNOWN" in msg
+        assert "moddel" in msg
+        assert "Did you mean model?" in msg
+
+    def test_wrong_typed_field_hard_error(self, tmp_path):
+        # A field with the wrong lexeme class is a hard error naming the path.
+        data = {
+            "format_version": 1,
+            "name": 123,  # must be a string
+            "prompt_template": "p",
+            "version": "1.0",
+        }
+        path = tmp_path / "wrongtype.agent.json"
+        path.write_text(json.dumps(data))
+
+        with pytest.raises(AgentValidationError) as exc:
+            load_agent(path)
+        msg = str(exc.value)
+        assert "STRICTSPEC_TYPE_NOT_STRING" in msg
+        assert "$.name" in msg
+
+    def test_wrong_format_version_type_gate_error(self, tmp_path):
+        # format_version present but not an integer is a gate wrong-type error.
+        data = {
+            "format_version": "1",
+            "name": "bot",
+            "prompt_template": "p",
+            "version": "1.0",
+        }
+        path = tmp_path / "fvtype.agent.json"
+        path.write_text(json.dumps(data))
+
+        with pytest.raises(AgentValidationError) as exc:
+            load_agent(path)
+        assert "STRICTSPEC_GATE_WRONG_TYPE" in str(exc.value)
+
+    def test_valid_document_with_gate_loads(self, tmp_path):
+        # The stamped, structurally-valid document loads and the format_version
+        # gate value is not surfaced on the in-memory struct (boundary-only).
+        data = {
+            "format_version": 1,
+            "name": "bot",
+            "prompt_template": "Be helpful.",
+            "version": "1.0",
+        }
+        path = tmp_path / "bot.agent.json"
+        path.write_text(json.dumps(data))
+
+        ad = load_agent(path)
+        assert ad.name == "bot"
+        assert ad.version == "1.0"
+        assert not hasattr(ad, "format_version")
+
+    def test_discover_agents_validates_boundary(self, tmp_path):
+        # discover_agents enforces the same gate on every at-rest document it reads.
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        # missing format_version
+        (agents_dir / "bot.agent.json").write_text(
+            json.dumps({"name": "bot", "prompt_template": "p", "version": "1.0"})
+        )
+        with pytest.raises(AgentValidationError) as exc:
+            discover_agents(str(tmp_path))
+        assert "STRICTSPEC_GATE_ABSENT" in str(exc.value)
 
 
 class TestLoadAgentMigrationGuard:
@@ -254,6 +362,7 @@ class TestLoadAgentMigrationGuard:
 
     def test_new_fields_pass(self, tmp_path):
         data = {
+            "format_version": 1,
             "name": "new-agent",
             "prompt_template": "p",
             "version": "1.0",
@@ -593,7 +702,7 @@ class TestLoadAgentBareName:
     def test_bare_name_resolution(self, tmp_path, monkeypatch):
         agents_dir = tmp_path / ".claudestream" / "agents"
         agents_dir.mkdir(parents=True)
-        data = {"name": "mybot", "prompt_template": "Hello.", "version": "1.0"}
+        data = {"format_version": 1, "name": "mybot", "prompt_template": "Hello.", "version": "1.0"}
         (agents_dir / "mybot.agent.json").write_text(json.dumps(data))
 
         monkeypatch.chdir(tmp_path)
@@ -607,7 +716,7 @@ class TestLoadAgentBareName:
             load_agent("nonexistent")
 
     def test_file_path_still_works(self, tmp_path):
-        data = {"name": "bot", "prompt_template": "Hi.", "version": "2.0"}
+        data = {"format_version": 1, "name": "bot", "prompt_template": "Hi.", "version": "2.0"}
         path = tmp_path / "bot.agent.json"
         path.write_text(json.dumps(data))
 
@@ -616,7 +725,7 @@ class TestLoadAgentBareName:
         assert ad.version == "2.0"
 
     def test_json_extension_treated_as_path(self, tmp_path):
-        data = {"name": "bot", "prompt_template": "Hi.", "version": "1.0"}
+        data = {"format_version": 1, "name": "bot", "prompt_template": "Hi.", "version": "1.0"}
         path = tmp_path / "custom.json"
         path.write_text(json.dumps(data))
 
@@ -626,7 +735,7 @@ class TestLoadAgentBareName:
     def test_path_with_separator_treated_as_path(self, tmp_path):
         subdir = tmp_path / "agents"
         subdir.mkdir()
-        data = {"name": "bot", "prompt_template": "Hi.", "version": "1.0"}
+        data = {"format_version": 1, "name": "bot", "prompt_template": "Hi.", "version": "1.0"}
         path = subdir / "bot.agent.json"
         path.write_text(json.dumps(data))
 
@@ -636,7 +745,7 @@ class TestLoadAgentBareName:
     def test_bare_name_with_cwd(self, tmp_path):
         agents_dir = tmp_path / ".claudestream" / "agents"
         agents_dir.mkdir(parents=True)
-        data = {"name": "mybot", "prompt_template": "Hello.", "version": "1.0"}
+        data = {"format_version": 1, "name": "mybot", "prompt_template": "Hello.", "version": "1.0"}
         (agents_dir / "mybot.agent.json").write_text(json.dumps(data))
 
         # Does not need monkeypatch.chdir -- cwd parameter is used instead
@@ -654,7 +763,7 @@ class TestDiscoverAgents:
         agents_dir = tmp_path / ".claudestream" / "agents"
         agents_dir.mkdir(parents=True)
         for name, ver in [("beta", "2.0"), ("alpha", "1.0"), ("gamma", "3.0")]:
-            data = {"name": name, "prompt_template": "p", "version": ver}
+            data = {"format_version": 1, "name": name, "prompt_template": "p", "version": ver}
             (agents_dir / f"{name}.agent.json").write_text(json.dumps(data))
 
         agents = discover_agents(str(tmp_path))
@@ -675,7 +784,7 @@ class TestDiscoverAgents:
         agents_dir = tmp_path / ".claudestream" / "agents"
         agents_dir.mkdir(parents=True)
         # This should be picked up
-        data = {"name": "bot", "prompt_template": "p", "version": "1.0"}
+        data = {"format_version": 1, "name": "bot", "prompt_template": "p", "version": "1.0"}
         (agents_dir / "bot.agent.json").write_text(json.dumps(data))
         # These should be ignored
         (agents_dir / "readme.md").write_text("docs")
@@ -688,7 +797,7 @@ class TestDiscoverAgents:
     def test_discover_agents_uses_cwd_when_none(self, tmp_path, monkeypatch):
         agents_dir = tmp_path / ".claudestream" / "agents"
         agents_dir.mkdir(parents=True)
-        data = {"name": "bot", "prompt_template": "p", "version": "1.0"}
+        data = {"format_version": 1, "name": "bot", "prompt_template": "p", "version": "1.0"}
         (agents_dir / "bot.agent.json").write_text(json.dumps(data))
 
         monkeypatch.chdir(tmp_path)
@@ -700,7 +809,7 @@ class TestDiscoverAgents:
         custom_dir = tmp_path / "my_agents"
         custom_dir.mkdir()
         for name in ["alpha", "beta"]:
-            data = {"name": name, "prompt_template": "p", "version": "1.0"}
+            data = {"format_version": 1, "name": name, "prompt_template": "p", "version": "1.0"}
             (custom_dir / f"{name}.agent.json").write_text(json.dumps(data))
 
         agents = discover_agents(str(tmp_path), paths=[str(custom_dir)])
@@ -710,7 +819,7 @@ class TestDiscoverAgents:
     def test_discover_with_relative_custom_path(self, tmp_path):
         custom_dir = tmp_path / "extras"
         custom_dir.mkdir()
-        data = {"name": "rel", "prompt_template": "p", "version": "1.0"}
+        data = {"format_version": 1, "name": "rel", "prompt_template": "p", "version": "1.0"}
         (custom_dir / "rel.agent.json").write_text(json.dumps(data))
 
         # Relative path resolved against cwd
@@ -723,10 +832,12 @@ class TestDiscoverAgents:
         assert agents == []
 
     def test_discover_with_packages(self, tmp_path):
-        # Create a fake package resource that yields .agent.json files
-        agent_data = msgspec.json.encode(
-            AgentDefinition(name="pkg-agent", prompt_template="p", version="1.0")
-        )
+        # Create a fake package resource that yields .agent.json files. At-rest
+        # documents carry the integer format_version gate (the in-memory struct
+        # does not), so build raw bytes rather than encoding a struct.
+        agent_data = json.dumps(
+            {"format_version": 1, "name": "pkg-agent", "prompt_template": "p", "version": "1.0"}
+        ).encode()
 
         class FakeResource:
             name = "pkg-agent.agent.json"
@@ -757,13 +868,13 @@ class TestDiscoverAgents:
         # Agent "dup" in default location
         agents_dir = tmp_path / ".claudestream" / "agents"
         agents_dir.mkdir(parents=True)
-        data_v1 = {"name": "dup", "prompt_template": "first", "version": "1.0"}
+        data_v1 = {"format_version": 1, "name": "dup", "prompt_template": "first", "version": "1.0"}
         (agents_dir / "dup.agent.json").write_text(json.dumps(data_v1))
 
         # Same agent name in a custom path
         custom_dir = tmp_path / "custom"
         custom_dir.mkdir()
-        data_v2 = {"name": "dup", "prompt_template": "second", "version": "2.0"}
+        data_v2 = {"format_version": 1, "name": "dup", "prompt_template": "second", "version": "2.0"}
         (custom_dir / "dup.agent.json").write_text(json.dumps(data_v2))
 
         agents = discover_agents(str(tmp_path), paths=[str(custom_dir)])
@@ -775,7 +886,7 @@ class TestDiscoverAgents:
     def test_discover_conflict_warning(self, tmp_path, caplog):
         agents_dir = tmp_path / ".claudestream" / "agents"
         agents_dir.mkdir(parents=True)
-        data = {"name": "dup", "prompt_template": "p", "version": "1.0"}
+        data = {"format_version": 1, "name": "dup", "prompt_template": "p", "version": "1.0"}
         (agents_dir / "dup.agent.json").write_text(json.dumps(data))
 
         custom_dir = tmp_path / "custom"
@@ -790,19 +901,19 @@ class TestDiscoverAgents:
         # Default location
         agents_dir = tmp_path / ".claudestream" / "agents"
         agents_dir.mkdir(parents=True)
-        d1 = {"name": "default-agent", "prompt_template": "p", "version": "1.0"}
+        d1 = {"format_version": 1, "name": "default-agent", "prompt_template": "p", "version": "1.0"}
         (agents_dir / "default-agent.agent.json").write_text(json.dumps(d1))
 
         # Custom path
         custom_dir = tmp_path / "custom"
         custom_dir.mkdir()
-        d2 = {"name": "custom-agent", "prompt_template": "p", "version": "1.0"}
+        d2 = {"format_version": 1, "name": "custom-agent", "prompt_template": "p", "version": "1.0"}
         (custom_dir / "custom-agent.agent.json").write_text(json.dumps(d2))
 
-        # Package resource
-        agent_data = msgspec.json.encode(
-            AgentDefinition(name="pkg-agent", prompt_template="p", version="1.0")
-        )
+        # Package resource (at-rest bytes carry the format_version gate)
+        agent_data = json.dumps(
+            {"format_version": 1, "name": "pkg-agent", "prompt_template": "p", "version": "1.0"}
+        ).encode()
 
         class FakeResource:
             name = "pkg-agent.agent.json"
