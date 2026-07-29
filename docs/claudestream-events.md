@@ -7,6 +7,8 @@ nav_order: 11
 
 # claudestream.events
 
+:-: table-events
+
 :-: ref path="claudestream.events"
 
 ## Type Aliases
