@@ -2,7 +2,6 @@
 title: claudestream stream
 description: "Reference for the claudestream stream command — usage, flags, arguments, and examples for the stream subcommand of the claudestream CLI."
 generated: true
-seeded: true
 nav_group: "CLI Reference"
 nav_order: 8
 ---
@@ -10,25 +9,25 @@ nav_order: 8
 
 # claudestream stream
 
-Stream a prompt with real-time token output
+Stream a prompt with real-time incremental token-by-token output to stdout
 
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--model` | `-m` | str |  |  | Model to use |
-| `--cwd` |  | str |  |  | Working directory for Claude |
-| `--skip-permissions` |  | bool |  |  | Skip all permission prompts |
-| `--profile` |  | str |  |  | claudewheel profile to use |
-| `--footer` |  | bool | True |  | Show cost and timing on stderr |
-| `--system-prompt` | `-s` | str |  |  | System prompt for Claude |
-| `--stdin` |  | bool |  |  | Read prompt from stdin |
-| `--color` |  | bool | True |  | Enable colored output |
-| `--resume` |  | str |  |  | Resume a previous session by ID |
-| `--from-pr` |  | str |  |  | Resume from a PR |
+| `--model` | `-m` | str |  |  | Claude model identifier to use for this session (e.g. sonnet) |
+| `--cwd` |  | str |  |  | Working directory for the Claude Code subprocess to operate in |
+| `--skip-permissions` |  | bool |  |  | Bypass all tool permission prompts via --dangerously-skip-permissions |
+| `--profile` |  | str |  |  | Name of the claudewheel profile to use for authentication |
+| `--footer` |  | bool | True |  | Display cost and timing summary on stderr after completion |
+| `--system-prompt` | `-s` | str |  |  | Custom system prompt text to prepend to the Claude session |
+| `--stdin` |  | bool |  |  | Read the prompt text from standard input instead of an argument |
+| `--color` |  | bool | True |  | Enable ANSI colored output for terminal display and formatting |
+| `--resume` |  | str |  |  | Resume a previously started Claude session by its unique session ID |
+| `--from-pr` |  | str |  |  | Load context from a GitHub pull request identifier to resume |
 
 ## Arguments
 
 | Name | Required | Description |
 | --- | --- | --- |
-| `prompt` | no | The prompt to send |
+| `prompt` | no | The text prompt to send to the Claude Code session |

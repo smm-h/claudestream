@@ -19,19 +19,19 @@ Load an agent definition and run it with the given prompt. Accepts a path to a .
 
 | Name | Short | Type | Default | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--var` |  | str |  |  | Variable in key=value format (repeatable) |
-| `--model` | `-m` | str |  |  | Model override |
-| `--profile` |  | str |  |  | claudewheel profile to use |
-| `--cwd` |  | str |  |  | Working directory |
-| `--footer` |  | bool | True |  | Show cost and timing on stderr |
-| `--color` |  | bool | True |  | Enable colored output |
+| `--var` |  | str |  |  | Template variable in key=value format, repeatable for multiple variables |
+| `--model` | `-m` | str |  |  | Override the model declared in the agent definition file |
+| `--profile` |  | str |  |  | Name of the claudewheel profile to use for authentication |
+| `--cwd` |  | str |  |  | Working directory path for the Claude Code process to operate in |
+| `--footer` |  | bool | True |  | Display cost and timing summary on stderr after completion |
+| `--color` |  | bool | True |  | Enable ANSI colored output for terminal display and formatting |
 
 ### Arguments
 
 | Name | Required | Description |
 | --- | --- | --- |
-| `prompt` | yes | User message to send to the agent |
-| `definition` | yes | Agent name or path to .agent.json file |
+| `prompt` | yes | User message prompt to send to the agent for processing |
+| `definition` | yes | Agent name or filesystem path to a .agent.json definition file |
 
 ## agent list
 
@@ -41,7 +41,7 @@ List available agents from .claudestream/agents/. Scans the agents directory in 
 
 | Name | Short | Type | Default | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--cwd` |  | str |  |  | Working directory |
+| `--cwd` |  | str |  |  | Working directory path for the Claude Code process to operate in |
 
 ## agent info
 
@@ -51,7 +51,7 @@ Display agent definition details for a given agent name or path. Loads the .agen
 
 | Name | Required | Description |
 | --- | --- | --- |
-| `name` | yes | Agent name or path |
+| `name` | yes | Agent name or filesystem path to the .agent.json definition |
 
 ## agent validate
 
@@ -61,4 +61,4 @@ Validate an agent definition by loading and checking its .agent.json file for st
 
 | Name | Required | Description |
 | --- | --- | --- |
-| `name` | yes | Agent name or path |
+| `name` | yes | Agent name or filesystem path to the .agent.json definition |

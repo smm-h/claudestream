@@ -139,13 +139,13 @@ with SyncSession(config) as session:
 
 | Command | Description |
 | --- | --- |
-| `send` | Send a prompt and display the response |
-| `stream` | Stream a prompt with real-time token output |
-| `events` | Debug: show all raw protocol events |
-| `repl` | Interactive multi-turn REPL |
-| `ask` | Send a prompt and print the response text |
-| `doctor` | Check claudestream environment health |
-| `config` | Show resolved configuration |
+| `send` | Send a prompt to Claude and display the complete response with events |
+| `stream` | Stream a prompt with real-time incremental token-by-token output to stdout |
+| `events` | Debug mode: display all raw JSON protocol events from the subprocess |
+| `repl` | Start an interactive multi-turn read-eval-print loop session with Claude |
+| `ask` | Send a prompt to Claude and print only the final response text |
+| `doctor` | Check claudestream environment health: binary, version, and profile |
+| `config` | Show resolved configuration including binary path and version |
 | **agent** | Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata. |
 | `agent run` | Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition. |
 | `agent list` | List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'. |

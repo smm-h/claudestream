@@ -2,7 +2,6 @@
 title: claudestream ask
 description: "Reference for the claudestream ask command — usage, flags, arguments, and examples for the ask subcommand of the claudestream CLI."
 generated: true
-seeded: true
 nav_group: "CLI Reference"
 nav_order: 2
 ---
@@ -10,24 +9,24 @@ nav_order: 2
 
 # claudestream ask
 
-Send a prompt and print the response text
+Send a prompt to Claude and print only the final response text
 
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--model` | `-m` | str |  |  | Model to use |
-| `--profile` |  | str |  |  | claudewheel profile |
-| `--cwd` |  | str |  |  | Working directory |
-| `--skip-permissions` |  | bool |  |  | Skip all permission prompts |
-| `--system-prompt` | `-s` | str |  |  | System prompt |
-| `--stdin` |  | bool |  |  | Read prompt from stdin |
-| `--json-output` |  | bool |  |  | Output AskResult as JSON |
-| `--color` |  | bool | True |  | Enable colored output |
-| `--from-pr` |  | str |  |  | Resume from a PR |
+| `--model` | `-m` | str |  |  | Claude model identifier to use for this session (e.g. sonnet) |
+| `--profile` |  | str |  |  | Name of the claudewheel profile for authentication |
+| `--cwd` |  | str |  |  | Working directory path for the Claude Code process to operate in |
+| `--skip-permissions` |  | bool |  |  | Bypass all tool permission prompts via --dangerously-skip-permissions |
+| `--system-prompt` | `-s` | str |  |  | Custom system prompt text to prepend to the session context |
+| `--stdin` |  | bool |  |  | Read the prompt text from standard input instead of an argument |
+| `--json-output` |  | bool |  |  | Serialize the AskResult response object as a JSON line on stdout |
+| `--color` |  | bool | True |  | Enable ANSI colored output for terminal display and formatting |
+| `--from-pr` |  | str |  |  | Load context from a GitHub pull request identifier to resume |
 
 ## Arguments
 
 | Name | Required | Description |
 | --- | --- | --- |
-| `prompt` | no | The prompt to send |
+| `prompt` | no | The text prompt to send to the Claude Code session |

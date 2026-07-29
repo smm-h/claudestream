@@ -17,13 +17,13 @@ Version: 0.13.1
 
 ## Commands
 
-- [send](cli-send.html) -- Send a prompt and display the response
-- [stream](cli-stream.html) -- Stream a prompt with real-time token output
-- [events](cli-events.html) -- Debug: show all raw protocol events
-- [repl](cli-repl.html) -- Interactive multi-turn REPL
-- [ask](cli-ask.html) -- Send a prompt and print the response text
-- [doctor](cli-doctor.html) -- Check claudestream environment health
-- [config](cli-config.html) -- Show resolved configuration
+- [send](cli-send.html) -- Send a prompt to Claude and display the complete response with events
+- [stream](cli-stream.html) -- Stream a prompt with real-time incremental token-by-token output to stdout
+- [events](cli-events.html) -- Debug mode: display all raw JSON protocol events from the subprocess
+- [repl](cli-repl.html) -- Start an interactive multi-turn read-eval-print loop session with Claude
+- [ask](cli-ask.html) -- Send a prompt to Claude and print only the final response text
+- [doctor](cli-doctor.html) -- Check claudestream environment health: binary, version, and profile
+- [config](cli-config.html) -- Show resolved configuration including binary path and version
 
 ## Command Groups
 

@@ -2,7 +2,6 @@
 title: claudestream doctor
 description: "Reference for the claudestream doctor command — usage, flags, arguments, and examples for the doctor subcommand of the claudestream CLI."
 generated: true
-seeded: true
 nav_group: "CLI Reference"
 nav_order: 4
 ---
@@ -10,10 +9,10 @@ nav_order: 4
 
 # claudestream doctor
 
-Check claudestream environment health
+Check claudestream environment health: binary, version, and profile
 
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--profile` |  | str |  |  | Profile to check |
+| `--profile` |  | str |  |  | Name of the claudewheel profile to validate and check |

@@ -2,7 +2,6 @@
 title: claudestream config
 description: "Reference for the claudestream config command — usage, flags, arguments, and examples for the config subcommand of the claudestream CLI."
 generated: true
-seeded: true
 nav_group: "CLI Reference"
 nav_order: 3
 ---
@@ -10,10 +9,10 @@ nav_order: 3
 
 # claudestream config
 
-Show resolved configuration
+Show resolved configuration including binary path and version
 
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--profile` |  | str |  |  | Profile to show |
+| `--profile` |  | str |  |  | Name of the claudewheel profile to display settings for |
