@@ -76,9 +76,9 @@
     "source_docstring": "f50401cc9e505481954edc9e5b82cd23f0272e63b1794cbe1f92bb57b35478ce"
   },
   "en/cli-agent.md": {
-    "content": "e07f2279bbc8b792f10e461bb14879cde9adccbf4601d1274ac3eae7a95b8dc5",
-    "description": "0e9b342ad073bddd8f15b2acc7dc9e72b81dbcf18440e00666b86d98e706726c",
-    "schema_hash": "95297c858435ec345a23993e36ad03741dd5544be05852bbb1880095dbc31abf"
+    "content": "98824246a64105966702c308a07382f28f7e381f1e967700310505fae4f97664",
+    "description": "10add5b211311ff2bddd0bd12ea720058cae85352164076a9b9e918e7d8f9201",
+    "schema_hash": "c4a0fcf95f8b8aad81aa1437268358cd4749857a378abb9b3eefc8fd389d85aa"
   },
   "en/cli-ask.md": {
     "content": "d5e1b93d81db291033dbb7003ad8bc9d710202c1983597852051686ddd3d9ff0",
@@ -122,12 +122,12 @@
   },
   "en/gen-index.md": {
     "content": "543cf82f5ccf5e5bdb14c12dcb83a6abbfe2df4af30a59de19464ff1189987da",
-    "description": "10662407a5043364eeec0a04945149ccdcd78b2d5a3d1c0583c7b107491a3106",
+    "description": "587601a926ec6f77e60b5bb511c123ac2edc7973f0bda06f38bfe6982e6709fe",
     "seed_hash": "10662407a5043364eeec0a04945149ccdcd78b2d5a3d1c0583c7b107491a3106"
   },
   "en/guide.md": {
-    "content": "3f2b8212fcca1411fa4b5d79779de69ac2d0696acf00c2a2e58f61796ecca682",
-    "description": "eb3a372ceb217062bf5ca5736a3e0b3d32e0020c8a1fb3d018ba44cfbbd68d3d",
+    "content": "dcfb741d9da7be416f83dc51219d326b6b12a660eff5633d5f96ef44b64baee9",
+    "description": "d6bc2228f8c766f7b72200a60dd98067b2c199a32a775d3334bc3a9e0ee9e5f8",
     "source_docstring": "eb76765087ebc41967861c1aff873ab914be5434b6b4adbfe21beb9bf2a2e07e"
   },
   "en/index.md": {
