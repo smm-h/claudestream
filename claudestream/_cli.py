@@ -151,20 +151,20 @@ def _stream_events(session: SyncSession, prompt: str, footer: bool, color: Color
 
 # --- send command ---
 
-@app.command("send", help="Send a prompt and display the response")
-@strictcli.arg("prompt", help="The prompt to send", required=False, default="")
-@strictcli.flag("model", type=str, help="Model to use (e.g. sonnet, opus)", short="m")
-@strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
-@strictcli.flag("raw", type=bool, default=False, help="Show raw protocol events instead of flattened")
-@strictcli.flag("json-output", type=bool, default=False, help="Output events as JSON lines")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("profile", type=str, help="claudewheel profile to use")
-@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
-@strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
-@strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
-@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
-@strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
-@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
+@app.command("send", help="Send a prompt to Claude and display the complete response with events")
+@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
+@strictcli.flag("model", type=str, help="Claude model identifier for this session (e.g. sonnet, opus)", short="m")
+@strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
+@strictcli.flag("raw", type=bool, default=False, help="Show raw protocol events from the subprocess instead of flattened output")
+@strictcli.flag("json-output", type=bool, default=False, help="Serialize each protocol event as a JSON line on stdout")
+@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
+@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
+@strictcli.flag("system-prompt", type=str, default="", help="Custom system prompt text to prepend to the Claude session", short="s")
+@strictcli.flag("stdin", type=bool, default=False, help="Read the prompt text from standard input instead of an argument")
+@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
+@strictcli.flag("resume", type=str, default="", help="Resume a previously started Claude session by its unique session ID")
+@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
 def cmd_send(
     ctx,
     prompt: str = "",
@@ -202,18 +202,18 @@ def cmd_send(
 
 # --- stream command ---
 
-@app.command("stream", help="Stream a prompt with real-time token output")
-@strictcli.arg("prompt", help="The prompt to send", required=False, default="")
-@strictcli.flag("model", type=str, help="Model to use", short="m")
-@strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("profile", type=str, help="claudewheel profile to use")
-@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
-@strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
-@strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
-@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
-@strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
-@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
+@app.command("stream", help="Stream a prompt with real-time incremental token-by-token output to stdout")
+@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
+@strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
+@strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
+@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
+@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
+@strictcli.flag("system-prompt", type=str, default="", help="Custom system prompt text to prepend to the Claude session", short="s")
+@strictcli.flag("stdin", type=bool, default=False, help="Read the prompt text from standard input instead of an argument")
+@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
+@strictcli.flag("resume", type=str, default="", help="Resume a previously started Claude session by its unique session ID")
+@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
 def cmd_stream(
     ctx,
     prompt: str = "",
@@ -244,18 +244,18 @@ def cmd_stream(
 
 # --- events command ---
 
-@app.command("events", help="Debug: show all raw protocol events")
-@strictcli.arg("prompt", help="The prompt to send", required=False, default="")
-@strictcli.flag("model", type=str, help="Model to use", short="m")
-@strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("profile", type=str, help="claudewheel profile to use")
-@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
-@strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
-@strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
-@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
-@strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
-@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
+@app.command("events", help="Debug mode: display all raw JSON protocol events from the subprocess")
+@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
+@strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
+@strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
+@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
+@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
+@strictcli.flag("system-prompt", type=str, default="", help="Custom system prompt text to prepend to the Claude session", short="s")
+@strictcli.flag("stdin", type=bool, default=False, help="Read the prompt text from standard input instead of an argument")
+@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
+@strictcli.flag("resume", type=str, default="", help="Resume a previously started Claude session by its unique session ID")
+@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
 def cmd_events(
     ctx,
     prompt: str = "",
@@ -289,16 +289,16 @@ def cmd_events(
 
 # --- repl command ---
 
-@app.command("repl", help="Interactive multi-turn REPL")
-@strictcli.flag("model", type=str, help="Model to use", short="m")
-@strictcli.flag("cwd", type=str, default="", help="Working directory for Claude")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("profile", type=str, help="claudewheel profile to use")
-@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
-@strictcli.flag("system-prompt", type=str, default="", help="System prompt for Claude", short="s")
-@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
-@strictcli.flag("resume", type=str, default="", help="Resume a previous session by ID")
-@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
+@app.command("repl", help="Start an interactive multi-turn read-eval-print loop session with Claude")
+@strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
+@strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
+@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
+@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
+@strictcli.flag("system-prompt", type=str, default="", help="Custom system prompt text to prepend to the Claude session", short="s")
+@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
+@strictcli.flag("resume", type=str, default="", help="Resume a previously started Claude session by its unique session ID")
+@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
 def cmd_repl(
     ctx,
     model: str,
@@ -364,14 +364,14 @@ agent_group = app.group("agent", help="Manage and run agents defined in .agent.j
 
 
 @agent_group.command("run", help="Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.")
-@strictcli.arg("definition", help="Agent name or path to .agent.json file")
-@strictcli.arg("prompt", help="User message to send to the agent")
-@strictcli.flag("var", type=str, help="Variable in key=value format (repeatable)", repeatable=True, unique=False)
-@strictcli.flag("model", type=str, help="Model override", short="m", default="")
-@strictcli.flag("profile", type=str, help="claudewheel profile to use")
-@strictcli.flag("cwd", type=str, help="Working directory", default="")
-@strictcli.flag("footer", type=bool, default=True, help="Show cost and timing on stderr")
-@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
+@strictcli.arg("definition", help="Agent name or filesystem path to a .agent.json definition file")
+@strictcli.arg("prompt", help="User message prompt to send to the agent for processing")
+@strictcli.flag("var", type=str, help="Template variable in key=value format, repeatable for multiple variables", repeatable=True, unique=False)
+@strictcli.flag("model", type=str, help="Override the model declared in the agent definition file", short="m", default="")
+@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("cwd", type=str, help="Working directory path for the Claude Code process to operate in", default="")
+@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
+@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
 def cmd_agent_run(
     ctx,
     definition: str,
@@ -429,7 +429,7 @@ def cmd_agent_run(
 
 
 @agent_group.command("list", help="List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'.")
-@strictcli.flag("cwd", type=str, default="", help="Working directory")
+@strictcli.flag("cwd", type=str, default="", help="Working directory path for the Claude Code process to operate in")
 def cmd_agent_list(ctx, cwd: str = "") -> int | None:
     agents = discover_agents(cwd or None)
     if not agents:
@@ -447,7 +447,7 @@ def cmd_agent_list(ctx, cwd: str = "") -> int | None:
 
 
 @agent_group.command("info", help="Display agent definition details for a given agent name or path. Loads the .agent.json file, parses it, and prints every configured field: name, version, description, model, budget limits, sandbox policy, tool schemas, MCP server config, and stream options. Use this to inspect an agent's full configuration before invoking it.")
-@strictcli.arg("name", help="Agent name or path")
+@strictcli.arg("name", help="Agent name or filesystem path to the .agent.json definition")
 def cmd_agent_info(ctx, name: str) -> int | None:
     try:
         agent = load_agent(name)
@@ -481,7 +481,7 @@ def cmd_agent_info(ctx, name: str) -> int | None:
 
 
 @agent_group.command("validate", help="Validate an agent definition by loading and checking its .agent.json file for structural and semantic correctness. Verifies that budget values are non-negative, the prompt template is non-empty, tool schemas are well-formed, and required fields are present. Reports specific errors on failure or prints a success confirmation.")
-@strictcli.arg("name", help="Agent name or path")
+@strictcli.arg("name", help="Agent name or filesystem path to the .agent.json definition")
 def cmd_agent_validate(ctx, name: str) -> int | None:
     try:
         agent = load_agent(name)
@@ -508,17 +508,17 @@ def cmd_agent_validate(ctx, name: str) -> int | None:
 
 # --- ask command ---
 
-@app.command("ask", help="Send a prompt and print the response text")
-@strictcli.arg("prompt", help="The prompt to send", required=False, default="")
-@strictcli.flag("model", type=str, short="m", help="Model to use")
-@strictcli.flag("profile", type=str, help="claudewheel profile")
-@strictcli.flag("cwd", type=str, default="", help="Working directory")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Skip all permission prompts")
-@strictcli.flag("system-prompt", type=str, default="", short="s", help="System prompt")
-@strictcli.flag("stdin", type=bool, default=False, help="Read prompt from stdin")
-@strictcli.flag("json-output", type=bool, default=False, help="Output AskResult as JSON")
-@strictcli.flag("color", type=bool, default=True, help="Enable colored output")
-@strictcli.flag("from-pr", type=str, default="", help="Resume from a PR")
+@app.command("ask", help="Send a prompt to Claude and print only the final response text")
+@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
+@strictcli.flag("model", type=str, short="m", help="Claude model identifier to use for this session (e.g. sonnet)")
+@strictcli.flag("profile", type=str, help="Name of the claudewheel profile for authentication")
+@strictcli.flag("cwd", type=str, default="", help="Working directory path for the Claude Code process to operate in")
+@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
+@strictcli.flag("system-prompt", type=str, default="", short="s", help="Custom system prompt text to prepend to the session context")
+@strictcli.flag("stdin", type=bool, default=False, help="Read the prompt text from standard input instead of an argument")
+@strictcli.flag("json-output", type=bool, default=False, help="Serialize the AskResult response object as a JSON line on stdout")
+@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
+@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
 def cmd_ask(
     ctx,
     prompt: str = "",
@@ -559,8 +559,8 @@ def cmd_ask(
 
 # --- doctor command ---
 
-@app.command("doctor", help="Check claudestream environment health")
-@strictcli.flag("profile", type=str, default="", help="Profile to check")
+@app.command("doctor", help="Check claudestream environment health: binary, version, and profile")
+@strictcli.flag("profile", type=str, default="", help="Name of the claudewheel profile to validate and check")
 def cmd_doctor(ctx, profile: str = "") -> int | None:
     import asyncio
 
@@ -603,8 +603,8 @@ def cmd_doctor(ctx, profile: str = "") -> int | None:
 
 # --- config command ---
 
-@app.command("config", help="Show resolved configuration")
-@strictcli.flag("profile", type=str, default="", help="Profile to show")
+@app.command("config", help="Show resolved configuration including binary path and version")
+@strictcli.flag("profile", type=str, default="", help="Name of the claudewheel profile to display settings for")
 def cmd_config(ctx, profile: str = "") -> int | None:
     import asyncio
 

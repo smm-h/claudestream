@@ -53,91 +53,91 @@
   "commands": {
     "send": {
       "name": "send",
-      "help": "Send a prompt and display the response",
+      "help": "Send a prompt to Claude and display the complete response with events",
       "flags": [
         {
           "name": "model",
           "type": "str",
-          "help": "Model to use (e.g. sonnet, opus)",
+          "help": "Claude model identifier for this session (e.g. sonnet, opus)",
           "short": "m"
         },
         {
           "name": "cwd",
           "type": "str",
-          "help": "Working directory for Claude",
+          "help": "Working directory for the Claude Code subprocess to operate in",
           "default": ""
         },
         {
           "name": "raw",
           "type": "bool",
-          "help": "Show raw protocol events instead of flattened",
+          "help": "Show raw protocol events from the subprocess instead of flattened output",
           "default": false,
           "negatable": true
         },
         {
           "name": "json-output",
           "type": "bool",
-          "help": "Output events as JSON lines",
+          "help": "Serialize each protocol event as a JSON line on stdout",
           "default": false,
           "negatable": true
         },
         {
           "name": "skip-permissions",
           "type": "bool",
-          "help": "Skip all permission prompts",
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
           "default": false,
           "negatable": true
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile to use"
+          "help": "Name of the claudewheel profile to use for authentication"
         },
         {
           "name": "footer",
           "type": "bool",
-          "help": "Show cost and timing on stderr",
+          "help": "Display cost and timing summary on stderr after completion",
           "default": true,
           "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
-          "help": "System prompt for Claude",
+          "help": "Custom system prompt text to prepend to the Claude session",
           "short": "s",
           "default": ""
         },
         {
           "name": "stdin",
           "type": "bool",
-          "help": "Read prompt from stdin",
+          "help": "Read the prompt text from standard input instead of an argument",
           "default": false,
           "negatable": true
         },
         {
           "name": "color",
           "type": "bool",
-          "help": "Enable colored output",
+          "help": "Enable ANSI colored output for terminal display and formatting",
           "default": true,
           "negatable": true
         },
         {
           "name": "resume",
           "type": "str",
-          "help": "Resume a previous session by ID",
+          "help": "Resume a previously started Claude session by its unique session ID",
           "default": ""
         },
         {
           "name": "from-pr",
           "type": "str",
-          "help": "Resume from a PR",
+          "help": "Load context from a GitHub pull request identifier to resume",
           "default": ""
         }
       ],
       "args": [
         {
           "name": "prompt",
-          "help": "The prompt to send",
+          "help": "The text prompt to send to the Claude Code session",
           "required": false,
           "default": ""
         }
@@ -145,77 +145,77 @@
     },
     "stream": {
       "name": "stream",
-      "help": "Stream a prompt with real-time token output",
+      "help": "Stream a prompt with real-time incremental token-by-token output to stdout",
       "flags": [
         {
           "name": "model",
           "type": "str",
-          "help": "Model to use",
+          "help": "Claude model identifier to use for this session (e.g. sonnet)",
           "short": "m"
         },
         {
           "name": "cwd",
           "type": "str",
-          "help": "Working directory for Claude",
+          "help": "Working directory for the Claude Code subprocess to operate in",
           "default": ""
         },
         {
           "name": "skip-permissions",
           "type": "bool",
-          "help": "Skip all permission prompts",
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
           "default": false,
           "negatable": true
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile to use"
+          "help": "Name of the claudewheel profile to use for authentication"
         },
         {
           "name": "footer",
           "type": "bool",
-          "help": "Show cost and timing on stderr",
+          "help": "Display cost and timing summary on stderr after completion",
           "default": true,
           "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
-          "help": "System prompt for Claude",
+          "help": "Custom system prompt text to prepend to the Claude session",
           "short": "s",
           "default": ""
         },
         {
           "name": "stdin",
           "type": "bool",
-          "help": "Read prompt from stdin",
+          "help": "Read the prompt text from standard input instead of an argument",
           "default": false,
           "negatable": true
         },
         {
           "name": "color",
           "type": "bool",
-          "help": "Enable colored output",
+          "help": "Enable ANSI colored output for terminal display and formatting",
           "default": true,
           "negatable": true
         },
         {
           "name": "resume",
           "type": "str",
-          "help": "Resume a previous session by ID",
+          "help": "Resume a previously started Claude session by its unique session ID",
           "default": ""
         },
         {
           "name": "from-pr",
           "type": "str",
-          "help": "Resume from a PR",
+          "help": "Load context from a GitHub pull request identifier to resume",
           "default": ""
         }
       ],
       "args": [
         {
           "name": "prompt",
-          "help": "The prompt to send",
+          "help": "The text prompt to send to the Claude Code session",
           "required": false,
           "default": ""
         }
@@ -223,77 +223,77 @@
     },
     "events": {
       "name": "events",
-      "help": "Debug: show all raw protocol events",
+      "help": "Debug mode: display all raw JSON protocol events from the subprocess",
       "flags": [
         {
           "name": "model",
           "type": "str",
-          "help": "Model to use",
+          "help": "Claude model identifier to use for this session (e.g. sonnet)",
           "short": "m"
         },
         {
           "name": "cwd",
           "type": "str",
-          "help": "Working directory for Claude",
+          "help": "Working directory for the Claude Code subprocess to operate in",
           "default": ""
         },
         {
           "name": "skip-permissions",
           "type": "bool",
-          "help": "Skip all permission prompts",
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
           "default": false,
           "negatable": true
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile to use"
+          "help": "Name of the claudewheel profile to use for authentication"
         },
         {
           "name": "footer",
           "type": "bool",
-          "help": "Show cost and timing on stderr",
+          "help": "Display cost and timing summary on stderr after completion",
           "default": true,
           "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
-          "help": "System prompt for Claude",
+          "help": "Custom system prompt text to prepend to the Claude session",
           "short": "s",
           "default": ""
         },
         {
           "name": "stdin",
           "type": "bool",
-          "help": "Read prompt from stdin",
+          "help": "Read the prompt text from standard input instead of an argument",
           "default": false,
           "negatable": true
         },
         {
           "name": "color",
           "type": "bool",
-          "help": "Enable colored output",
+          "help": "Enable ANSI colored output for terminal display and formatting",
           "default": true,
           "negatable": true
         },
         {
           "name": "resume",
           "type": "str",
-          "help": "Resume a previous session by ID",
+          "help": "Resume a previously started Claude session by its unique session ID",
           "default": ""
         },
         {
           "name": "from-pr",
           "type": "str",
-          "help": "Resume from a PR",
+          "help": "Load context from a GitHub pull request identifier to resume",
           "default": ""
         }
       ],
       "args": [
         {
           "name": "prompt",
-          "help": "The prompt to send",
+          "help": "The text prompt to send to the Claude Code session",
           "required": false,
           "default": ""
         }
@@ -301,134 +301,134 @@
     },
     "repl": {
       "name": "repl",
-      "help": "Interactive multi-turn REPL",
+      "help": "Start an interactive multi-turn read-eval-print loop session with Claude",
       "flags": [
         {
           "name": "model",
           "type": "str",
-          "help": "Model to use",
+          "help": "Claude model identifier to use for this session (e.g. sonnet)",
           "short": "m"
         },
         {
           "name": "cwd",
           "type": "str",
-          "help": "Working directory for Claude",
+          "help": "Working directory for the Claude Code subprocess to operate in",
           "default": ""
         },
         {
           "name": "skip-permissions",
           "type": "bool",
-          "help": "Skip all permission prompts",
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
           "default": false,
           "negatable": true
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile to use"
+          "help": "Name of the claudewheel profile to use for authentication"
         },
         {
           "name": "footer",
           "type": "bool",
-          "help": "Show cost and timing on stderr",
+          "help": "Display cost and timing summary on stderr after completion",
           "default": true,
           "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
-          "help": "System prompt for Claude",
+          "help": "Custom system prompt text to prepend to the Claude session",
           "short": "s",
           "default": ""
         },
         {
           "name": "color",
           "type": "bool",
-          "help": "Enable colored output",
+          "help": "Enable ANSI colored output for terminal display and formatting",
           "default": true,
           "negatable": true
         },
         {
           "name": "resume",
           "type": "str",
-          "help": "Resume a previous session by ID",
+          "help": "Resume a previously started Claude session by its unique session ID",
           "default": ""
         },
         {
           "name": "from-pr",
           "type": "str",
-          "help": "Resume from a PR",
+          "help": "Load context from a GitHub pull request identifier to resume",
           "default": ""
         }
       ]
     },
     "ask": {
       "name": "ask",
-      "help": "Send a prompt and print the response text",
+      "help": "Send a prompt to Claude and print only the final response text",
       "flags": [
         {
           "name": "model",
           "type": "str",
-          "help": "Model to use",
+          "help": "Claude model identifier to use for this session (e.g. sonnet)",
           "short": "m"
         },
         {
           "name": "profile",
           "type": "str",
-          "help": "claudewheel profile"
+          "help": "Name of the claudewheel profile for authentication"
         },
         {
           "name": "cwd",
           "type": "str",
-          "help": "Working directory",
+          "help": "Working directory path for the Claude Code process to operate in",
           "default": ""
         },
         {
           "name": "skip-permissions",
           "type": "bool",
-          "help": "Skip all permission prompts",
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
           "default": false,
           "negatable": true
         },
         {
           "name": "system-prompt",
           "type": "str",
-          "help": "System prompt",
+          "help": "Custom system prompt text to prepend to the session context",
           "short": "s",
           "default": ""
         },
         {
           "name": "stdin",
           "type": "bool",
-          "help": "Read prompt from stdin",
+          "help": "Read the prompt text from standard input instead of an argument",
           "default": false,
           "negatable": true
         },
         {
           "name": "json-output",
           "type": "bool",
-          "help": "Output AskResult as JSON",
+          "help": "Serialize the AskResult response object as a JSON line on stdout",
           "default": false,
           "negatable": true
         },
         {
           "name": "color",
           "type": "bool",
-          "help": "Enable colored output",
+          "help": "Enable ANSI colored output for terminal display and formatting",
           "default": true,
           "negatable": true
         },
         {
           "name": "from-pr",
           "type": "str",
-          "help": "Resume from a PR",
+          "help": "Load context from a GitHub pull request identifier to resume",
           "default": ""
         }
       ],
       "args": [
         {
           "name": "prompt",
-          "help": "The prompt to send",
+          "help": "The text prompt to send to the Claude Code session",
           "required": false,
           "default": ""
         }
@@ -436,24 +436,24 @@
     },
     "doctor": {
       "name": "doctor",
-      "help": "Check claudestream environment health",
+      "help": "Check claudestream environment health: binary, version, and profile",
       "flags": [
         {
           "name": "profile",
           "type": "str",
-          "help": "Profile to check",
+          "help": "Name of the claudewheel profile to validate and check",
           "default": ""
         }
       ]
     },
     "config": {
       "name": "config",
-      "help": "Show resolved configuration",
+      "help": "Show resolved configuration including binary path and version",
       "flags": [
         {
           "name": "profile",
           "type": "str",
-          "help": "Profile to show",
+          "help": "Name of the claudewheel profile to display settings for",
           "default": ""
         }
       ]
@@ -471,39 +471,39 @@
             {
               "name": "var",
               "type": "str",
-              "help": "Variable in key=value format (repeatable)",
+              "help": "Template variable in key=value format, repeatable for multiple variables",
               "default": [],
               "repeatable": true
             },
             {
               "name": "model",
               "type": "str",
-              "help": "Model override",
+              "help": "Override the model declared in the agent definition file",
               "short": "m",
               "default": ""
             },
             {
               "name": "profile",
               "type": "str",
-              "help": "claudewheel profile to use"
+              "help": "Name of the claudewheel profile to use for authentication"
             },
             {
               "name": "cwd",
               "type": "str",
-              "help": "Working directory",
+              "help": "Working directory path for the Claude Code process to operate in",
               "default": ""
             },
             {
               "name": "footer",
               "type": "bool",
-              "help": "Show cost and timing on stderr",
+              "help": "Display cost and timing summary on stderr after completion",
               "default": true,
               "negatable": true
             },
             {
               "name": "color",
               "type": "bool",
-              "help": "Enable colored output",
+              "help": "Enable ANSI colored output for terminal display and formatting",
               "default": true,
               "negatable": true
             }
@@ -511,11 +511,11 @@
           "args": [
             {
               "name": "prompt",
-              "help": "User message to send to the agent"
+              "help": "User message prompt to send to the agent for processing"
             },
             {
               "name": "definition",
-              "help": "Agent name or path to .agent.json file"
+              "help": "Agent name or filesystem path to a .agent.json definition file"
             }
           ]
         },
@@ -526,7 +526,7 @@
             {
               "name": "cwd",
               "type": "str",
-              "help": "Working directory",
+              "help": "Working directory path for the Claude Code process to operate in",
               "default": ""
             }
           ]
@@ -537,7 +537,7 @@
           "args": [
             {
               "name": "name",
-              "help": "Agent name or path"
+              "help": "Agent name or filesystem path to the .agent.json definition"
             }
           ]
         },
@@ -547,7 +547,7 @@
           "args": [
             {
               "name": "name",
-              "help": "Agent name or path"
+              "help": "Agent name or filesystem path to the .agent.json definition"
             }
           ]
         }
