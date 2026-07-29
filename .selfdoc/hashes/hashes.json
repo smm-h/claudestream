@@ -1,5 +1,10 @@
 {
   "_hash_version": 3,
+  "en/agents-guide.md": {
+    "content": "7c67feff1c8c6fd45393367d131ae98dd139f43f81ee10c9d741bf9c821b396c",
+    "description": "e9756454852b897fc213df16c066de9ff0780bc1a86550fcf9fc4b6c9f7d4510",
+    "source_docstring": "34be0be68993ae7458b011dd06147a5e5cea644398fedfcf332b7edb68777632"
+  },
   "en/claudestream-_agent.md": {
     "content": "9dfd6e87698290f23e489100275a401ac7ccc3289c890038feee5046eaf7f44a",
     "description": "448cb117d26e31d27b070b3e4493d368e74b958ec92c5d131b3ae80154b4bbd3",
@@ -126,6 +131,11 @@
     "content": "543cf82f5ccf5e5bdb14c12dcb83a6abbfe2df4af30a59de19464ff1189987da",
     "description": "10662407a5043364eeec0a04945149ccdcd78b2d5a3d1c0583c7b107491a3106",
     "seed_hash": "10662407a5043364eeec0a04945149ccdcd78b2d5a3d1c0583c7b107491a3106"
+  },
+  "en/guide.md": {
+    "content": "3f2b8212fcca1411fa4b5d79779de69ac2d0696acf00c2a2e58f61796ecca682",
+    "description": "eb3a372ceb217062bf5ca5736a3e0b3d32e0020c8a1fb3d018ba44cfbbd68d3d",
+    "source_docstring": "eb76765087ebc41967861c1aff873ab914be5434b6b4adbfe21beb9bf2a2e07e"
   },
   "en/index.md": {
     "content": "be6e1439938d88bcb7cb54370a5078f1ba292c75b839d4b42ccb13be1fe8e958",
