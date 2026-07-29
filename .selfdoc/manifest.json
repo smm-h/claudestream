@@ -8,6 +8,11 @@
   "base_url": "https://claudestream.smmh.dev",
   "pages": [
     {
+      "path": "agents-guide.md",
+      "title": "Agent Definition Guide",
+      "type": "doc"
+    },
+    {
       "path": "claudestream-_agent.md",
       "title": "claudestream._agent",
       "type": "doc"
@@ -128,11 +133,16 @@
       "type": "doc"
     },
     {
+      "path": "guide.md",
+      "title": "Architecture Guide",
+      "type": "doc"
+    },
+    {
       "path": "index.md",
       "title": "claudestream",
       "type": "doc"
     }
   ],
   "posts": [],
-  "last_gen": "2026-07-29T15:02:21.271869+00:00"
+  "last_gen": "2026-07-29T15:10:24.318705+00:00"
 }
