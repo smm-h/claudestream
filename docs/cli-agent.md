@@ -1,6 +1,6 @@
 ---
 title: claudestream agent
-description: "Reference for the claudestream agent command group: run, list, info, and validate agents defined in .agent.json files with tools, sandbox, and budget limits."
+description: "Reference for the claudestream agent command group: run, list, info, and validate agents defined in .agent.json files with tools, sandbox, and budget."
 generated: true
 nav_group: "CLI Reference"
 nav_order: 1
@@ -9,7 +9,7 @@ nav_order: 1
 
 # claudestream agent
 
-Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata.
+Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Provides 4 subcommands to validate configurations, run agents against prompts, and inspect metadata.
 
 ## agent run
 

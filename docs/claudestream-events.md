@@ -13,4 +13,4 @@ nav_order: 11
 
 ## Type Aliases
 
-**ContentBlock** is a union of all content block types: `TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock`. Used as the element type of `AssistantMessage.content`.
+**ContentBlock** is a union of the 4 content block types (`TextBlock | ToolUseBlock | ThinkingBlock | ToolResultBlock`) and serves as the element type of `AssistantMessage.content`. Each block carries typed data from one segment of an assistant response, and the union lets consumers use isinstance checks or pattern matching to dispatch on block kind without casting.

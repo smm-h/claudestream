@@ -13,7 +13,7 @@ The agent system separates *what* the agent does (defined in the `.agent.json` f
 
 ## File location and discovery
 
-Agent definitions live in `.claudestream/agents/` relative to the working directory. Each file is named `<name>.agent.json`, where `<name>` matches the `name` field inside the document:
+Agent definitions live in `.claudestream/agents/` relative to the working directory. Each file follows the naming convention `<name>.agent.json`, where `<name>` must match the `name` field inside the JSON document. The `discover_agents` function scans this directory at runtime and returns all valid definitions sorted alphabetically:
 
 ```
 .claudestream/
@@ -30,6 +30,8 @@ The `discover_agents` function scans this directory and returns all valid defini
 An agent definition is a JSON document validated against a strictspec schema (format version 1). The schema enforces required fields, type constraints, and value ranges at load time. Invalid documents produce an `AgentValidationError` with pinned diagnostic codes and paths.
 
 ### Complete field reference
+
+The `AgentDefinition` struct has 10 fields covering identity, prompt, model selection, sandbox policy, budget limits, tool schemas, MCP server integration, and stream output behavior. Only `name`, `prompt_template`, and `version` are required; all others are optional overrides.
 
 :-: table-schema path="claudestream/_agent.py" target="AgentDefinition"
 
@@ -101,7 +103,7 @@ Every `.agent.json` document must include a top-level integer `format_version` f
 
 ## Prompt templates and variable substitution
 
-The `prompt_template` field is a system prompt string with `{variable}` placeholders. Variables are resolved at invocation time by passing a `variables` dictionary.
+The `prompt_template` field is a system prompt string with `{variable}` placeholders that are resolved at invocation time by passing a `variables` dictionary. Resolution follows a 4-step process: identify all template variables, substitute provided values, verify no original variables remain unresolved, and leave any curly-brace patterns introduced by substituted values untouched.
 
 ### How resolution works
 
@@ -112,7 +114,7 @@ The `prompt_template` field is a system prompt string with `{variable}` placehol
 
 ### CLI usage
 
-Pass variables with repeatable `--var` flags:
+Pass template variables from the command line using repeatable `--var key=value` flags. Each flag sets one variable, and all variables referenced in the prompt template must be provided or the command fails with a resolution error:
 
 ```
 claudestream agent run reviewer "Review this PR" \
@@ -167,7 +169,7 @@ for event in session.send(prompt):
 
 ## Sandbox configuration
 
-The `sandbox` object restricts what tools the agent can use and where it can write. When present in the agent definition, it overrides any sandbox set on the `SessionConfig`.
+The `sandbox` object restricts what tools the agent can use and where it can write, with 5 configurable fields covering tool allow-lists, write-path scoping, CLAUDE.md suppression, violation logging, and permission bypass. When present in the agent definition, it fully overrides any sandbox set on the `SessionConfig`.
 
 :-: table-schema path="claudestream/policy.py" target="Sandbox"
 
@@ -195,7 +197,7 @@ When `write_paths` is set, write tools (`Write`, `Edit`, `MultiEdit`) are restri
 
 ### Tool schemas
 
-The `tools` array declares tools the agent can use, each with a name, description, JSON Schema for input parameters, and an optional MCP server name.
+The `tools` array declares tools the agent can use. Each `ToolSchema` entry has 4 fields: a unique name used in MCP tool calls, an optional human-readable description shown to the model, an optional JSON Schema defining the input parameters, and an optional MCP server name identifying which server hosts the tool.
 
 :-: table-schema path="claudestream/_options.py" target="ToolSchema"
 
@@ -217,7 +219,7 @@ with invoke_agent_sync(agent, config, tool_handlers={"lint": lint_handler}) as s
 
 ### MCP server configuration
 
-The `mcp` object points to external MCP server configuration files and controls strict mode.
+The `mcp` object points to external MCP server configuration files and controls strict mode for server name resolution. It has 2 required fields: `config_files` (a list of paths to JSON configuration files defining available servers) and `strict` (a boolean controlling whether unknown server names cause errors or are silently ignored).
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -228,7 +230,7 @@ When `strict` is `true`, any MCP tool call referencing an unknown server name is
 
 ### Stream options
 
-The `stream` object controls event stream behavior.
+The `stream` object controls event stream behavior with 5 required boolean fields that configure verbose output, partial message streaming, hook event inclusion, user message replay on session resume, and dynamic prompt section exclusion.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
@@ -250,11 +252,11 @@ Fields that exist only on `SessionConfig` (e.g., `profile`, `cwd`, `binary`, `ex
 
 ## Running agents via CLI
 
-The `agent` command group provides four subcommands.
+The `agent` command group provides 4 subcommands for running, listing, inspecting, and validating agent definitions from the command line without writing any Python code. Each subcommand loads the `.agent.json` file, validates it against the strictspec schema (format version 1), and performs its operation.
 
 ### `agent run`
 
-Load and invoke an agent with a prompt:
+Load an agent definition from a `.agent.json` file or by bare name, resolve prompt template variables, and invoke the agent with a user message. Accepts 6 flags for variable substitution, model override, profile selection, working directory, footer display, and color output:
 
 ```
 claudestream agent run <name-or-path> "<prompt>" [flags]
@@ -280,7 +282,7 @@ claudestream agent run ./custom/review.agent.json "Check this code" --var projec
 
 ### `agent list`
 
-Discover and list all agents in `.claudestream/agents/`:
+Scan the `.claudestream/agents/` directory in the current working directory (or the directory specified by `--cwd`) and print a table of all discovered agents with their name, schema version, and description columns:
 
 ```
 claudestream agent list [--cwd <dir>]
@@ -290,7 +292,7 @@ Prints a table with columns: NAME, VERSION, DESCRIPTION.
 
 ### `agent info`
 
-Show full configuration details for an agent:
+Load and display the complete configuration of an agent definition, printing every configured field including name, version, description, model, budget thresholds, sandbox policy, tool schemas, MCP config, and stream options:
 
 ```
 claudestream agent info <name-or-path>
@@ -300,7 +302,7 @@ Prints every configured field: name, version, description, model, budget thresho
 
 ### `agent validate`
 
-Check an agent definition for structural and semantic correctness:
+Check an agent definition for structural and semantic correctness against the strictspec schema (format version 1), verifying required fields, type constraints, non-negative budget values, well-formed tool schemas, and non-empty prompt templates:
 
 ```
 claudestream agent validate <name-or-path>

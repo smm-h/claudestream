@@ -11,7 +11,7 @@ nav_order: 1
 
 ## Public API
 
-Everything below is importable directly from `claudestream`. The symbols are grouped by category.
+Everything below is importable directly from `claudestream` at the top level, with no need to reference internal module paths. The 47 public symbols are grouped into 9 categories covering sessions, events, messages, protocol, policy, tools, options, process management, and agent definitions.
 
 ### Sessions
 
@@ -21,7 +21,7 @@ Everything below is importable directly from `claudestream`. The symbols are gro
 
 ### Events
 
-Typed dataclasses for every Claude Code stream output:
+Typed dataclasses representing every Claude Code stream output, with 19 event types covering the full lifecycle from session initialization through assistant responses, tool use, permission handling, and final result summaries with cost and token usage:
 
 - **Event** -- base class for all stream events
 - **SystemInit** -- first event in the stream, containing session metadata
@@ -56,7 +56,7 @@ Typed dataclasses for every Claude Code stream output:
 
 ### Messages
 
-Typed structs for Claude Code stream input:
+Typed structs for the 6 message types that flow from the SDK to the Claude Code subprocess via stdin, covering user prompts, permission responses, MCP tool results, server registration, and session initialization:
 
 - **AllowPermission** -- allow a permission request
 - **DenyPermission** -- deny a permission request
@@ -67,7 +67,7 @@ Typed structs for Claude Code stream input:
 
 ### Protocol
 
-NDJSON protocol layer for reading and writing the stream:
+The NDJSON protocol layer provides 4 functions for reading events from and writing messages to the Claude Code subprocess stream. It handles JSON serialization and deserialization, event type dispatch based on the `type` field, and content block flattening that expands compound `AssistantMessage` events into individual typed events like `AssistantText` and `ToolUse`:
 
 - **Writable** -- union type alias for all writable message types
 - **flatten_event** -- expand an event into convenience events (one per content block)
@@ -77,7 +77,7 @@ NDJSON protocol layer for reading and writing the stream:
 
 ### Policy
 
-Sandbox and permission policy types:
+Sandbox and permission policy types that control which tools an agent can call and which filesystem paths it can write to, with declarative allow and deny rules evaluated automatically during each permission request:
 
 - **Allow** -- allow a tool to execute
 - **Deny** -- deny a tool execution
@@ -87,7 +87,7 @@ Sandbox and permission policy types:
 
 ### Tools
 
-Tool registration API for user-defined MCP tools:
+Tool registration API that lets consumers define custom MCP tools using a decorator-based pattern, where the function's type hints and docstring are automatically converted into a JSON Schema served to Claude Code at session startup:
 
 - **Tool** -- a user-defined tool struct served via MCP to Claude Code
 - **collect_tools** -- gather all @tool-decorated functions from a module
@@ -95,7 +95,7 @@ Tool registration API for user-defined MCP tools:
 
 ### Options
 
-Configuration structs for session setup:
+Configuration structs for session setup, covering 9 option types. The primary entry point is `SessionConfig`, which unifies all settings into a single object passed to `AsyncSession` or `SyncSession`. The remaining 8 option types control specific areas: budget limits, debug output, MCP server integration, plugin loading, stream behavior, process tuning, session resolution, and tool schemas:
 
 - **Budget** -- cost, turn, and token limits for a session
 - **DebugOptions** -- debug output configuration
@@ -109,14 +109,14 @@ Configuration structs for session setup:
 
 ### Process
 
-Subprocess management:
+Subprocess management layer that spawns the Claude Code CLI process with piped stdin, stdout, and stderr, registers it for atexit cleanup, and implements a 3-stage graceful shutdown sequence with configurable timeouts:
 
 - **ProcessConfig** -- configuration for spawning a Claude Code subprocess
 - **ProcessManager** -- manages the Claude Code subprocess lifecycle
 
 ### Agents
 
-Agent definition and invocation:
+Agent definition and invocation API providing 5 functions for loading, discovering, and running reusable agent configurations stored as `.agent.json` files, with support for prompt template variable substitution and budget enforcement:
 
 - **AgentDefinition** -- a complete agent definition loadable from .agent.json files
 - **discover_agents** -- discover agent definitions from filesystem and package resources

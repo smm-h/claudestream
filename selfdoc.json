@@ -58,7 +58,8 @@
   },
   "gen": {
     "exclude": [
-      "claudestream"
+      "claudestream",
+      "claudestream._agent_schema"
     ]
   },
   "root_files": [

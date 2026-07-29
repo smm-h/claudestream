@@ -1,6 +1,6 @@
 ---
 title: Architecture Guide
-description: How claudestream's four layers turn a subprocess into typed async events, with permission handling and tool serving.
+description: "How claudestream's 4-layer architecture (process, protocol, session, CLI) turns a Claude Code subprocess into typed async events with permissions."
 ---
 
 # Architecture Guide
@@ -11,6 +11,8 @@ claudestream wraps the Claude Code CLI's stream-json protocol in a four-layer Py
 
 ### Process (bottom)
 
+The process layer spawns and manages the Claude Code subprocess, mapping every session option to its corresponding CLI flag and handling lifecycle events including startup, graceful shutdown with a 3-stage sequence, and atexit cleanup for orphan prevention.
+
 :-: ref path="claudestream._process" lang="python"
 
 `ProcessConfig` is a frozen struct that maps every session option to its CLI flag equivalent. Its `build_argv()` method produces the full argument list, including the hardcoded `--output-format stream-json --input-format stream-json` that enables the protocol. A declarative flag registry (`_FLAG_REGISTRY`) drives the mapping: each entry is a `(field_name, cli_flag, style)` tuple where style is `"value"`, `"bool"`, or `"list"`.
@@ -18,6 +20,8 @@ claudestream wraps the Claude Code CLI's stream-json protocol in a four-layer Py
 `ProcessManager` owns the subprocess lifecycle. On `start()`, it spawns the process with piped stdin/stdout/stderr, registers it in a module-level `_ACTIVE_CHILDREN` set (cleaned up by an `atexit` handler), and launches a background task to drain stderr. On `close()`, it follows a three-stage shutdown sequence: close stdin, wait for exit, SIGTERM with timeout, then SIGKILL.
 
 ### Protocol (middle-lower)
+
+The protocol layer converts raw NDJSON lines into typed Python Event objects and serializes outbound Message objects back to NDJSON, providing the bidirectional codec between the subprocess I/O streams and the SDK's typed event system.
 
 :-: ref path="claudestream._protocol" lang="python"
 
@@ -31,6 +35,8 @@ The protocol layer converts between raw NDJSON lines and typed Python objects.
 
 ### Session (middle-upper)
 
+The session layer manages turn-based conversation state on top of the protocol, combining process lifecycle, event parsing, sandbox-based permission interception, MCP tool serving, budget tracking, and callback dispatch into a single context manager.
+
 :-: ref path="claudestream._async_session" lang="python"
 
 :-: ref path="claudestream._sync_session" lang="python"
@@ -41,13 +47,15 @@ The protocol layer converts between raw NDJSON lines and typed Python objects.
 
 ### CLI (top)
 
+The CLI layer exposes the SDK as shell commands built with strictcli, providing 8 commands for sending prompts, streaming tokens, debugging protocol events, running interactive sessions, and managing agent definitions.
+
 :-: ref path="claudestream._cli" lang="python"
 
 The CLI is built with strictcli and provides commands that construct a `SessionConfig` from flags and run sessions. Commands include `send` (display response events), `stream` (real-time token output via `StreamDelta`), `events` (raw protocol debug), `repl` (multi-turn interactive), `ask` (one-shot text output), `doctor` (environment health check), `config` (show resolved config), and the `agent` subcommand group.
 
 ## Event lifecycle
 
-When you call `session.send("prompt")`, the following sequence occurs:
+When you call `session.send("prompt")`, the event flows through an 8-step pipeline that transforms your prompt into a stream of typed events. The steps are: message serialization, subprocess processing, event reading, permission and MCP handling, event flattening and enrichment, file tracking, callback firing, and turn completion with budget checks:
 
 1. **Message serialization.** The prompt is wrapped in a `UserMessage` and written to the subprocess stdin as an NDJSON line via `write_message()`.
 
@@ -69,7 +77,7 @@ When you call `session.send("prompt")`, the following sequence occurs:
 
 ### Async iteration
 
-The core API is an async generator. `AsyncSession.send()` yields events one at a time as they arrive from the subprocess:
+The core API is an async generator that yields typed events one at a time as they arrive from the subprocess. Each call to `AsyncSession.send()` drives one conversational turn, blocking until the subprocess produces each event and terminating when a `Result` event signals turn completion:
 
 ```python
 async with AsyncSession(config) as session:
@@ -87,7 +95,7 @@ The iterator blocks until the subprocess produces the next event. A turn is comp
 
 ### Raw vs. flattened mode
 
-By default, `send()` flattens events. An `AssistantMessage` with text and tool_use blocks becomes separate `AssistantText` and `ToolUse` events. This is the intended API for most consumers.
+By default, `send()` flattens compound events into individual typed events: an `AssistantMessage` containing 3 content blocks (text, tool_use, thinking) becomes 3 separate events (`AssistantText`, `ToolUse`, `Thinking`). Passing `raw=True` disables flattening and yields the original compound events with their content block lists intact, which is useful for protocol debugging or custom renderers.
 
 Passing `raw=True` yields the protocol-level events (`AssistantMessage`, `ToolResultMessage`) with their content block lists intact. This is useful for debugging, protocol inspection, or building custom renderers that need the full message structure.
 
@@ -122,7 +130,7 @@ for event in session.send("prompt"):
 
 ### Event filtering by type
 
-Use `isinstance` checks or structural pattern matching to filter events. The type hierarchy is flat: all events inherit from `Event`, so there is no deep dispatch needed.
+Use `isinstance` checks or structural pattern matching to filter from the 19 event types in the SDK. The type hierarchy is flat with all events inheriting directly from `Event`, so filtering requires only single-level dispatch without navigating a deep class tree or handling intermediate abstract types:
 
 ```python
 from claudestream import (
@@ -143,7 +151,7 @@ for event in session.send("prompt"):
 
 ### Callbacks
 
-Register callbacks for specific event types. Callbacks fire during iteration, before the event is yielded:
+Register callbacks for specific event types using `session.on(EventType, handler)`. Callbacks fire during iteration before each event is yielded to the consumer, allowing side effects like logging, metrics collection, or progress reporting without modifying the main iteration loop:
 
 ```python
 session.on(ToolUse, lambda e: print(f"[calling {e.name}]"))
@@ -152,9 +160,11 @@ session.on(Result, lambda e: print(f"[${e.total_cost_usd:.4f}]"))
 
 ## Permission handling
 
-Permission handling has two modes: automatic (sandbox-driven) and manual (consumer-driven).
+Permission handling has 2 modes: automatic (sandbox-driven, where the SDK resolves tool permission requests using declarative allow/deny rules) and manual (consumer-driven, where `PermissionRequest` events are surfaced to the caller for interactive decision-making).
 
 ### Automatic: sandbox policies
+
+When a `Sandbox` is configured, the session automatically resolves permission requests by applying a 2-step check (tool allow-list, then write-path scope) without surfacing any events to the consumer. This is the default mode for agent definitions that declare a sandbox.
 
 :-: ref path="claudestream.policy" lang="python"
 
@@ -184,7 +194,7 @@ The `skip_permissions=True` option bypasses all permission prompts by passing `-
 
 ### Manual: consumer-driven permission handling
 
-When `intercept_permissions=True` is set on `SessionConfig`, or when iterating with `raw=True`, `PermissionRequest` events are surfaced to the consumer. The consumer must respond with `respond_allow()` or `respond_deny()`:
+When `intercept_permissions=True` is set on `SessionConfig`, or when iterating with `raw=True`, the session surfaces `PermissionRequest` events containing the tool name, input parameters, and display metadata. The consumer inspects each request and responds with `respond_allow()` or `respond_deny()` to unblock the subprocess:
 
 ```python
 config = SessionConfig(
@@ -213,7 +223,7 @@ with SyncSession(config) as session:
 
 ### One-shot ask
 
-The simplest pattern. `ask()` collects all `AssistantText` events and returns an `AskResult` with the concatenated text plus metadata:
+The simplest pattern for single-question interactions. The `ask()` method internally calls `send()`, collects all `AssistantText` events, concatenates their text content, and returns an `AskResult` containing the full response text along with cost, duration, and token usage metadata:
 
 ```python
 from claudestream import SessionConfig, SyncSession
@@ -227,7 +237,7 @@ with SyncSession(config) as session:
 
 ### Multi-turn conversation
 
-The subprocess maintains conversation state across calls to `send()`:
+The subprocess maintains full conversation state across multiple calls to `send()`, so each subsequent prompt has access to the complete history of prior turns. The session tracks cumulative cost, token usage, and turn count across the entire conversation:
 
 ```python
 config = SessionConfig(model="sonnet", profile="default")
@@ -241,7 +251,7 @@ with SyncSession(config) as session:
 
 ### Registering custom tools
 
-The `@tool` decorator creates a `Tool` from a function's type hints and docstring. Tools are served to Claude via MCP during the session startup handshake:
+The `@tool` decorator creates a `Tool` from a function's type hints and docstring, automatically generating a JSON Schema for the input parameters. Tools are served to Claude Code via MCP during the session startup handshake, and the SDK dispatches incoming `McpRequest` events to the registered handler functions:
 
 ```python
 from claudestream import tool, SessionConfig, SyncSession, AssistantText
@@ -269,7 +279,7 @@ with SyncSession(config) as session:
 
 ### Lifecycle hooks
 
-Register hooks for turn completion, errors, and session close:
+Register hooks for 3 lifecycle events: turn completion (fires after each `Result` with cost and turn data), errors (fires on unhandled exceptions during iteration), and session close (fires when the context manager exits):
 
 ```python
 def on_done(session, result):
@@ -288,7 +298,7 @@ with SyncSession(config) as session:
 
 ### Budget observation
 
-Budget thresholds are informational events fired when cumulative cost, turn count, or token count crosses a configured value:
+Budget thresholds are informational `BudgetThreshold` events fired when cumulative cost (USD), turn count, or token count crosses any of the configured threshold values. Each threshold fires exactly once per session, and the event carries the metric name, threshold value, and current value for logging or abort decisions:
 
 ```python
 from claudestream import Budget, SessionConfig, SyncSession, BudgetThreshold
@@ -309,7 +319,7 @@ with SyncSession(config) as session:
 
 ### Mid-session control
 
-The session supports mid-session control requests: switch models, change permission modes, query context usage, and interrupt running turns:
+The session supports 4 mid-session control operations that modify the running subprocess without restarting it: switching the active model, changing permission modes, querying context window usage (total and maximum tokens), and interrupting a running turn to reclaim control:
 
 ```python
 async with AsyncSession(config) as session:
@@ -326,7 +336,7 @@ async with AsyncSession(config) as session:
 
 ### Agent definitions
 
-Agents are JSON files that compose config, sandbox, budget, and tools into reusable definitions:
+Agents are `.agent.json` files that compose a model, system prompt template, sandbox policy, budget constraints, tool schemas, and MCP configuration into a single reusable definition, loadable by name from `.claudestream/agents/` or by filesystem path:
 
 ```python
 from claudestream import load_agent, invoke_agent_sync, SessionConfig, AssistantText
