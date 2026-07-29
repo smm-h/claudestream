@@ -2,7 +2,7 @@
   "schema_version": 1,
   "name": "claudestream",
   "slug": "claudestream",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "description": "",
   "language": "python",
   "base_url": "https://claudestream.smmh.dev",
@@ -10,6 +10,11 @@
     {
       "path": "claudestream-_agent.md",
       "title": "claudestream._agent",
+      "type": "doc"
+    },
+    {
+      "path": "claudestream-_agent_schema.md",
+      "title": "claudestream._agent_schema",
       "type": "doc"
     },
     {
@@ -129,5 +134,5 @@
     }
   ],
   "posts": [],
-  "last_gen": "2026-07-13T17:14:52.286304+00:00"
+  "last_gen": "2026-07-29T15:02:21.271869+00:00"
 }

@@ -1,6 +1,6 @@
 ---
 title: API Reference
-description: "API reference index for claudestream covering 11 modules"
+description: "API reference index for claudestream covering 12 modules"
 generated: true
 seeded: true
 nav_group: "API Reference"
@@ -12,6 +12,7 @@ order: 90
 # API Reference
 
 - [claudestream._agent](claudestream-_agent.html)
+- [claudestream._agent_schema](claudestream-_agent_schema.html)
 - [claudestream._async_session](claudestream-_async_session.html)
 - [claudestream._cli](claudestream-_cli.html)
 - [claudestream._color](claudestream-_color.html)

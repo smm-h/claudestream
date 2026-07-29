@@ -5,6 +5,11 @@
     "description": "448cb117d26e31d27b070b3e4493d368e74b958ec92c5d131b3ae80154b4bbd3",
     "source_docstring": "448cb117d26e31d27b070b3e4493d368e74b958ec92c5d131b3ae80154b4bbd3"
   },
+  "en/claudestream-_agent_schema.md": {
+    "content": "57d714a49ea2cf164316905b06200702ddb3ad7ebb8f2d195ccf2ecaee486fd5",
+    "description": "429eb0dff867178a8bfb3d0b8393c6bfb2f8203b7b9e26825566b8de14cd7c4d",
+    "seed_hash": "429eb0dff867178a8bfb3d0b8393c6bfb2f8203b7b9e26825566b8de14cd7c4d"
+  },
   "en/claudestream-_async_session.md": {
     "content": "f4d94422ceb813179bc7476c2934170ee447632090a4c050df420a2adbb4bdf4",
     "description": "eb7292da18c96240dd1e11507331026261fd5c6567f9f786aa480ac0a8acadb8",
@@ -118,9 +123,9 @@
     "seed_hash": "801ddd67495b0a8f502f50eecce4d602dddd84e5b6e7df08065d3d5b4427a2ff"
   },
   "en/gen-index.md": {
-    "content": "8878177212229602a93fe4821255a0076dff7b8a31a163f2d9d49a0799cc5252",
-    "description": "bc10b60455c659d9d84be2928d0e09d82d173b4ff9337ad5572314cb9aab755e",
-    "seed_hash": "bc10b60455c659d9d84be2928d0e09d82d173b4ff9337ad5572314cb9aab755e"
+    "content": "543cf82f5ccf5e5bdb14c12dcb83a6abbfe2df4af30a59de19464ff1189987da",
+    "description": "10662407a5043364eeec0a04945149ccdcd78b2d5a3d1c0583c7b107491a3106",
+    "seed_hash": "10662407a5043364eeec0a04945149ccdcd78b2d5a3d1c0583c7b107491a3106"
   },
   "en/index.md": {
     "content": "be6e1439938d88bcb7cb54370a5078f1ba292c75b839d4b42ccb13be1fe8e958",

@@ -19,6 +19,7 @@ The `@tool` decorator (`_tools.py`) and agent definitions (`_agent.py`) are cros
 
 - **claudestream** (`claudestream/__init__.py`): A Python library and CLI for streaming Claude Code's JSON protocol, providing typed events, async/sync sessions, and tool registration.
 - **claudestream._agent** (`claudestream/_agent.py`): Agent definition loader and budget enforcement for Claude Code sessions, with sync and async context managers for invoking agents.
+- **claudestream._agent_schema** (`claudestream/_agent_schema.py`)
 - **claudestream._async_session** (`claudestream/_async_session.py`): Async session manager for the Claude Code stream-json protocol, handling process lifecycle, event parsing, and permission callbacks.
 - **claudestream._cli** (`claudestream/_cli.py`): Command-line interface entry point for claudestream, providing send, listen, and agent commands for interacting with Claude Code.
 - **claudestream._color** (`claudestream/_color.py`): ANSI color output support with automatic TTY detection, NO_COLOR environment variable compliance, and a reusable Colorizer class.
