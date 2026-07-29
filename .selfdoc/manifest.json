@@ -18,11 +18,6 @@
       "type": "doc"
     },
     {
-      "path": "claudestream-_agent_schema.md",
-      "title": "claudestream._agent_schema",
-      "type": "doc"
-    },
-    {
       "path": "claudestream-_async_session.md",
       "title": "claudestream._async_session",
       "type": "doc"
@@ -144,5 +139,5 @@
     }
   ],
   "posts": [],
-  "last_gen": "2026-07-29T15:10:24.318705+00:00"
+  "last_gen": "2026-07-29T17:14:39.545363+00:00"
 }

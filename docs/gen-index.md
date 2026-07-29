@@ -2,7 +2,6 @@
 title: API Reference
 description: "API reference index for the claudestream Python library, with links to documentation for all 12 modules covering sessions, events, protocol, and tools."
 generated: true
-seeded: true
 nav_group: "API Reference"
 nav_order: 0
 order: 90
@@ -12,7 +11,6 @@ order: 90
 # API Reference
 
 - [claudestream._agent](claudestream-_agent.html)
-- [claudestream._agent_schema](claudestream-_agent_schema.html)
 - [claudestream._async_session](claudestream-_async_session.html)
 - [claudestream._cli](claudestream-_cli.html)
 - [claudestream._color](claudestream-_color.html)
