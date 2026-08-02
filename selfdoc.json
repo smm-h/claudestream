@@ -70,7 +70,6 @@
     "slug": "claudestream",
     "docs_base": "https://docs.smmh.dev",
     "posts_base": "https://blog.smmh.dev",
-    "assembly": "smm-h/selfdoc-cache",
     "projects": {
       "pixelweaver": "https://docs.smmh.dev/pixelweaver",
       "claudewheel": "https://docs.smmh.dev/claudewheel",
