@@ -151,7 +151,7 @@ def _stream_events(session: SyncSession, prompt: str, footer: bool, color: Color
 
 # --- send command ---
 
-@app.command("send", help="Send a prompt to Claude and display the complete response with events")
+@app.command("send", effect="mutating", help="Send a prompt to Claude and display the complete response with events")
 @strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
 @strictcli.flag("model", type=str, help="Claude model identifier for this session (e.g. sonnet, opus)", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
@@ -202,7 +202,7 @@ def cmd_send(
 
 # --- stream command ---
 
-@app.command("stream", help="Stream a prompt with real-time incremental token-by-token output to stdout")
+@app.command("stream", effect="mutating", help="Stream a prompt with real-time incremental token-by-token output to stdout")
 @strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
 @strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
@@ -244,7 +244,7 @@ def cmd_stream(
 
 # --- events command ---
 
-@app.command("events", help="Debug mode: display all raw JSON protocol events from the subprocess")
+@app.command("events", effect="mutating", help="Debug mode: display all raw JSON protocol events from the subprocess")
 @strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
 @strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
@@ -289,7 +289,7 @@ def cmd_events(
 
 # --- repl command ---
 
-@app.command("repl", help="Start an interactive multi-turn read-eval-print loop session with Claude")
+@app.command("repl", effect="mutating", help="Start an interactive multi-turn read-eval-print loop session with Claude")
 @strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
 @strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
 @strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
@@ -363,7 +363,7 @@ def cmd_repl(
 agent_group = app.group("agent", help="Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata.")
 
 
-@agent_group.command("run", help="Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.")
+@agent_group.command("run", effect="mutating", help="Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.")
 @strictcli.arg("definition", help="Agent name or filesystem path to a .agent.json definition file")
 @strictcli.arg("prompt", help="User message prompt to send to the agent for processing")
 @strictcli.flag("var", type=str, help="Template variable in key=value format, repeatable for multiple variables", repeatable=True, unique=False)
@@ -428,7 +428,7 @@ def cmd_agent_run(
         return 1
 
 
-@agent_group.command("list", help="List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'.")
+@agent_group.command("list", effect="read_only", help="List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'.")
 @strictcli.flag("cwd", type=str, default="", help="Working directory path for the Claude Code process to operate in")
 def cmd_agent_list(ctx, cwd: str = "") -> int | None:
     agents = discover_agents(cwd or None)
@@ -446,7 +446,7 @@ def cmd_agent_list(ctx, cwd: str = "") -> int | None:
     return None
 
 
-@agent_group.command("info", help="Display agent definition details for a given agent name or path. Loads the .agent.json file, parses it, and prints every configured field: name, version, description, model, budget limits, sandbox policy, tool schemas, MCP server config, and stream options. Use this to inspect an agent's full configuration before invoking it.")
+@agent_group.command("info", effect="read_only", help="Display agent definition details for a given agent name or path. Loads the .agent.json file, parses it, and prints every configured field: name, version, description, model, budget limits, sandbox policy, tool schemas, MCP server config, and stream options. Use this to inspect an agent's full configuration before invoking it.")
 @strictcli.arg("name", help="Agent name or filesystem path to the .agent.json definition")
 def cmd_agent_info(ctx, name: str) -> int | None:
     try:
@@ -480,7 +480,7 @@ def cmd_agent_info(ctx, name: str) -> int | None:
     return None
 
 
-@agent_group.command("validate", help="Validate an agent definition by loading and checking its .agent.json file for structural and semantic correctness. Verifies that budget values are non-negative, the prompt template is non-empty, tool schemas are well-formed, and required fields are present. Reports specific errors on failure or prints a success confirmation.")
+@agent_group.command("validate", effect="read_only", help="Validate an agent definition by loading and checking its .agent.json file for structural and semantic correctness. Verifies that budget values are non-negative, the prompt template is non-empty, tool schemas are well-formed, and required fields are present. Reports specific errors on failure or prints a success confirmation.")
 @strictcli.arg("name", help="Agent name or filesystem path to the .agent.json definition")
 def cmd_agent_validate(ctx, name: str) -> int | None:
     try:
@@ -508,7 +508,7 @@ def cmd_agent_validate(ctx, name: str) -> int | None:
 
 # --- ask command ---
 
-@app.command("ask", help="Send a prompt to Claude and print only the final response text")
+@app.command("ask", effect="mutating", help="Send a prompt to Claude and print only the final response text")
 @strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
 @strictcli.flag("model", type=str, short="m", help="Claude model identifier to use for this session (e.g. sonnet)")
 @strictcli.flag("profile", type=str, help="Name of the claudewheel profile for authentication")
@@ -559,7 +559,7 @@ def cmd_ask(
 
 # --- doctor command ---
 
-@app.command("doctor", help="Check claudestream environment health: binary, version, and profile")
+@app.command("doctor", effect="read_only", help="Check claudestream environment health: binary, version, and profile")
 @strictcli.flag("profile", type=str, default="", help="Name of the claudewheel profile to validate and check")
 def cmd_doctor(ctx, profile: str = "") -> int | None:
     import asyncio
@@ -603,7 +603,7 @@ def cmd_doctor(ctx, profile: str = "") -> int | None:
 
 # --- config command ---
 
-@app.command("config", help="Show resolved configuration including binary path and version")
+@app.command("config", effect="read_only", help="Show resolved configuration including binary path and version")
 @strictcli.flag("profile", type=str, default="", help="Name of the claudewheel profile to display settings for")
 def cmd_config(ctx, profile: str = "") -> int | None:
     import asyncio
