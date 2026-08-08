@@ -23,12 +23,29 @@ build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 markers = [
-    "integration: tests that require a real claude CLI and authentication",
+    "integration: tests that require a real claude CLI and authentication (opt in with CLAUDESTREAM_INTEGRATION=1)",
     "slow: tests that take >10s (e.g. subprocess liveness probes)",
 ]
+
+# The stricttest isolation floor. Installing the plugin IS adoption of the
+# floor, and no key has an implicit default -- a missing one aborts the session
+# at configure time -- so all five stances are declared explicitly.
+#
+# Every stance here is deny. The suite talks to subprocesses over pipes, never
+# over sockets: the replay lane drives tests/fixtures/claude_vcr.py through
+# stdin/stdout, and the live lane (which does reach the network, through the
+# claude binary) is a separate opt-in process that is skipped here.
+stricttest_sockets = "deny"
+stricttest_socket_allowlist = []
+stricttest_unix_socket_allowlist = []
+stricttest_loopback = "deny"
+# No sandbox runner in this repo yet; the bwrap runner ships as an rlsbl
+# scaffold template. Flip to "true" at adoption.
+stricttest_sandbox_required = "false"
 
 [dependency-groups]
 dev = [
     "pytest",
     "pytest-timeout>=2.4.0",
+    "stricttest>=0.2.0",
 ]

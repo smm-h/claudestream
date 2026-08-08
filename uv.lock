@@ -23,6 +23,7 @@ dependencies = [
 dev = [
     { name = "pytest" },
     { name = "pytest-timeout" },
+    { name = "stricttest" },
 ]
 
 [package.metadata]
@@ -38,6 +39,7 @@ requires-dist = [
 dev = [
     { name = "pytest" },
     { name = "pytest-timeout", specifier = ">=2.4.0" },
+    { name = "stricttest", specifier = ">=0.2.0" },
 ]
 
 [[package]]
@@ -235,6 +237,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/c9/0f/6dedf3247b60df0ccaeeeb95c16da564896843604f190b40caedf4e21b92/strictspec-0.1.0.tar.gz", hash = "sha256:d442eb93eed052b33ea52f339fed91b72f7efd244ce4c4c4bb73bb5bf9655bf2", size = 74389, upload-time = "2026-07-27T19:20:55.9Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/36/80/c9985e8a7ec573126b13e98479efe45c5a235f00727cfc19742572f848ca/strictspec-0.1.0-py3-none-any.whl", hash = "sha256:a8fcba764def9d8a02debe249f63a2289ec75a03786a3cce34e000289fb5ea42", size = 52393, upload-time = "2026-07-27T19:20:54.569Z" },
+]
+
+[[package]]
+name = "stricttest"
+version = "0.2.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pytest" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/20/5d/abb037f117142f4063f43c0e92123d324bed5420a13bbae27bf21c3e7358/stricttest-0.2.0.tar.gz", hash = "sha256:f0d180017fe4781dc82500024f0123c761e0ed4ce930135afc7ffc00e7efbd69", size = 51302, upload-time = "2026-08-07T12:02:35.988Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6e/b1/d79c6786287ec589e94d5255d585d3f5e837e9ecbaf15c3c0d7fdee65c23/stricttest-0.2.0-py3-none-any.whl", hash = "sha256:e945a7b0f7d47bba88f4de43417683b2db57dc38d4dfc304f52f1b3605a58964", size = 28626, upload-time = "2026-08-07T12:02:34.723Z" },
 ]
 
 [[package]]
