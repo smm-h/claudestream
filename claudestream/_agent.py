@@ -44,16 +44,54 @@ class AgentDefinition(msgspec.Struct, frozen=True):
     stream: StreamOptions | None = None  # Stream output config; overrides SessionConfig
 
 
-def _decode_agent_document(data: bytes, source: str) -> AgentDefinition:
-    """Validate raw ``.agent.json`` bytes against the generated strictspec schema,
-    then msgspec-decode into an :class:`AgentDefinition`.
+#: Budget fields removed in 0.12.0 in favour of the threshold lists. The schema
+#: rejects them as unknown keys, which says nothing about what to do instead --
+#: hence the targeted pre-check below.
+_DEPRECATED_BUDGET_FIELDS = frozenset({"max_cost_usd", "max_turns", "max_tokens"})
 
-    The strictspec gate runs FIRST: a missing/wrong-typed integer
+
+def _check_deprecated_budget(data: bytes) -> None:
+    """Raise a migration hint for a document still using the old budget fields.
+
+    Runs BEFORE the structural schema gate: the budget rename has no live
+    strictspec migration (it ships only as a conformance fixture), so without
+    this the reader would get a generic unknown-key diagnostic instead of the
+    replacement field names.
+    """
+    try:
+        raw = _json_mod.loads(data)
+    except ValueError:
+        return
+    if not isinstance(raw, dict):
+        return
+    budget_dict = raw.get("budget")
+    if not isinstance(budget_dict, dict):
+        return
+    for field in sorted(_DEPRECATED_BUDGET_FIELDS & budget_dict.keys()):
+        raise ValueError(
+            f"Agent '{raw.get('name', '<unknown>')}' uses deprecated budget field '{field}'. "
+            "Replace with threshold fields: cost_thresholds, turn_thresholds, "
+            "token_thresholds. See migration guide."
+        )
+
+
+def _decode_agent_document(data: bytes, source: str) -> AgentDefinition:
+    """Validate raw ``.agent.json`` bytes and decode into an :class:`AgentDefinition`.
+
+    This is the single at-rest boundary: every entry point that reads a
+    ``.agent.json`` from disk or a package goes through it, so a given document
+    produces the same diagnostic no matter how it was reached.
+
+    Order matters. The claudestream-owned deprecated-budget hint runs first,
+    because the schema would otherwise reject those fields as unknown keys with
+    no remediation. Then the strictspec gate: a missing/wrong-typed integer
     ``format_version``, an unknown key, or a wrong-typed field is a hard error
     (:class:`AgentValidationError`) carrying the pinned diagnostic code, path, and
     remediation text. msgspec decode runs only on a document that already passed.
     """
     from claudestream import _agent_schema
+
+    _check_deprecated_budget(data)
 
     _root, diags = _agent_schema.validate_bytes(data, "json")
     if diags:
@@ -108,25 +146,6 @@ def load_agent(path: str | Path, cwd: str | None = None) -> AgentDefinition:
         data = expected.read_bytes()
     else:
         data = Path(path).read_bytes()
-
-    # Deprecated-budget migration hint (claudestream-owned). The budget rename has
-    # no live strictspec migration -- it ships only as a conformance fixture -- so
-    # this targeted pre-check runs BEFORE the structural schema gate to give a
-    # remediation message the schema's generic unknown-key error cannot.
-    try:
-        raw = _json_mod.loads(data)
-    except ValueError:
-        raw = None
-    if isinstance(raw, dict):
-        budget_dict = raw.get("budget")
-        if isinstance(budget_dict, dict):
-            deprecated = {"max_cost_usd", "max_turns", "max_tokens"}
-            for field in sorted(deprecated & budget_dict.keys()):
-                raise ValueError(
-                    f"Agent '{raw.get('name', '<unknown>')}' uses deprecated budget field '{field}'. "
-                    "Replace with threshold fields: cost_thresholds, turn_thresholds, "
-                    "token_thresholds. See migration guide."
-                )
 
     return _decode_agent_document(data, str(path))
 

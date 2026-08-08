@@ -375,6 +375,50 @@ class TestLoadAgentMigrationGuard:
         assert ad.budget.cost_thresholds == [5.0]
         assert ad.budget.turn_thresholds == [10]
 
+    def test_discover_agents_gives_the_same_targeted_hint(self, tmp_path):
+        """A legacy file reached by discovery gets the budget hint too.
+
+        The remediation used to live in ``load_agent`` alone, so the identical
+        document produced a targeted migration message when loaded by name and a
+        generic unknown-key schema error when found by discovery. Both entry
+        points now share one at-rest decoder.
+        """
+        agents_dir = tmp_path / ".claudestream" / "agents"
+        agents_dir.mkdir(parents=True)
+        (agents_dir / "old.agent.json").write_text(
+            json.dumps(
+                {
+                    "format_version": 1,
+                    "name": "old-agent",
+                    "prompt_template": "p",
+                    "version": "1.0",
+                    "budget": {"max_cost_usd": 5.0},
+                }
+            )
+        )
+
+        with pytest.raises(ValueError, match="deprecated budget field 'max_cost_usd'"):
+            discover_agents(str(tmp_path))
+
+    def test_discover_agents_hint_applies_to_custom_paths(self, tmp_path):
+        """Discovery's second source (explicit --agents-path dirs) shares it too."""
+        custom = tmp_path / "elsewhere"
+        custom.mkdir()
+        (custom / "old.agent.json").write_text(
+            json.dumps(
+                {
+                    "format_version": 1,
+                    "name": "old-agent",
+                    "prompt_template": "p",
+                    "version": "1.0",
+                    "budget": {"max_turns": 10},
+                }
+            )
+        )
+
+        with pytest.raises(ValueError, match="deprecated budget field 'max_turns'"):
+            discover_agents(str(tmp_path), paths=[str(custom)])
+
 
 class TestResolveModel:
     def test_definition_overrides_config(self):
