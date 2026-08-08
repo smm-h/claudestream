@@ -14,7 +14,7 @@ dependencies = [
     { name = "claudewheel" },
     { name = "msgspec" },
     { name = "selfdoc", version = "0.24.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "selfdoc", version = "0.33.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "selfdoc", version = "0.36.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "strictcli" },
     { name = "strictspec" },
 ]
@@ -44,14 +44,14 @@ dev = [
 
 [[package]]
 name = "claudewheel"
-version = "0.22.1"
+version = "0.23.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "strictcli" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/c0/29/19a5732b8cab9301033334bb97c2f1547764058fdc399fdfe87e6e8d9f81/claudewheel-0.22.1.tar.gz", hash = "sha256:9c9ec4783fb44b1c7addea2f3e12fd96f934ef1c5359d47d46b2ff202cd07396", size = 2895889, upload-time = "2026-07-11T10:50:35.628Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a2/64/34af9835bd23bc893440f8c12d9c8ab6721a2496d6d06287302190eb82e2/claudewheel-0.23.3.tar.gz", hash = "sha256:3dacd66278070ec123e291118e2a06b2ac94c71c0b294285bf5ab6718d5f3b13", size = 2956744, upload-time = "2026-07-18T21:43:10.901Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e4/8f/3b4149108374e0bc136432c2b5fef0f0f35fc9d24c09e1121c5480d93d74/claudewheel-0.22.1-py3-none-any.whl", hash = "sha256:88ee631276b0332176d2ace7edd93830fcb8ed76bb8c5a371854f5126b94889b", size = 150333, upload-time = "2026-07-11T10:50:33.651Z" },
+    { url = "https://files.pythonhosted.org/packages/e7/e8/0b000d4c6749a069726b2402cdce9d49abf13c84f654cf9429addac99373/claudewheel-0.23.3-py3-none-any.whl", hash = "sha256:0772f94f6afc7b005025ca3844edce244e157b75c4faa5c4012dcb4359a35411", size = 163641, upload-time = "2026-07-18T21:43:09.297Z" },
 ]
 
 [[package]]
@@ -122,11 +122,11 @@ wheels = [
 
 [[package]]
 name = "packaging"
-version = "26.2"
+version = "26.3"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d7/f1/e7a6dd94a8d4a5626c03e4e99c87f241ba9e350cd9e6d75123f992427270/packaging-26.2.tar.gz", hash = "sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661", size = 228134, upload-time = "2026-04-24T20:15:23.917Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7d/fa/3944b40b07da9ce895c0e6303a5ab7d53da063554f534556b134a54d6093/packaging-26.3.tar.gz", hash = "sha256:94edc256424af38762eb31306eed28beb9f0efc50a8837492c9d6fd6004aed79", size = 313412, upload-time = "2026-08-04T18:15:28.737Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/df/b2/87e62e8c3e2f4b32e5fe99e0b86d576da1312593b39f47d8ceef365e95ed/packaging-26.2-py3-none-any.whl", hash = "sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e", size = 100195, upload-time = "2026-04-24T20:15:22.081Z" },
+    { url = "https://files.pythonhosted.org/packages/63/34/ba1c580383c9eada3711951fef0795c80b829a078d72188184bcab9dd527/packaging-26.3-py3-none-any.whl", hash = "sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c", size = 129956, upload-time = "2026-08-04T18:15:27.159Z" },
 ]
 
 [[package]]
@@ -149,7 +149,7 @@ wheels = [
 
 [[package]]
 name = "pytest"
-version = "9.0.3"
+version = "9.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "colorama", marker = "sys_platform == 'win32'" },
@@ -158,9 +158,9 @@ dependencies = [
     { name = "pluggy" },
     { name = "pygments" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7d/0d/549bd94f1a0a402dc8cf64563a117c0f3765662e2e668477624baeec44d5/pytest-9.0.3.tar.gz", hash = "sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c", size = 1572165, upload-time = "2026-04-07T17:16:18.027Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/47/b9efed96c114afcfa3c9d3fe98a76a1d14c74a9e266d397cf6eb64be5e01/pytest-9.1.1.tar.gz", hash = "sha256:1088fbde8f2b49d95a549a195707afa7a76a3ce9bcadc26b6d71f0ffda5fe313", size = 1636369, upload-time = "2026-06-19T10:58:32.857Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d4/24/a372aaf5c9b7208e7112038812994107bc65a84cd00e0354a88c2c77a617/pytest-9.0.3-py3-none-any.whl", hash = "sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9", size = 375249, upload-time = "2026-04-07T17:16:16.13Z" },
+    { url = "https://files.pythonhosted.org/packages/24/25/1de2678b631f5a49215c6c96fff41ba892b0a34df68d6d80292b1b48aa7f/pytest-9.1.1-py3-none-any.whl", hash = "sha256:37a86b45efb9a47a61a36449063e8e18d0cab3161329fc099eb21783169c4f0c", size = 386536, upload-time = "2026-06-19T10:58:31.347Z" },
 ]
 
 [[package]]
@@ -192,7 +192,7 @@ wheels = [
 
 [[package]]
 name = "selfdoc"
-version = "0.33.0"
+version = "0.36.0"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.12'",
@@ -201,30 +201,34 @@ dependencies = [
     { name = "selfdoc-core", marker = "python_full_version >= '3.12'" },
     { name = "strictcli", marker = "python_full_version >= '3.12'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/49/9c/2d0471ef6f5470223bd2369a472b1f5f936f55f7af8472a885b3c60d7a91/selfdoc-0.33.0.tar.gz", hash = "sha256:0cfd37d4a2cf7ac0de807c3fa3b56f6f9cc101c6a687b3c010456f7e2bbfdb77", size = 79305, upload-time = "2026-07-11T14:40:20.037Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/d7/e5bc343fcac873ee35ecfe9eb2dc0bb49ee5ea70668893c19f965be995fb/selfdoc-0.36.0.tar.gz", hash = "sha256:9e8db1a5d64619cec5ccfa8bd27ac5b35328889a74cd8710c0a65dd407d291cc", size = 90596, upload-time = "2026-08-07T12:26:33.433Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e3/e4/8ae68345e3b14100d093327ecf49c3e4fdb22a03b6b7abec3774731a5d95/selfdoc-0.33.0-py3-none-any.whl", hash = "sha256:138e64c8a850f68f6a4d75777bea21e98a109f09d696ebdbf102fb3a1cffe82b", size = 99918, upload-time = "2026-07-11T14:40:18.778Z" },
+    { url = "https://files.pythonhosted.org/packages/3e/17/7bd37e31cd7e6aad8fcef3fd963334b28411b7977e04c5d0ca07dd7d75d5/selfdoc-0.36.0-py3-none-any.whl", hash = "sha256:5b0f34e237b128b1b0dd7d16cebd3b99f299bab448783641200daff9b1463cd1", size = 112071, upload-time = "2026-08-07T12:26:31.976Z" },
 ]
 
 [[package]]
 name = "selfdoc-core"
-version = "0.5.0"
+version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/82/a9/694ae9a4e1193ce58144ac5cebdafd8e2e49a1f4a34f90fbe759bf9f38a6/selfdoc_core-0.5.0.tar.gz", hash = "sha256:161e14f5fba878b3aedf2d69a2e40d7691e923bc130aee94ff005c660b3f12f1", size = 212313, upload-time = "2026-07-11T14:38:33.674Z" }
+dependencies = [
+    { name = "strictcli", marker = "python_full_version >= '3.12'" },
+    { name = "strictspec", marker = "python_full_version >= '3.12'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b8/90/54eb9da5cd89c43cba83b72ba34eef2f0a0f6d8fd805480086f3fd585b0a/selfdoc_core-0.8.0.tar.gz", hash = "sha256:ee4cb4dee6d3719723049bb73c4e88db9e0d47ee1c959dc46a001e942285c9f2", size = 229531, upload-time = "2026-08-07T12:26:23.993Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/db/86/f9e650015d7b7137d71d8b642167d62677342b4a6e5109e36720b7721b9a/selfdoc_core-0.5.0-py3-none-any.whl", hash = "sha256:6a863f1f5d3912f3c314e14e4b890e71e08e82a3146390ebdefde02cc13ae42c", size = 243794, upload-time = "2026-07-11T14:38:32.239Z" },
+    { url = "https://files.pythonhosted.org/packages/77/79/163bad9b9812494486117dbff15d25d2b7cbbf2387548086fa1b733b1e62/selfdoc_core-0.8.0-py3-none-any.whl", hash = "sha256:b30eec44906b71f3c3973a47776e3897858b1a2faac89fd7cd63f3e3cfa75379", size = 262040, upload-time = "2026-08-07T12:26:22.581Z" },
 ]
 
 [[package]]
 name = "strictcli"
-version = "0.36.0"
+version = "0.37.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "tomlkit" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e3/b4/5ad0aa4f8912a87716e75614d85c8d8c27b6dcc6bdbf9b3de1303c22714a/strictcli-0.36.0.tar.gz", hash = "sha256:3ad801d2919ac1b0ecb68f04a1062e2cedd7d58d3ad6d4aa1ba0eca7e11d7d05", size = 260732, upload-time = "2026-08-04T20:49:45.559Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f2/8a/e0f5686eb0aebeff1e59236b7c58c307504202e3df5b05479550c1952c45/strictcli-0.37.0.tar.gz", hash = "sha256:82060ff8e74e58505396644233af0f2e36daa526dc6c8f5e5b4a3fb8d8f7ea98", size = 266525, upload-time = "2026-08-07T11:51:54.67Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/be/a924f2e95af0642a0c6358ec6b5b998b5adef5625814cb5024d1a564b677/strictcli-0.36.0-py3-none-any.whl", hash = "sha256:1aa2fa464fb7b1505485c79e3436942ca5c2dfe39958f8de7f2e3e7271baa98f", size = 101923, upload-time = "2026-08-04T20:49:43.962Z" },
+    { url = "https://files.pythonhosted.org/packages/61/b8/878fd7d5be276068365f89eaf5ca42d582db5a6fc93979beab5055768908/strictcli-0.37.0-py3-none-any.whl", hash = "sha256:5f73f6926c827e576e53fdc24f300509da7a634193694cc7f4a47f3ecfb348b1", size = 105406, upload-time = "2026-08-07T11:51:53.124Z" },
 ]
 
 [[package]]
