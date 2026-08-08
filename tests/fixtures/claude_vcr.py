@@ -62,24 +62,92 @@ VERSION_FLAGS = {"-v", "--version"}
 
 
 #: Keys whose values are an inventory of the recording machine (the operator's
-#: slash commands, subagents, model catalogue, output styles) rather than
-#: protocol structure. Cassettes are committed to a public repository, so these
-#: are emptied at record time. The key and its type survive -- what is dropped
-#: is content claudestream never reads.
-_EMPTIED_LIST_KEYS = frozenset(
+#: slash commands, subagents, model catalogue, output styles, memory paths)
+#: rather than protocol structure. Cassettes are committed to a public
+#: repository, so these are emptied at record time. The key and the *kind* of
+#: its value survive -- what is dropped is content claudestream never reads.
+#:
+#: Emptying is deliberately type-agnostic. The predecessor of this set only
+#: emptied ``list`` values, and ``memory_paths`` arrives as a ``dict``: it was
+#: copied verbatim and a real machine path shipped in a public cassette.
+#: Whatever type the CLI chooses for one of these keys, its content goes.
+_EMPTIED_INVENTORY_KEYS = frozenset(
     {
         "agents",
         "available_output_styles",
         "commands",
         "memory_paths",
         "models",
+        "plugins",
         "skills",
         "slash_commands",
     }
 )
 
+#: Built-in tool names that are public Claude Code surface. A ``tools``
+#: inventory also lists whatever the recording machine has configured locally
+#: (the operator's own tools, plugin tools, MCP tools), which is not
+#: claudestream's to publish, so the list is filtered down to this allowlist.
+#: ``Read`` is load-bearing for ``tests/test_replay.py``, which asserts a
+#: recognisable tool survives the round-trip.
+_PUBLIC_TOOLS = frozenset(
+    {
+        "AskUserQuestion",
+        "Bash",
+        "BashOutput",
+        "Edit",
+        "ExitPlanMode",
+        "Glob",
+        "Grep",
+        "KillShell",
+        "MultiEdit",
+        "NotebookEdit",
+        "Read",
+        "Skill",
+        "SlashCommand",
+        "Task",
+        "TodoWrite",
+        "WebFetch",
+        "WebSearch",
+        "Write",
+    }
+)
+
 #: Placeholder for the recording machine's working directory.
 _SCRUBBED_CWD = "/workspace"
+
+#: Placeholder for an emptied string value, so the key keeps a string type.
+_SCRUBBED_TEXT = "<scrubbed>"
+
+
+def _emptied(value):
+    """Return *value* stripped of content, keeping the type it arrived as.
+
+    ``dict`` -> ``{}``, ``list`` -> ``[]``, ``str`` -> a placeholder string.
+    Anything else (a number, a bool, ``None``) carries no machine-local text
+    and is passed through.
+    """
+    if isinstance(value, dict):
+        return {}
+    if isinstance(value, list):
+        return []
+    if isinstance(value, str):
+        return _SCRUBBED_TEXT
+    return value
+
+
+def _public_tools_only(items):
+    """Drop non-public tool names from a ``tools`` inventory.
+
+    Only *string* entries are filtered. The same key name carries MCP tool
+    *objects* in a ``tools/list`` response -- those are claudestream's own
+    tools, declared by the test that recorded the cassette, and they stay.
+    """
+    return [
+        _scrub(item)
+        for item in items
+        if not isinstance(item, str) or item in _PUBLIC_TOOLS
+    ]
 
 
 def _scrub(value):
@@ -87,8 +155,10 @@ def _scrub(value):
     if isinstance(value, dict):
         scrubbed = {}
         for key, item in value.items():
-            if key in _EMPTIED_LIST_KEYS and isinstance(item, list):
-                scrubbed[key] = []
+            if key in _EMPTIED_INVENTORY_KEYS:
+                scrubbed[key] = _emptied(item)
+            elif key == "tools" and isinstance(item, list):
+                scrubbed[key] = _public_tools_only(item)
             elif key == "cwd" and isinstance(item, str):
                 scrubbed[key] = _SCRUBBED_CWD
             elif key == "pid" and isinstance(item, int):
