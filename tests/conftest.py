@@ -1,12 +1,64 @@
-"""Shared test fixtures for claudestream."""
+"""Shared test fixtures for claudestream, and the spend guard that arms the suite.
+
+The default ``pytest`` run must not be able to spend money. Two mechanisms in
+this file enforce that, and ``tests/test_spend_guard.py`` pins both:
+
+1. ``pytest_collection_modifyitems`` skips every ``@pytest.mark.integration``
+   test unless ``CLAUDESTREAM_INTEGRATION=1`` is set.
+2. ``pytest_configure`` prepends a poisoned ``claude`` shim to ``PATH`` in that
+   same default lane, so nothing -- not the known tests, not code written
+   tomorrow -- can resolve a real binary by name.
+
+See ``tests/spend_guard.py`` for the mechanics.
+"""
 
 import shutil
+from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from claudestream._async_session import AsyncSession
 from claudestream._options import SessionConfig
+from tests.spend_guard import (
+    SKIP_REASON,
+    install_poisoned_binary,
+    live_lane_enabled,
+    remove_poisoned_binary,
+)
+
+_POISONED_BINARY: Path | None = None
+
+
+def pytest_configure(config):
+    """Arm the spend guard for the default (opt-out-of-nothing) lane."""
+    global _POISONED_BINARY
+    if not live_lane_enabled():
+        _POISONED_BINARY = install_poisoned_binary()
+
+
+def pytest_unconfigure(config):
+    """Disarm the spend guard, restoring ``PATH``."""
+    global _POISONED_BINARY
+    if _POISONED_BINARY is not None:
+        remove_poisoned_binary(_POISONED_BINARY)
+        _POISONED_BINARY = None
+
+
+def pytest_collection_modifyitems(config, items):
+    """Skip integration tests unless the live lane is explicitly opted into.
+
+    Opt-in is the whole point: these tests drive the real Claude Code binary
+    against a real profile and bill a real account, so running them has to be a
+    deliberate act, never the consequence of a developer machine happening to
+    have the prerequisites installed.
+    """
+    if live_lane_enabled():
+        return
+    skip = pytest.mark.skip(reason=SKIP_REASON)
+    for item in items:
+        if item.get_closest_marker("integration") is not None:
+            item.add_marker(skip)
 
 
 def _missing_real_cli_prereqs(profile: str) -> str | None:
@@ -38,11 +90,12 @@ def _missing_real_cli_prereqs(profile: str) -> str | None:
 
 @pytest.fixture(autouse=True)
 def _skip_without_real_cli(request):
-    """Skip integration-marked tests when the real claude CLI/profile is absent.
+    """Skip opted-in integration tests when the CLI/profile prerequisites fail.
 
-    Applies only to tests carrying ``@pytest.mark.integration`` (including the
-    module-level ``pytestmark``). Where the prerequisites exist (developer
-    machines with a configured profile), the tests run normally.
+    This is the second gate, not the first: collection has already skipped
+    everything integration-marked unless the live lane was opted into. What is
+    left is to turn a *broken* live environment (no binary, unresolvable
+    profile) into a skip rather than an obscure failure.
     """
     if request.node.get_closest_marker("integration") is None:
         return
