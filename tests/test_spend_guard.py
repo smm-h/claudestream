@@ -152,6 +152,25 @@ def test_integration_tests_are_skipped_without_the_opt_in():
     assert counted == 2, f"expected 2 opt-in skips, got {counted}:\n{proc.stdout}"
 
 
+def test_no_operator_script_is_named_like_a_test():
+    """``scripts/`` holds manual probes that spend real money on a real profile.
+
+    A file named ``test_*.py`` or ``*_test.py`` there is collected by any
+    ``pytest`` invocation that names the directory, which is exactly the wrong
+    default for a script whose whole job is to bill an account. Naming them
+    ``probe_*`` makes the mistake unrepresentable rather than merely unlikely.
+    """
+    offenders = sorted(
+        path.name
+        for path in (REPO_ROOT / "scripts").glob("*.py")
+        if path.name.startswith("test_") or path.name.endswith("_test.py")
+    )
+    assert not offenders, (
+        f"pytest-shaped names in scripts/: {offenders}. These are operator "
+        "scripts, not tests -- rename them to probe_*.py."
+    )
+
+
 def _default_lane_env() -> dict:
     return {k: v for k, v in os.environ.items() if k != INTEGRATION_ENV}
 

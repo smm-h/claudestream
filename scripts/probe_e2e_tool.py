@@ -1,5 +1,15 @@
 #!/usr/bin/env python3
-"""End-to-end test: verify custom tool registration through claudestream API."""
+"""Manual probe: custom tool registration end to end through the claudestream API.
+
+This is an operator script, not a test. Running it drives the real Claude Code
+binary against the named profile and SPENDS REAL MONEY -- which is why it is
+named ``probe_*`` rather than ``test_*``: nothing about it should ever be
+collected by pytest.
+
+Run it by hand::
+
+    scripts/probe_e2e_tool.py
+"""
 
 from claudestream import (
     tool, SessionConfig, SyncSession, AssistantText, ToolUse, Result,

@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-"""Live test v8: full MCP handshake with proper auth via profile resolution."""
+"""Manual probe: full MCP handshake against the raw CLI, with real auth.
+
+This is an operator script, not a test. It talks the stream-json protocol to the
+real Claude Code binary directly (no claudestream session), resolving a real
+profile, and SPENDS REAL MONEY -- which is why it is named ``probe_*`` rather
+than ``test_*``: nothing about it should ever be collected by pytest. The
+equivalent assertion-carrying test is
+``tests/test_mcp_handshake_integration.py``, which is opt-in behind
+``CLAUDESTREAM_INTEGRATION=1``.
+
+Run it by hand::
+
+    scripts/probe_mcp_protocol_v8.py
+"""
 
 import asyncio
 import json

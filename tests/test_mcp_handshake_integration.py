@@ -1,6 +1,6 @@
 """Integration test for MCP handshake protocol with a real Claude Code process.
 
-Based on scripts/test_mcp_protocol_v8.py. Requires valid Claude Code auth.
+Based on scripts/probe_mcp_protocol_v8.py. Requires valid Claude Code auth.
 
 Run with: uv run pytest tests/test_mcp_handshake_integration.py -v --timeout=120
 Skip with: pytest -m "not integration"
