@@ -12,10 +12,14 @@ build_argv) and its env handling (resolve_profile("personal") merged over
 os.environ), exactly as claudestream's integration tests do.
 
 Usage:
-    probe_user_dialogs.py --scenario {A,B,C_completed,C_cancelled,D} --model MODEL
+    probe_user_dialogs.py --scenario {A,B,C_completed,C_cancelled,D} \\
+        --model MODEL --captures-dir DIR
 
-Captures are written to the scratchpad captures dir as one NDJSON file per
-scenario. Every stdout line is recorded verbatim.
+Captures are written to ``--captures-dir`` as one NDJSON file per scenario;
+every stdout line is recorded verbatim. The directory is a required argument
+with no default on purpose: this file is committed to a public repository and
+shipped in the sdist, so a default would be one machine's path published as
+everyone's.
 """
 
 from __future__ import annotations
@@ -29,10 +33,6 @@ import time
 from pathlib import Path
 
 from claudewheel.profile import resolve_profile
-
-CAPTURES_DIR = Path(
-    "/tmp/claude-1000/-home-m-Projects/37ab5c49-a710-43ca-b5a2-6bf9f4da4f27/scratchpad/dialog-probe-captures"
-)
 
 COLOR_PROMPT = (
     "Use the AskUserQuestion tool to ask me which of two colors I prefer, "
@@ -542,7 +542,7 @@ async def main_async(args: argparse.Namespace) -> None:
     )
     await probe.run()
     suffix = f"_{args.multi_format}" if args.scenario == "F_multi" else ""
-    out = CAPTURES_DIR / f"scenario_{args.scenario}{suffix}.ndjson"
+    out = args.captures_dir / f"scenario_{args.scenario}{suffix}.ndjson"
     out.write_text("\n".join(probe.lines) + "\n")
     print(f"scenario={args.scenario} model={args.model}")
     print(f"lines_captured={len(probe.lines)}")
@@ -567,6 +567,16 @@ def main() -> None:
     )
     ap.add_argument("--model", default="haiku")
     ap.add_argument(
+        "--captures-dir",
+        required=True,
+        type=Path,
+        help=(
+            "directory to write the captured NDJSON into. Required, with no "
+            "default: a default here would be one machine's path, committed "
+            "to a public repository."
+        ),
+    )
+    ap.add_argument(
         "--answer-key",
         default="question",
         choices=["question", "header", "list"],
@@ -579,7 +589,7 @@ def main() -> None:
         help="F_multi: how to encode the multiSelect answer value",
     )
     args = ap.parse_args()
-    CAPTURES_DIR.mkdir(parents=True, exist_ok=True)
+    args.captures_dir.mkdir(parents=True, exist_ok=True)
     asyncio.run(main_async(args))
 
 
