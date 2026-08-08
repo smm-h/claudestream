@@ -52,6 +52,13 @@ echo "{GUARD_MESSAGE}" >&2
 exit {GUARD_EXIT_CODE}
 """
 
+#: Terminal header lines the guard writes on every pytest run rooted at this
+#: repository, so its state is visible rather than inferred. ``ARMED_HEADER``
+#: appearing is what proves the guard reached a given invocation --
+#: ``tests/test_spend_guard.py`` asserts it for a path outside ``tests/``.
+ARMED_HEADER = "claudestream spend guard: ARMED"
+DISARMED_HEADER = "claudestream spend guard: DISARMED"
+
 #: Skip reason attached to integration tests in the default lane.
 SKIP_REASON = (
     f"live lane not enabled: set {INTEGRATION_ENV}=1 to run integration tests "

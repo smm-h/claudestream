@@ -22,6 +22,7 @@ import pytest
 
 from claudestream._process import find_binary
 from tests.spend_guard import (
+    ARMED_HEADER,
     GUARD_BINARY_ENV,
     GUARD_EXIT_CODE,
     GUARD_MESSAGE,
@@ -123,6 +124,30 @@ def test_integration_tests_are_skipped_without_the_opt_in():
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert "2 skipped" in proc.stdout, proc.stdout
+
+
+def _default_lane_env() -> dict:
+    return {k: v for k, v in os.environ.items() if k != INTEGRATION_ENV}
+
+
+@pytest.mark.parametrize("target", ["scripts", "claudestream", "."])
+def test_the_guard_arms_for_paths_outside_the_tests_directory(target):
+    """The guard is repo-scoped, not ``tests/``-scoped.
+
+    It used to live in ``tests/conftest.py``, so ``pytest scripts/`` -- or any
+    other path -- collected and ran with an unpoisoned ``PATH``. The hooks now
+    live in the repository-root ``conftest.py``, which pytest loads for every
+    invocation rooted here, and the header proves it did.
+    """
+    proc = subprocess.run(
+        [sys.executable, "-m", "pytest", target, "--collect-only", "-p", "no:cacheprovider"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=300,
+        env=_default_lane_env(),
+    )
+    assert ARMED_HEADER in proc.stdout, proc.stdout + proc.stderr
 
 
 def test_opt_in_requires_the_exact_value_one(monkeypatch):
