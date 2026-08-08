@@ -11,6 +11,7 @@ deliberately absent.
 
 from __future__ import annotations
 
+import importlib
 import os
 import shutil
 import subprocess
@@ -25,7 +26,16 @@ from tests.spend_guard import (
     GUARD_EXIT_CODE,
     GUARD_MESSAGE,
     INTEGRATION_ENV,
+    SKIP_REASON,
     live_lane_enabled,
+)
+
+#: Every module whose tests drive the real binary. They must reach it the same
+#: way production does -- by name, through ``PATH`` -- or the poisoned shim
+#: cannot stand between them and a real installation.
+INTEGRATION_MODULES = (
+    "tests.test_integration",
+    "tests.test_mcp_handshake_integration",
 )
 
 pytestmark = pytest.mark.skipif(
@@ -59,6 +69,32 @@ def test_the_poisoned_shim_refuses_to_run():
     )
     assert proc.returncode == GUARD_EXIT_CODE
     assert GUARD_MESSAGE in proc.stderr
+
+
+@pytest.mark.parametrize("module_name", INTEGRATION_MODULES)
+def test_integration_modules_resolve_the_binary_by_name(module_name):
+    """No integration module may pin an absolute path to the real binary.
+
+    An absolute path walks straight around the poisoned ``PATH``: the shim is
+    only ever consulted for a *name* lookup. A module that hardcodes
+    ``/somewhere/bin/claude`` opts its whole file out of the spend guard, and
+    bakes a developer's home directory into a public repository besides.
+    """
+    binary = importlib.import_module(module_name).BINARY
+    assert not os.path.isabs(binary), (
+        f"{module_name}.BINARY is the absolute path {binary!r}; the poisoned "
+        "PATH cannot intercept it. Name the binary instead."
+    )
+    assert os.sep not in binary, (
+        f"{module_name}.BINARY is the path {binary!r}, not a bare name."
+    )
+
+
+@pytest.mark.parametrize("module_name", INTEGRATION_MODULES)
+def test_integration_modules_resolve_to_the_poisoned_shim(module_name):
+    """What those modules would spawn in the default lane is the guard itself."""
+    binary = importlib.import_module(module_name).BINARY
+    assert shutil.which(binary) == _shim_path()
 
 
 def test_integration_tests_are_skipped_without_the_opt_in():

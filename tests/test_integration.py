@@ -28,7 +28,11 @@ from claudestream import (
 
 pytestmark = pytest.mark.integration
 
-BINARY = "/home/m/.local/bin/claude"
+#: Resolved by name through ``PATH``, never as an absolute path. The default
+#: lane prepends a poisoned ``claude`` shim to ``PATH`` (see
+#: ``tests/spend_guard.py``); a hardcoded path would step around it, and would
+#: bake a developer's home directory into a public repository besides.
+BINARY = "claude"
 MODEL = "haiku"
 PROFILE = "personal"
 
