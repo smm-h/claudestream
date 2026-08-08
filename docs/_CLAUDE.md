@@ -146,6 +146,45 @@ def on_done(session, result):
 session.on_turn_complete(on_done)
 ```
 
+## Testing lanes
+
+The suite has three lanes. Only the first runs by default, and it cannot spend money.
+
+| Lane | How to run | Cost | What it covers |
+| --- | --- | --- | --- |
+| Default | `uv run pytest` | none | Unit tests plus the replay lane |
+| Replay (VCR) | `uv run pytest tests/test_replay.py` | none | The real subprocess/pipe/NDJSON stack against recorded cassettes |
+| Live | `CLAUDESTREAM_INTEGRATION=1 uv run pytest -m integration` | real API spend | The real `claude` binary against a real profile |
+
+The live lane is explicit opt-in. Without `CLAUDESTREAM_INTEGRATION=1` every
+`@pytest.mark.integration` test is skipped at collection, and a poisoned `claude`
+shim is prepended to `PATH` so nothing else can resolve a real binary by name
+either. `tests/test_spend_guard.py` pins both mechanisms. Run the live lane
+deliberately — on a CLI version bump, or when protocol drift is suspected. It is
+the drift detector; the replay lane pins the library against a known protocol
+version.
+
+Replay works through first-class knobs, not monkeypatching: the binary is
+redirected with `SessionConfig.binary` to `tests/fixtures/claude_vcr.py`, and the
+profile with claudewheel's `CLAUDEWHEEL_CONFIG_DIR` workspace root pointed at a
+throwaway workspace, so `resolve_profile` runs for real and yields no token.
+
+Re-record cassettes with `scripts/record_transcripts.py`, which drives real
+sessions through the stand-in binary in record mode:
+
+```bash
+# Control plane only: no credentials, no spend
+scripts/record_transcripts.py --lane free
+
+# Scenarios needing a real model answer -- BILLS THE NAMED PROFILE
+scripts/record_transcripts.py --lane paid --profile <name>
+```
+
+Recording scrubs machine-local inventory (slash commands, skills, agents, `cwd`,
+`pid`) so cassettes are safe to publish. Stale cassettes between re-records are
+fine: replay pins a known protocol version, and the live lane is what notices
+the world moved.
+
 ## Release workflow
 
 This project uses [rlsbl](https://github.com/smm-h/rlsbl) for release orchestration.
