@@ -11,6 +11,8 @@ nav_order: 7
 
 Send a prompt to Claude and display the complete response with events
 
+**Effect:** mutating
+
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |

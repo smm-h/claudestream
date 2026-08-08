@@ -11,6 +11,8 @@ nav_order: 3
 
 Show resolved configuration including binary path and version
 
+**Effect:** read_only
+
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |

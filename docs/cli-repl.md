@@ -11,6 +11,8 @@ nav_order: 6
 
 Start an interactive multi-turn read-eval-print loop session with Claude
 
+**Effect:** mutating
+
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |

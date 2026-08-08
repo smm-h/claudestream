@@ -15,6 +15,8 @@ Manage and run agents defined in .agent.json files. Agent definitions declare a 
 
 Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.
 
+**Effect:** mutating
+
 ### Flags
 
 | Name | Short | Type | Default | Env | Description |
@@ -37,6 +39,8 @@ Load an agent definition and run it with the given prompt. Accepts a path to a .
 
 List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'.
 
+**Effect:** read_only
+
 ### Flags
 
 | Name | Short | Type | Default | Env | Description |
@@ -47,6 +51,8 @@ List available agents from .claudestream/agents/. Scans the agents directory in 
 
 Display agent definition details for a given agent name or path. Loads the .agent.json file, parses it, and prints every configured field: name, version, description, model, budget limits, sandbox policy, tool schemas, MCP server config, and stream options. Use this to inspect an agent's full configuration before invoking it.
 
+**Effect:** read_only
+
 ### Arguments
 
 | Name | Required | Description |
@@ -56,6 +62,8 @@ Display agent definition details for a given agent name or path. Loads the .agen
 ## agent validate
 
 Validate an agent definition by loading and checking its .agent.json file for structural and semantic correctness. Verifies that budget values are non-negative, the prompt template is non-empty, tool schemas are well-formed, and required fields are present. Reports specific errors on failure or prints a success confirmation.
+
+**Effect:** read_only
 
 ### Arguments
 

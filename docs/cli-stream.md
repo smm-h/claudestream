@@ -11,6 +11,8 @@ nav_order: 8
 
 Stream a prompt with real-time incremental token-by-token output to stdout
 
+**Effect:** mutating
+
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |

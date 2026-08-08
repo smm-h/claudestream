@@ -11,6 +11,8 @@ nav_order: 2
 
 Send a prompt to Claude and print only the final response text
 
+**Effect:** mutating
+
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |

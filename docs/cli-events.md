@@ -11,6 +11,8 @@ nav_order: 5
 
 Debug mode: display all raw JSON protocol events from the subprocess
 
+**Effect:** mutating
+
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |

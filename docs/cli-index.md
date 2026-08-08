@@ -28,3 +28,14 @@ Version: :-: var key="project.version"
 ## Command Groups
 
 - [agent](cli-agent.html) -- Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata.
+
+## Framework flags
+
+These flags are owned by the strictcli framework, not by the app. No command may declare a flag with one of these names, and each is recognized anywhere on the command line.
+
+| Flag | Effect |
+| --- | --- |
+| `--dry-run` | Preview mode: no mutation runs. The framework prints a log of every effect the command would have performed. |
+| `--approve-consequential` | Skips the confirmation prompt a consequential command shows before it runs. |
+| `--quiet` | Hides informational output. Warnings, errors, structured data and the dry-run log are never suppressed. |
+| `--verbose` | Shows debug output. `--quiet` wins when both are passed. |

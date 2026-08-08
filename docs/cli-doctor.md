@@ -11,6 +11,8 @@ nav_order: 4
 
 Check claudestream environment health: binary, version, and profile
 
+**Effect:** read_only
+
 ## Flags
 
 | Name | Short | Type | Default | Env | Description |
