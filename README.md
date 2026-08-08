@@ -210,7 +210,7 @@ with SyncSession(config) as session:
 
 | Package | Version Constraint |
 | --- | --- |
-| `strictcli` | * |
+| `strictcli` | >=0.36.0 |
 | `msgspec` | * |
 | `selfdoc` | * |
 | `claudewheel` | * |
