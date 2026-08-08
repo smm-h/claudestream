@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import importlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -38,6 +39,9 @@ INTEGRATION_MODULES = (
     "tests.test_integration",
     "tests.test_mcp_handshake_integration",
 )
+
+#: ``-rs`` short-summary line: ``SKIPPED [n] path:line: reason``.
+_SKIPPED_COUNT = re.compile(r"^SKIPPED \[(\d+)\]")
 
 pytestmark = pytest.mark.skipif(
     live_lane_enabled(),
@@ -103,8 +107,15 @@ def test_integration_tests_are_skipped_without_the_opt_in():
 
     Runs pytest in a subprocess so the assertion is about a real collection
     pass, not about this session's own state.
+
+    The assertion is on the skip *reason*, not merely on a count. A count is
+    machine-dependent evidence: a developer with a broken claudewheel profile
+    gets the same "2 skipped" from the second gate
+    (``conftest._skip_without_real_cli``), so a count-only assertion stays
+    green even if the opt-in gate is deleted outright. ``-rs`` prints each
+    reason in full, and only the opt-in gate produces :data:`SKIP_REASON`.
     """
-    env = {k: v for k, v in os.environ.items() if k != INTEGRATION_ENV}
+    env = _default_lane_env()
     proc = subprocess.run(
         [
             sys.executable,
@@ -114,6 +125,7 @@ def test_integration_tests_are_skipped_without_the_opt_in():
             "tests/test_mcp_handshake_integration.py",
             "-p",
             "no:cacheprovider",
+            "-rs",
             "-q",
         ],
         cwd=REPO_ROOT,
@@ -124,6 +136,20 @@ def test_integration_tests_are_skipped_without_the_opt_in():
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
     assert "2 skipped" in proc.stdout, proc.stdout
+
+    reasons = [
+        line for line in proc.stdout.splitlines() if line.startswith("SKIPPED")
+    ]
+    assert reasons, f"-rs printed no skip reasons:\n{proc.stdout}"
+    for line in reasons:
+        assert SKIP_REASON in line, (
+            "a live test was skipped for a reason other than the integration "
+            f"opt-in, so this run proves nothing about the gate: {line!r}"
+        )
+    # ``SKIPPED [n] location: reason`` -- pytest groups identical reasons, so
+    # count the tests the lines account for rather than the lines themselves.
+    counted = sum(int(match.group(1)) for match in map(_SKIPPED_COUNT.match, reasons) if match)
+    assert counted == 2, f"expected 2 opt-in skips, got {counted}:\n{proc.stdout}"
 
 
 def _default_lane_env() -> dict:
