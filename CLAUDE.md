@@ -304,7 +304,12 @@ The suite has three lanes. Only the first runs by default, and it cannot spend m
 The live lane is explicit opt-in. Without `CLAUDESTREAM_INTEGRATION=1` every
 `@pytest.mark.integration` test is skipped at collection, and a poisoned `claude`
 shim is prepended to `PATH` so nothing else can resolve a real binary by name
-either. `tests/test_spend_guard.py` pins both mechanisms. Run the live lane
+either. Both hooks live in the **repository-root `conftest.py`**, so they cover
+every `pytest` invocation rooted here — `pytest scripts/` included, not just
+`pytest tests/` — and each run prints `claudestream spend guard: ARMED` in its
+header. Tests must therefore name the binary (`BINARY = "claude"`) rather than
+pin an absolute path, which the shim cannot intercept.
+`tests/test_spend_guard.py` pins all of it. Run the live lane
 deliberately — on a CLI version bump, or when protocol drift is suspected. It is
 the drift detector; the replay lane pins the library against a known protocol
 version.
@@ -325,10 +330,17 @@ scripts/record_transcripts.py --lane free
 scripts/record_transcripts.py --lane paid --profile <name>
 ```
 
-Recording scrubs machine-local inventory (slash commands, skills, agents, `cwd`,
-`pid`) so cassettes are safe to publish. Stale cassettes between re-records are
-fine: replay pins a known protocol version, and the live lane is what notices
-the world moved.
+Recording scrubs machine-local inventory so cassettes are safe to publish:
+`cwd`, `pid`, and the inventory keys (`slash_commands`, `commands`, `skills`,
+`agents`, `models`, `plugins`, `available_output_styles`, `memory_paths`) are
+emptied **whatever type they arrive as** — dict, list or string — and the
+`tools` list is filtered to a public-tool allowlist so the recording machine's
+private tool surface never ships. `tests/test_cassette_hygiene.py` is the
+backstop: it greps every committed cassette for home directories, temp
+directories, `$HOME`, the operator's username as a path segment, and
+absolute-path shapes, so a protocol key the scrubber has never heard of cannot
+leak silently. Stale cassettes between re-records are fine: replay pins a known
+protocol version, and the live lane is what notices the world moved.
 
 ## Release workflow
 

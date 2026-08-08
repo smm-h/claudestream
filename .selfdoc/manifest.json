@@ -2,7 +2,7 @@
   "schema_version": 1,
   "name": "claudestream",
   "slug": "claudestream",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "description": "",
   "language": "python",
   "base_url": "https://claudestream.smmh.dev",
@@ -139,5 +139,5 @@
     }
   ],
   "posts": [],
-  "last_gen": "2026-07-29T17:14:39.545363+00:00"
+  "last_gen": "2026-08-08T13:58:06.887306+00:00"
 }
