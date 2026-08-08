@@ -76,49 +76,49 @@
     "source_docstring": "f50401cc9e505481954edc9e5b82cd23f0272e63b1794cbe1f92bb57b35478ce"
   },
   "en/cli-agent.md": {
-    "content": "98824246a64105966702c308a07382f28f7e381f1e967700310505fae4f97664",
+    "content": "d573e09528762560d59ddf3f2fa5578f131bd3d3f5c56b8ecbb9035d3e3b0d11",
     "description": "10add5b211311ff2bddd0bd12ea720058cae85352164076a9b9e918e7d8f9201",
-    "schema_hash": "c4a0fcf95f8b8aad81aa1437268358cd4749857a378abb9b3eefc8fd389d85aa"
+    "schema_hash": "3ffde5bbea7293908a7a7e28217dec995e18495a833b2becabcf7b3289856e90"
   },
   "en/cli-ask.md": {
-    "content": "8b97769ca4941950c13a96c8d181511d2c0c65013ccc8f7869dcb0350c35861a",
+    "content": "51a049b0310af4a8f7861a0f87773299a1216054152581caf7b7d22216fbf04b",
     "description": "2048e265e186181855d3304b2a60f9478353f541f06efd0b352d6a5a6b867491",
-    "schema_hash": "0737d1872b70e2642528a34ca004d034c8a9bfb5a9f8e3282fc1bed3552ac833"
+    "schema_hash": "1780e2b58b66b648475546bd17fdbec4acd2d1f5beedf094f5048d1ed33af19e"
   },
   "en/cli-config.md": {
-    "content": "bab7a04c4510bb66f504bf07e648fcf434fe230ddee08ef03125eb5b1d30ed52",
+    "content": "b382885ebd7644e72918b7d8d94ad51ca475f22cd96fd008d7d946aa78331581",
     "description": "44a1283cd8df2cc6c3d71f0c0227f92550eae8fd7cfd37417d8e8ed567d70947",
-    "schema_hash": "7fa9096849c0bee49afc0487e082b421ea8c3073769717e3dbe0d741025def43"
+    "schema_hash": "c94efb53c095a7323b054fa5680816b98c3927829282bbe0f732b47e8e8c5f52"
   },
   "en/cli-doctor.md": {
-    "content": "ceb33ef5011148d795b85ad12b9b880c736893e6039452f77381da7a107e2f94",
+    "content": "1fccef16a0a7dac562f50f44dcc7f9381ae292bdec90c2464cbd47af198e821b",
     "description": "a6923a594451d0ab70dd5d1bb9b342546c9d2696c49aa01ed213585e79b68cd7",
-    "schema_hash": "b7aaca0aec1744591598abf2e2c52cfc2de1e51e3c604f7880061cf31e644dfd"
+    "schema_hash": "063759ee58ed84d4f9229aff57b199f6eac030884b8c55a9cf650cf86b0f6d33"
   },
   "en/cli-events.md": {
-    "content": "8450990822be79c853703859d34c30cc7907acf3bbc6002df54a9178850a92d3",
+    "content": "621bbd588723df2af7495074d7654d717c6c81831a5ca9bf1adb0b30754a884c",
     "description": "8e6085392b28c54a07787fbbf23748a2a910624cc38b30858395a647bf828c9c",
-    "schema_hash": "131142f53f51205a521124573b0ec90b4acc2d446e5843ff64f9846cb5e0ea09"
+    "schema_hash": "707ce773dab85fb82c3d6ff695b08c98a4b4969dc0851dd5de8bc8e217905e10"
   },
   "en/cli-index.md": {
-    "content": "e13cf7e3561b2b0ef394650fe0014ad0ee9ac4fbef69f4383c635a14f884b665",
+    "content": "75b8cd49d3c7c755b9edb1c4f8c178cac1b601ffe16b507500a79c4b7abbe650",
     "description": "160dac3a666212f735378ede9e70b41f7bf7fa869de54000440ae80cc6347e6c",
     "seed_hash": "160dac3a666212f735378ede9e70b41f7bf7fa869de54000440ae80cc6347e6c"
   },
   "en/cli-repl.md": {
-    "content": "d9230a822399309bd9501c1758ce0461469e05185845d52ed041cb1c51fb82e0",
+    "content": "c2aecc4a7f2569cba029109a920f7b7c80caaf81ffc5aa8923894f3f07c69513",
     "description": "0fca3886f79df4239bb1b5b1342a8fd7e128e493e76425c7e02473bf7f836b94",
-    "schema_hash": "d20ebb579ccc5346483510e4ffcab4691c48599c787cea40569a8f31455b0502"
+    "schema_hash": "477442e02dd373eec3429526b2e002062ee4567f6fcc1ebed9043328de773c08"
   },
   "en/cli-send.md": {
-    "content": "c0a51bbfd0f521ebb87b3773eef99fd75b6dcaeaaf4456082d36540c9e076c48",
+    "content": "8352f3dfe6e5fc6f8043fdc1014a93846b3339f635c34c803411af08f433549b",
     "description": "b441dab6291130ec8f8936ef5d097a390301d538c5568f95739cbeaff68ec7ab",
-    "schema_hash": "6b141c96dd3bb28294a97f7173cc34f460199143df05350adb9dc221d8d25c8e"
+    "schema_hash": "3087c7e104338f18bfb4e3a6e94839a5febc477cac7e5eb69f686e40b18686ea"
   },
   "en/cli-stream.md": {
-    "content": "89804098b48ae3a7324f3c6bf122f70088ef0fd2b8fc8fb8cf05bedcb21f8546",
+    "content": "82e47d3e3fd22bf8d6aea7ed3e63c91059b22df44b084784f9c302319d113b59",
     "description": "801ddd67495b0a8f502f50eecce4d602dddd84e5b6e7df08065d3d5b4427a2ff",
-    "schema_hash": "d3e804603a2975b967a40fa89b3175e0ae9116570a75e233414734fdd46d8e24"
+    "schema_hash": "9eb52011300635b6dd54db4b26adce3a461e0aa94c9a381540adc920722b646c"
   },
   "en/gen-index.md": {
     "content": "8878177212229602a93fe4821255a0076dff7b8a31a163f2d9d49a0799cc5252",
