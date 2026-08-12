@@ -10,36 +10,28 @@
   "base_url": "https://claudestream.smmh.dev",
   "versions": [
     {
-      "version": "0.3.0",
-      "indexed": true
+      "version": "0.3.0"
     },
     {
-      "version": "0.5.1",
-      "indexed": false
+      "version": "0.5.1"
     },
     {
-      "version": "0.6.0",
-      "indexed": false
+      "version": "0.6.0"
     },
     {
-      "version": "0.6.1",
-      "indexed": false
+      "version": "0.6.1"
     },
     {
-      "version": "0.6.2",
-      "indexed": false
+      "version": "0.6.2"
     },
     {
-      "version": "0.7.0",
-      "indexed": false
+      "version": "0.7.0"
     },
     {
-      "version": "0.7.6",
-      "indexed": false
+      "version": "0.7.6"
     },
     {
-      "version": "0.14.2",
-      "indexed": true
+      "version": "0.14.2"
     }
   ],
   "locales": [
@@ -68,7 +60,7 @@
   ],
   "topology": {
     "slug": "claudestream",
-    "docs_base": "https://docs.smmh.dev",
+    "docs_base": "https://smmh.dev",
     "posts_base": "https://blog.smmh.dev",
     "projects": {
       "pixelweaver": "https://docs.smmh.dev/pixelweaver",
@@ -88,5 +80,13 @@
   },
   "assembly": {
     "repo": "smm-h/selfdoc-cache"
+  },
+  "search_engine": "pagefind",
+  "author": {
+    "name": "SMMH",
+    "url": "https://smmh.dev",
+    "same_as": [
+      "https://github.com/smm-h"
+    ]
   }
 }
