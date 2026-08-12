@@ -17,17 +17,17 @@ Version: :-: var key="project.version"
 
 ## Commands
 
-- [send](cli-send.html) -- Send a prompt to Claude and display the complete response with events
-- [stream](cli-stream.html) -- Stream a prompt with real-time incremental token-by-token output to stdout
-- [events](cli-events.html) -- Debug mode: display all raw JSON protocol events from the subprocess
-- [repl](cli-repl.html) -- Start an interactive multi-turn read-eval-print loop session with Claude
-- [ask](cli-ask.html) -- Send a prompt to Claude and print only the final response text
-- [doctor](cli-doctor.html) -- Check claudestream environment health: binary, version, and profile
-- [config](cli-config.html) -- Show resolved configuration including binary path and version
+- [send](../cli-send/) -- Send a prompt to Claude and display the complete response with events
+- [stream](../cli-stream/) -- Stream a prompt with real-time incremental token-by-token output to stdout
+- [events](../cli-events/) -- Debug mode: display all raw JSON protocol events from the subprocess
+- [repl](../cli-repl/) -- Start an interactive multi-turn read-eval-print loop session with Claude
+- [ask](../cli-ask/) -- Send a prompt to Claude and print only the final response text
+- [doctor](../cli-doctor/) -- Check claudestream environment health: binary, version, and profile
+- [config](../cli-config/) -- Show resolved configuration including binary path and version
 
 ## Command Groups
 
-- [agent](cli-agent.html) -- Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata.
+- [agent](../cli-agent/) -- Manage and run agents defined in .agent.json files. Agent definitions declare a model, prompt template, allowed tools with input schemas, sandbox permissions, and budget limits (cost, turns, tokens). Use subcommands to validate configurations, run agents against prompts, and inspect metadata.
 
 ## Framework flags
 
