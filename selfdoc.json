@@ -41,10 +41,6 @@
       "default": true
     }
   ],
-  "deploy": {
-    "provider": "cloudflare-pages",
-    "project": "claudestream"
-  },
   "directives": {
     "table-events": "docs/_directives/event_catalog.py"
   },
