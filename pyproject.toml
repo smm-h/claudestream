@@ -6,10 +6,12 @@ requires-python = ">=3.11"
 license = "MIT"
 authors = [{name = "SMM-H", email = "lisa.codi@veliu.com"}]
 dependencies = [
-    # Floor, not a pin: 0.36.0 made per-command effect classification mandatory
-    # and claudestream's commands declare it, so an older strictcli cannot
-    # register them at all.
-    "strictcli>=0.36.0",
+    # Floor, not a pin: 0.41.0 made the per-flag presence declaration mandatory
+    # (exactly one of presence="required" / presence="optional" / default=) and
+    # banned value defaults on mutating commands. Every declaration in
+    # claudestream/_cli.py is written in that spelling, and an older strictcli
+    # rejects `presence=` outright, so it cannot register them at all.
+    "strictcli>=0.41.0",
     "msgspec",
     "selfdoc",
     "claudewheel",

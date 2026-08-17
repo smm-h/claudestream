@@ -56,17 +56,37 @@ app = strictcli.App(
 # --- Shared helpers ---
 
 
-def _resolve_prompt(prompt: str, stdin: bool, color: Colorizer) -> str | int:
-    """Resolve prompt from argument or stdin. Returns the prompt string, or 1 on error."""
+def _opt(value, fallback):
+    """Resolve an optional flag's absence to the fallback its help declares.
+
+    strictcli's mutating-default ban forbids ``default=`` on any flag of a
+    ``mutating`` command: a value the framework picks is a value the framework
+    writes. claudestream's session commands are all mutating, so their
+    behavioral switches (``--footer``, ``--color``, ``--raw``, ``--stdin``,
+    ``--skip-permissions``, ``--json-output``) declare ``presence="optional"``
+    and name their fallback in their own help text. This is the one place where
+    absence becomes that fallback, so nothing downstream ever sees a ``None``
+    it would silently read as false.
+    """
+    return fallback if value is None else value
+
+
+def _resolve_prompt(prompt: str | None, stdin: bool, color: Colorizer) -> str | int:
+    """Resolve prompt from argument or stdin. Returns the prompt string, or 1 on error.
+
+    ``prompt`` is ``None`` when the positional argument was not supplied at
+    all -- the optional presence declaration delivers absence as absence, so an
+    explicitly supplied empty string is a supplied prompt, not an absent one.
+    """
     if stdin:
-        if prompt:
+        if prompt is not None:
             print(color.red("error: cannot use both prompt argument and --stdin"), file=sys.stderr)
             return 1
         prompt = sys.stdin.read().strip()
         if not prompt:
             print(color.red("error: --stdin provided but stdin is empty"), file=sys.stderr)
             return 1
-    elif not prompt:
+    elif prompt is None or not prompt:
         print(color.red("error: prompt argument required (or use --stdin)"), file=sys.stderr)
         return 1
     return prompt
@@ -75,22 +95,27 @@ def _resolve_prompt(prompt: str, stdin: bool, color: Colorizer) -> str | int:
 def _build_config(
     model: str,
     profile: str,
-    cwd: str = "",
+    cwd: str | None = None,
     skip_permissions: bool = False,
-    system_prompt: str = "",
-    resume: str = "",
-    from_pr: str = "",
+    system_prompt: str | None = None,
+    resume: str | None = None,
+    from_pr: str | None = None,
 ) -> SessionConfig:
-    """Build a SessionConfig from common CLI flags."""
+    """Build a SessionConfig from common CLI flags.
+
+    Every ``str | None`` parameter here is fed by a flag declaring
+    ``presence="optional"``, so absence arrives as ``None`` and is passed
+    straight through -- no empty-string sentinel is constructed or tested.
+    """
     sandbox = Sandbox(skip_permissions=True) if skip_permissions else None
     return SessionConfig(
         model=model,
-        cwd=cwd or None,
+        cwd=cwd,
         sandbox=sandbox,
         profile=profile,
-        system_prompt=system_prompt or None,
-        resume_session_id=resume or None,
-        from_pr=from_pr or None,
+        system_prompt=system_prompt,
+        resume_session_id=resume,
+        from_pr=from_pr,
     )
 
 
@@ -152,36 +177,41 @@ def _stream_events(session: SyncSession, prompt: str, footer: bool, color: Color
 # --- send command ---
 
 @app.command("send", effect="mutating", help="Send a prompt to Claude and display the complete response with events")
-@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
-@strictcli.flag("model", type=str, help="Claude model identifier for this session (e.g. sonnet, opus)", short="m")
-@strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
-@strictcli.flag("raw", type=bool, default=False, help="Show raw protocol events from the subprocess instead of flattened output")
-@strictcli.flag("json-output", type=bool, default=False, help="Serialize each protocol event as a JSON line on stdout")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
-@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
-@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
-@strictcli.flag("system-prompt", type=str, default="", help="Custom system prompt text to prepend to the Claude session", short="s")
-@strictcli.flag("stdin", type=bool, default=False, help="Read the prompt text from standard input instead of an argument")
-@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
-@strictcli.flag("resume", type=str, default="", help="Resume a previously started Claude session by its unique session ID")
-@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
+@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input", presence="optional")
+@strictcli.flag("model", type=str, presence="required", help="Claude model identifier for this session (e.g. sonnet, opus)", short="m")
+@strictcli.flag("cwd", type=str, presence="optional", help="Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory")
+@strictcli.flag("raw", type=bool, presence="optional", help="Show raw protocol events from the subprocess instead of flattened output (flattened when neither --raw nor --no-raw is passed)")
+@strictcli.flag("json-output", type=bool, presence="optional", help="Serialize each protocol event as a JSON line on stdout (human rendering when neither --json-output nor --no-json-output is passed)")
+@strictcli.flag("skip-permissions", type=bool, presence="optional", help="Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)")
+@strictcli.flag("profile", type=str, presence="required", help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("footer", type=bool, presence="optional", help="Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)")
+@strictcli.flag("system-prompt", type=str, presence="optional", help="Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt", short="s")
+@strictcli.flag("stdin", type=bool, presence="optional", help="Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed)")
+@strictcli.flag("color", type=bool, presence="optional", help="Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)")
+@strictcli.flag("resume", type=str, presence="optional", help="Resume a previously started Claude session by its unique session ID; when omitted a new session is started")
+@strictcli.flag("from-pr", type=str, presence="optional", help="Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded")
 def cmd_send(
     ctx,
-    prompt: str = "",
+    prompt: str | None = None,
     model: str = "",
     profile: str = "",
-    cwd: str = "",
-    raw: bool = False,
-    json_output: bool = False,
-    skip_permissions: bool = False,
-    footer: bool = True,
-    system_prompt: str = "",
-    stdin: bool = False,
-    color: bool = True,
-    resume: str = "",
-    from_pr: str = "",
+    cwd: str | None = None,
+    raw: bool | None = None,
+    json_output: bool | None = None,
+    skip_permissions: bool | None = None,
+    footer: bool | None = None,
+    system_prompt: str | None = None,
+    stdin: bool | None = None,
+    color: bool | None = None,
+    resume: str | None = None,
+    from_pr: str | None = None,
 ) -> int | None:
-    color = Colorizer(should_color(color_flag=color))
+    raw = _opt(raw, False)
+    json_output = _opt(json_output, False)
+    skip_permissions = _opt(skip_permissions, False)
+    footer = _opt(footer, True)
+    stdin = _opt(stdin, False)
+    color = Colorizer(should_color(color_flag=_opt(color, True)))
     resolved = _resolve_prompt(prompt, stdin, color)
     if isinstance(resolved, int):
         return resolved
@@ -203,32 +233,35 @@ def cmd_send(
 # --- stream command ---
 
 @app.command("stream", effect="mutating", help="Stream a prompt with real-time incremental token-by-token output to stdout")
-@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
-@strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
-@strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
-@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
-@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
-@strictcli.flag("system-prompt", type=str, default="", help="Custom system prompt text to prepend to the Claude session", short="s")
-@strictcli.flag("stdin", type=bool, default=False, help="Read the prompt text from standard input instead of an argument")
-@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
-@strictcli.flag("resume", type=str, default="", help="Resume a previously started Claude session by its unique session ID")
-@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
+@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input", presence="optional")
+@strictcli.flag("model", type=str, presence="required", help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
+@strictcli.flag("cwd", type=str, presence="optional", help="Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory")
+@strictcli.flag("skip-permissions", type=bool, presence="optional", help="Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)")
+@strictcli.flag("profile", type=str, presence="required", help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("footer", type=bool, presence="optional", help="Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)")
+@strictcli.flag("system-prompt", type=str, presence="optional", help="Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt", short="s")
+@strictcli.flag("stdin", type=bool, presence="optional", help="Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed)")
+@strictcli.flag("color", type=bool, presence="optional", help="Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)")
+@strictcli.flag("resume", type=str, presence="optional", help="Resume a previously started Claude session by its unique session ID; when omitted a new session is started")
+@strictcli.flag("from-pr", type=str, presence="optional", help="Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded")
 def cmd_stream(
     ctx,
-    prompt: str = "",
+    prompt: str | None = None,
     model: str = "",
     profile: str = "",
-    cwd: str = "",
-    skip_permissions: bool = False,
-    footer: bool = True,
-    system_prompt: str = "",
-    stdin: bool = False,
-    color: bool = True,
-    resume: str = "",
-    from_pr: str = "",
+    cwd: str | None = None,
+    skip_permissions: bool | None = None,
+    footer: bool | None = None,
+    system_prompt: str | None = None,
+    stdin: bool | None = None,
+    color: bool | None = None,
+    resume: str | None = None,
+    from_pr: str | None = None,
 ) -> int | None:
-    color = Colorizer(should_color(color_flag=color))
+    skip_permissions = _opt(skip_permissions, False)
+    footer = _opt(footer, True)
+    stdin = _opt(stdin, False)
+    color = Colorizer(should_color(color_flag=_opt(color, True)))
     resolved = _resolve_prompt(prompt, stdin, color)
     if isinstance(resolved, int):
         return resolved
@@ -245,32 +278,35 @@ def cmd_stream(
 # --- events command ---
 
 @app.command("events", effect="mutating", help="Debug mode: display all raw JSON protocol events from the subprocess")
-@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
-@strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
-@strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
-@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
-@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
-@strictcli.flag("system-prompt", type=str, default="", help="Custom system prompt text to prepend to the Claude session", short="s")
-@strictcli.flag("stdin", type=bool, default=False, help="Read the prompt text from standard input instead of an argument")
-@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
-@strictcli.flag("resume", type=str, default="", help="Resume a previously started Claude session by its unique session ID")
-@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
+@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input", presence="optional")
+@strictcli.flag("model", type=str, presence="required", help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
+@strictcli.flag("cwd", type=str, presence="optional", help="Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory")
+@strictcli.flag("skip-permissions", type=bool, presence="optional", help="Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)")
+@strictcli.flag("profile", type=str, presence="required", help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("footer", type=bool, presence="optional", help="Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)")
+@strictcli.flag("system-prompt", type=str, presence="optional", help="Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt", short="s")
+@strictcli.flag("stdin", type=bool, presence="optional", help="Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed)")
+@strictcli.flag("color", type=bool, presence="optional", help="Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)")
+@strictcli.flag("resume", type=str, presence="optional", help="Resume a previously started Claude session by its unique session ID; when omitted a new session is started")
+@strictcli.flag("from-pr", type=str, presence="optional", help="Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded")
 def cmd_events(
     ctx,
-    prompt: str = "",
+    prompt: str | None = None,
     model: str = "",
     profile: str = "",
-    cwd: str = "",
-    skip_permissions: bool = False,
-    footer: bool = True,
-    system_prompt: str = "",
-    stdin: bool = False,
-    color: bool = True,
-    resume: str = "",
-    from_pr: str = "",
+    cwd: str | None = None,
+    skip_permissions: bool | None = None,
+    footer: bool | None = None,
+    system_prompt: str | None = None,
+    stdin: bool | None = None,
+    color: bool | None = None,
+    resume: str | None = None,
+    from_pr: str | None = None,
 ) -> int | None:
-    color = Colorizer(should_color(color_flag=color))
+    skip_permissions = _opt(skip_permissions, False)
+    footer = _opt(footer, True)
+    stdin = _opt(stdin, False)
+    color = Colorizer(should_color(color_flag=_opt(color, True)))
     resolved = _resolve_prompt(prompt, stdin, color)
     if isinstance(resolved, int):
         return resolved
@@ -290,28 +326,30 @@ def cmd_events(
 # --- repl command ---
 
 @app.command("repl", effect="mutating", help="Start an interactive multi-turn read-eval-print loop session with Claude")
-@strictcli.flag("model", type=str, help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
-@strictcli.flag("cwd", type=str, default="", help="Working directory for the Claude Code subprocess to operate in")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
-@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
-@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
-@strictcli.flag("system-prompt", type=str, default="", help="Custom system prompt text to prepend to the Claude session", short="s")
-@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
-@strictcli.flag("resume", type=str, default="", help="Resume a previously started Claude session by its unique session ID")
-@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
+@strictcli.flag("model", type=str, presence="required", help="Claude model identifier to use for this session (e.g. sonnet)", short="m")
+@strictcli.flag("cwd", type=str, presence="optional", help="Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory")
+@strictcli.flag("skip-permissions", type=bool, presence="optional", help="Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)")
+@strictcli.flag("profile", type=str, presence="required", help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("footer", type=bool, presence="optional", help="Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)")
+@strictcli.flag("system-prompt", type=str, presence="optional", help="Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt", short="s")
+@strictcli.flag("color", type=bool, presence="optional", help="Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)")
+@strictcli.flag("resume", type=str, presence="optional", help="Resume a previously started Claude session by its unique session ID; when omitted a new session is started")
+@strictcli.flag("from-pr", type=str, presence="optional", help="Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded")
 def cmd_repl(
     ctx,
     model: str,
     profile: str,
-    cwd: str = "",
-    skip_permissions: bool = False,
-    footer: bool = True,
-    system_prompt: str = "",
-    color: bool = True,
-    resume: str = "",
-    from_pr: str = "",
+    cwd: str | None = None,
+    skip_permissions: bool | None = None,
+    footer: bool | None = None,
+    system_prompt: str | None = None,
+    color: bool | None = None,
+    resume: str | None = None,
+    from_pr: str | None = None,
 ) -> None:
-    color = Colorizer(should_color(color_flag=color))
+    skip_permissions = _opt(skip_permissions, False)
+    footer = _opt(footer, True)
+    color = Colorizer(should_color(color_flag=_opt(color, True)))
     config = _build_config(model, profile, cwd, skip_permissions, system_prompt, resume, from_pr)
 
     def handler(session: SyncSession) -> None:
@@ -364,26 +402,27 @@ agent_group = app.group("agent", help="Manage and run agents defined in .agent.j
 
 
 @agent_group.command("run", effect="mutating", help="Load an agent definition and run it with the given prompt. Accepts a path to a .agent.json file or a bare agent name (resolved from .claudestream/agents/). The definition specifies the model, a prompt template with {variable} placeholders, tool schemas, sandbox policy, and budget constraints. Use --var key=value to substitute template variables. Use --model to override the model declared in the definition.")
-@strictcli.arg("definition", help="Agent name or filesystem path to a .agent.json definition file")
-@strictcli.arg("prompt", help="User message prompt to send to the agent for processing")
-@strictcli.flag("var", type=str, help="Template variable in key=value format, repeatable for multiple variables", repeatable=True, unique=False)
-@strictcli.flag("model", type=str, help="Override the model declared in the agent definition file", short="m", default="")
-@strictcli.flag("profile", type=str, help="Name of the claudewheel profile to use for authentication")
-@strictcli.flag("cwd", type=str, help="Working directory path for the Claude Code process to operate in", default="")
-@strictcli.flag("footer", type=bool, default=True, help="Display cost and timing summary on stderr after completion")
-@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
+@strictcli.arg("definition", help="Agent name or filesystem path to a .agent.json definition file", presence="required")
+@strictcli.arg("prompt", help="User message prompt to send to the agent for processing", presence="required")
+@strictcli.flag("var", type=str, default=[], help="Template variable in key=value format, repeatable for multiple variables", repeatable=True, unique=False)
+@strictcli.flag("model", type=str, presence="optional", help="Override the model declared in the agent definition file; when omitted the definition's own model is used", short="m")
+@strictcli.flag("profile", type=str, presence="required", help="Name of the claudewheel profile to use for authentication")
+@strictcli.flag("cwd", type=str, presence="optional", help="Working directory path for the Claude Code process to operate in; when omitted the subprocess inherits this process's directory")
+@strictcli.flag("footer", type=bool, presence="optional", help="Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)")
+@strictcli.flag("color", type=bool, presence="optional", help="Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)")
 def cmd_agent_run(
     ctx,
     definition: str,
     prompt: str,
     var: list[str],
-    model: str,
     profile: str,
-    cwd: str = "",
-    footer: bool = True,
-    color: bool = True,
+    model: str | None = None,
+    cwd: str | None = None,
+    footer: bool | None = None,
+    color: bool | None = None,
 ) -> int | None:
-    color = Colorizer(should_color(color_flag=color))
+    footer = _opt(footer, True)
+    color = Colorizer(should_color(color_flag=_opt(color, True)))
 
     # Parse variables from --var key=value flags
     variables: dict[str, str] = {}
@@ -407,7 +446,7 @@ def cmd_agent_run(
     base_config = SessionConfig(
         model=model or agent_def.model or "",
         profile=profile,
-        cwd=cwd or None,
+        cwd=cwd,
     )
 
     try:
@@ -429,9 +468,9 @@ def cmd_agent_run(
 
 
 @agent_group.command("list", effect="read_only", help="List available agents from .claudestream/agents/. Scans the agents directory in the working directory (or the directory specified by --cwd) and prints a table with each agent's name, schema version, and description. Use this to discover which agents are configured before running one with 'agent run'.")
-@strictcli.flag("cwd", type=str, default="", help="Working directory path for the Claude Code process to operate in")
-def cmd_agent_list(ctx, cwd: str = "") -> int | None:
-    agents = discover_agents(cwd or None)
+@strictcli.flag("cwd", type=str, presence="optional", help="Working directory path to scan for agent definitions; when omitted the current directory is scanned")
+def cmd_agent_list(ctx, cwd: str | None = None) -> int | None:
+    agents = discover_agents(cwd)
     if not agents:
         print("No agents found in .claudestream/agents/")
         return None
@@ -447,7 +486,7 @@ def cmd_agent_list(ctx, cwd: str = "") -> int | None:
 
 
 @agent_group.command("info", effect="read_only", help="Display agent definition details for a given agent name or path. Loads the .agent.json file, parses it, and prints every configured field: name, version, description, model, budget limits, sandbox policy, tool schemas, MCP server config, and stream options. Use this to inspect an agent's full configuration before invoking it.")
-@strictcli.arg("name", help="Agent name or filesystem path to the .agent.json definition")
+@strictcli.arg("name", help="Agent name or filesystem path to the .agent.json definition", presence="required")
 def cmd_agent_info(ctx, name: str) -> int | None:
     try:
         agent = load_agent(name)
@@ -481,7 +520,7 @@ def cmd_agent_info(ctx, name: str) -> int | None:
 
 
 @agent_group.command("validate", effect="read_only", help="Validate an agent definition by loading and checking its .agent.json file for structural and semantic correctness. Verifies that budget values are non-negative, the prompt template is non-empty, tool schemas are well-formed, and required fields are present. Reports specific errors on failure or prints a success confirmation.")
-@strictcli.arg("name", help="Agent name or filesystem path to the .agent.json definition")
+@strictcli.arg("name", help="Agent name or filesystem path to the .agent.json definition", presence="required")
 def cmd_agent_validate(ctx, name: str) -> int | None:
     try:
         agent = load_agent(name)
@@ -509,30 +548,33 @@ def cmd_agent_validate(ctx, name: str) -> int | None:
 # --- ask command ---
 
 @app.command("ask", effect="mutating", help="Send a prompt to Claude and print only the final response text")
-@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session", required=False, default="")
-@strictcli.flag("model", type=str, short="m", help="Claude model identifier to use for this session (e.g. sonnet)")
-@strictcli.flag("profile", type=str, help="Name of the claudewheel profile for authentication")
-@strictcli.flag("cwd", type=str, default="", help="Working directory path for the Claude Code process to operate in")
-@strictcli.flag("skip-permissions", type=bool, default=False, help="Bypass all tool permission prompts via --dangerously-skip-permissions")
-@strictcli.flag("system-prompt", type=str, default="", short="s", help="Custom system prompt text to prepend to the session context")
-@strictcli.flag("stdin", type=bool, default=False, help="Read the prompt text from standard input instead of an argument")
-@strictcli.flag("json-output", type=bool, default=False, help="Serialize the AskResult response object as a JSON line on stdout")
-@strictcli.flag("color", type=bool, default=True, help="Enable ANSI colored output for terminal display and formatting")
-@strictcli.flag("from-pr", type=str, default="", help="Load context from a GitHub pull request identifier to resume")
+@strictcli.arg("prompt", help="The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input", presence="optional")
+@strictcli.flag("model", type=str, short="m", presence="required", help="Claude model identifier to use for this session (e.g. sonnet)")
+@strictcli.flag("profile", type=str, presence="required", help="Name of the claudewheel profile for authentication")
+@strictcli.flag("cwd", type=str, presence="optional", help="Working directory path for the Claude Code process to operate in; when omitted the subprocess inherits this process's directory")
+@strictcli.flag("skip-permissions", type=bool, presence="optional", help="Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)")
+@strictcli.flag("system-prompt", type=str, presence="optional", short="s", help="Custom system prompt text to prepend to the session context; when omitted the session carries no custom system prompt")
+@strictcli.flag("stdin", type=bool, presence="optional", help="Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed)")
+@strictcli.flag("json-output", type=bool, presence="optional", help="Serialize the AskResult response object as a JSON line on stdout (the response text alone when neither --json-output nor --no-json-output is passed)")
+@strictcli.flag("color", type=bool, presence="optional", help="Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)")
+@strictcli.flag("from-pr", type=str, presence="optional", help="Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded")
 def cmd_ask(
     ctx,
-    prompt: str = "",
+    prompt: str | None = None,
     model: str = "",
     profile: str = "",
-    cwd: str = "",
-    skip_permissions: bool = False,
-    system_prompt: str = "",
-    stdin: bool = False,
-    json_output: bool = False,
-    color: bool = True,
-    from_pr: str = "",
+    cwd: str | None = None,
+    skip_permissions: bool | None = None,
+    system_prompt: str | None = None,
+    stdin: bool | None = None,
+    json_output: bool | None = None,
+    color: bool | None = None,
+    from_pr: str | None = None,
 ) -> int | None:
-    color = Colorizer(should_color(color_flag=color))
+    skip_permissions = _opt(skip_permissions, False)
+    stdin = _opt(stdin, False)
+    json_output = _opt(json_output, False)
+    color = Colorizer(should_color(color_flag=_opt(color, True)))
     resolved = _resolve_prompt(prompt, stdin, color)
     if isinstance(resolved, int):
         return resolved
@@ -560,8 +602,8 @@ def cmd_ask(
 # --- doctor command ---
 
 @app.command("doctor", effect="read_only", help="Check claudestream environment health: binary, version, and profile")
-@strictcli.flag("profile", type=str, default="", help="Name of the claudewheel profile to validate and check")
-def cmd_doctor(ctx, profile: str = "") -> int | None:
+@strictcli.flag("profile", type=str, presence="optional", help="Name of the claudewheel profile to validate and check; when omitted no profile is resolved")
+def cmd_doctor(ctx, profile: str | None = None) -> int | None:
     import asyncio
 
     ok = True
@@ -589,7 +631,7 @@ def cmd_doctor(ctx, profile: str = "") -> int | None:
             ok = False
 
     # 3. Profile resolution
-    if profile:
+    if profile is not None:
         try:
             from claudewheel.profile import resolve_profile
             env_vars = resolve_profile(profile)
@@ -604,8 +646,8 @@ def cmd_doctor(ctx, profile: str = "") -> int | None:
 # --- config command ---
 
 @app.command("config", effect="read_only", help="Show resolved configuration including binary path and version")
-@strictcli.flag("profile", type=str, default="", help="Name of the claudewheel profile to display settings for")
-def cmd_config(ctx, profile: str = "") -> int | None:
+@strictcli.flag("profile", type=str, presence="optional", help="Name of the claudewheel profile to display settings for; when omitted no profile is resolved")
+def cmd_config(ctx, profile: str | None = None) -> int | None:
     import asyncio
 
     # 1. Binary path
@@ -625,7 +667,7 @@ def cmd_config(ctx, profile: str = "") -> int | None:
     print(f"Minimum version: {MINIMUM_CLAUDE_VERSION}")
 
     # 4. Profile
-    if profile:
+    if profile is not None:
         try:
             from claudewheel.profile import resolve_profile
             env_vars = resolve_profile(profile)
