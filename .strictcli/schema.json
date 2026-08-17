@@ -1,42 +1,64 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "defaults": {
-    "schema_version": 1,
+    "schema_version": 2,
     "app": {
       "env_prefix": null,
       "config": false,
+      "config_format": "json",
+      "config_path": null,
+      "config_conflict_mode": "cli-wins",
+      "proc_observe_allowlist": [],
       "global_flags": [],
       "commands": {},
       "groups": {},
       "deprecated": {},
-      "tag_contracts": {}
+      "tag_contracts": {},
+      "checks": {},
+      "config_fields": {},
+      "infra": {}
     },
     "flag": {
       "short": null,
-      "default": null,
       "env": null,
-      "choices": null,
-      "repeatable": false,
-      "unique": false,
       "env_separator": null,
+      "prefixed": true,
+      "choices": null,
+      "elect_by": null,
+      "unique": false,
+      "conflict_mode": null,
       "negatable": null,
-      "hidden": false
+      "nullable": false
     },
     "arg": {
-      "type": "str",
-      "required": true,
-      "default": null,
       "variadic": false,
       "choices": null
     },
+    "choice": {
+      "flags": []
+    },
+    "choice_record": {
+      "help": null
+    },
     "command": {
+      "consequential": false,
+      "dry_run_supported": true,
+      "dry_run_unsupported_reason": null,
+      "update_of": null,
+      "write_mode": null,
+      "payload_schema": null,
+      "owns_stdout": false,
       "passthrough": false,
       "flags": [],
+      "flag_sets": [],
       "args": [],
       "tags": [],
       "constraints": [],
       "hidden": false,
-      "interactive": false
+      "interactive": false,
+      "config_fields": [],
+      "grants": [],
+      "forwarding": null
     },
     "group": {
       "commands": {},
@@ -44,6 +66,18 @@
       "deprecated": {},
       "tags": [],
       "hidden": false
+    },
+    "config_field": {
+      "default": null,
+      "bound_commands": []
+    },
+    "check": {
+      "scope": null
+    },
+    "infra": {
+      "roots": [],
+      "handshakes": [],
+      "connections": []
     }
   },
   "project_id": "claudestream",
@@ -58,89 +92,117 @@
       "flags": [
         {
           "name": "model",
-          "type": "str",
           "help": "Claude model identifier for this session (e.g. sonnet, opus)",
-          "short": "m"
+          "value_schema": {
+            "type": "string"
+          },
+          "short": "m",
+          "presence": "required"
         },
         {
           "name": "cwd",
-          "type": "str",
-          "help": "Working directory for the Claude Code subprocess to operate in",
-          "default": ""
+          "help": "Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "raw",
-          "type": "bool",
-          "help": "Show raw protocol events from the subprocess instead of flattened output",
-          "default": false,
+          "help": "Show raw protocol events from the subprocess instead of flattened output (flattened when neither --raw nor --no-raw is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "json-output",
-          "type": "bool",
-          "help": "Serialize each protocol event as a JSON line on stdout",
-          "default": false,
+          "help": "Serialize each protocol event as a JSON line on stdout (human rendering when neither --json-output nor --no-json-output is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "skip-permissions",
-          "type": "bool",
-          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
-          "default": false,
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "profile",
-          "type": "str",
-          "help": "Name of the claudewheel profile to use for authentication"
+          "help": "Name of the claudewheel profile to use for authentication",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "required"
         },
         {
           "name": "footer",
-          "type": "bool",
-          "help": "Display cost and timing summary on stderr after completion",
-          "default": true,
+          "help": "Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "system-prompt",
-          "type": "str",
-          "help": "Custom system prompt text to prepend to the Claude session",
+          "help": "Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt",
+          "value_schema": {
+            "type": "string"
+          },
           "short": "s",
-          "default": ""
+          "presence": "optional"
         },
         {
           "name": "stdin",
-          "type": "bool",
-          "help": "Read the prompt text from standard input instead of an argument",
-          "default": false,
+          "help": "Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "color",
-          "type": "bool",
-          "help": "Enable ANSI colored output for terminal display and formatting",
-          "default": true,
+          "help": "Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "resume",
-          "type": "str",
-          "help": "Resume a previously started Claude session by its unique session ID",
-          "default": ""
+          "help": "Resume a previously started Claude session by its unique session ID; when omitted a new session is started",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "from-pr",
-          "type": "str",
-          "help": "Load context from a GitHub pull request identifier to resume",
-          "default": ""
+          "help": "Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ],
       "args": [
         {
           "name": "prompt",
-          "help": "The text prompt to send to the Claude Code session",
-          "required": false,
-          "default": ""
+          "help": "The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ]
     },
@@ -151,75 +213,99 @@
       "flags": [
         {
           "name": "model",
-          "type": "str",
           "help": "Claude model identifier to use for this session (e.g. sonnet)",
-          "short": "m"
+          "value_schema": {
+            "type": "string"
+          },
+          "short": "m",
+          "presence": "required"
         },
         {
           "name": "cwd",
-          "type": "str",
-          "help": "Working directory for the Claude Code subprocess to operate in",
-          "default": ""
+          "help": "Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "skip-permissions",
-          "type": "bool",
-          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
-          "default": false,
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "profile",
-          "type": "str",
-          "help": "Name of the claudewheel profile to use for authentication"
+          "help": "Name of the claudewheel profile to use for authentication",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "required"
         },
         {
           "name": "footer",
-          "type": "bool",
-          "help": "Display cost and timing summary on stderr after completion",
-          "default": true,
+          "help": "Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "system-prompt",
-          "type": "str",
-          "help": "Custom system prompt text to prepend to the Claude session",
+          "help": "Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt",
+          "value_schema": {
+            "type": "string"
+          },
           "short": "s",
-          "default": ""
+          "presence": "optional"
         },
         {
           "name": "stdin",
-          "type": "bool",
-          "help": "Read the prompt text from standard input instead of an argument",
-          "default": false,
+          "help": "Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "color",
-          "type": "bool",
-          "help": "Enable ANSI colored output for terminal display and formatting",
-          "default": true,
+          "help": "Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "resume",
-          "type": "str",
-          "help": "Resume a previously started Claude session by its unique session ID",
-          "default": ""
+          "help": "Resume a previously started Claude session by its unique session ID; when omitted a new session is started",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "from-pr",
-          "type": "str",
-          "help": "Load context from a GitHub pull request identifier to resume",
-          "default": ""
+          "help": "Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ],
       "args": [
         {
           "name": "prompt",
-          "help": "The text prompt to send to the Claude Code session",
-          "required": false,
-          "default": ""
+          "help": "The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ]
     },
@@ -230,75 +316,99 @@
       "flags": [
         {
           "name": "model",
-          "type": "str",
           "help": "Claude model identifier to use for this session (e.g. sonnet)",
-          "short": "m"
+          "value_schema": {
+            "type": "string"
+          },
+          "short": "m",
+          "presence": "required"
         },
         {
           "name": "cwd",
-          "type": "str",
-          "help": "Working directory for the Claude Code subprocess to operate in",
-          "default": ""
+          "help": "Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "skip-permissions",
-          "type": "bool",
-          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
-          "default": false,
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "profile",
-          "type": "str",
-          "help": "Name of the claudewheel profile to use for authentication"
+          "help": "Name of the claudewheel profile to use for authentication",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "required"
         },
         {
           "name": "footer",
-          "type": "bool",
-          "help": "Display cost and timing summary on stderr after completion",
-          "default": true,
+          "help": "Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "system-prompt",
-          "type": "str",
-          "help": "Custom system prompt text to prepend to the Claude session",
+          "help": "Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt",
+          "value_schema": {
+            "type": "string"
+          },
           "short": "s",
-          "default": ""
+          "presence": "optional"
         },
         {
           "name": "stdin",
-          "type": "bool",
-          "help": "Read the prompt text from standard input instead of an argument",
-          "default": false,
+          "help": "Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "color",
-          "type": "bool",
-          "help": "Enable ANSI colored output for terminal display and formatting",
-          "default": true,
+          "help": "Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "resume",
-          "type": "str",
-          "help": "Resume a previously started Claude session by its unique session ID",
-          "default": ""
+          "help": "Resume a previously started Claude session by its unique session ID; when omitted a new session is started",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "from-pr",
-          "type": "str",
-          "help": "Load context from a GitHub pull request identifier to resume",
-          "default": ""
+          "help": "Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ],
       "args": [
         {
           "name": "prompt",
-          "help": "The text prompt to send to the Claude Code session",
-          "required": false,
-          "default": ""
+          "help": "The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ]
     },
@@ -309,60 +419,80 @@
       "flags": [
         {
           "name": "model",
-          "type": "str",
           "help": "Claude model identifier to use for this session (e.g. sonnet)",
-          "short": "m"
+          "value_schema": {
+            "type": "string"
+          },
+          "short": "m",
+          "presence": "required"
         },
         {
           "name": "cwd",
-          "type": "str",
-          "help": "Working directory for the Claude Code subprocess to operate in",
-          "default": ""
+          "help": "Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "skip-permissions",
-          "type": "bool",
-          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
-          "default": false,
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "profile",
-          "type": "str",
-          "help": "Name of the claudewheel profile to use for authentication"
+          "help": "Name of the claudewheel profile to use for authentication",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "required"
         },
         {
           "name": "footer",
-          "type": "bool",
-          "help": "Display cost and timing summary on stderr after completion",
-          "default": true,
+          "help": "Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "system-prompt",
-          "type": "str",
-          "help": "Custom system prompt text to prepend to the Claude session",
+          "help": "Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt",
+          "value_schema": {
+            "type": "string"
+          },
           "short": "s",
-          "default": ""
+          "presence": "optional"
         },
         {
           "name": "color",
-          "type": "bool",
-          "help": "Enable ANSI colored output for terminal display and formatting",
-          "default": true,
+          "help": "Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "resume",
-          "type": "str",
-          "help": "Resume a previously started Claude session by its unique session ID",
-          "default": ""
+          "help": "Resume a previously started Claude session by its unique session ID; when omitted a new session is started",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "from-pr",
-          "type": "str",
-          "help": "Load context from a GitHub pull request identifier to resume",
-          "default": ""
+          "help": "Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ]
     },
@@ -373,69 +503,91 @@
       "flags": [
         {
           "name": "model",
-          "type": "str",
           "help": "Claude model identifier to use for this session (e.g. sonnet)",
-          "short": "m"
+          "value_schema": {
+            "type": "string"
+          },
+          "short": "m",
+          "presence": "required"
         },
         {
           "name": "profile",
-          "type": "str",
-          "help": "Name of the claudewheel profile for authentication"
+          "help": "Name of the claudewheel profile for authentication",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "required"
         },
         {
           "name": "cwd",
-          "type": "str",
-          "help": "Working directory path for the Claude Code process to operate in",
-          "default": ""
+          "help": "Working directory path for the Claude Code process to operate in; when omitted the subprocess inherits this process's directory",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         },
         {
           "name": "skip-permissions",
-          "type": "bool",
-          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions",
-          "default": false,
+          "help": "Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "system-prompt",
-          "type": "str",
-          "help": "Custom system prompt text to prepend to the session context",
+          "help": "Custom system prompt text to prepend to the session context; when omitted the session carries no custom system prompt",
+          "value_schema": {
+            "type": "string"
+          },
           "short": "s",
-          "default": ""
+          "presence": "optional"
         },
         {
           "name": "stdin",
-          "type": "bool",
-          "help": "Read the prompt text from standard input instead of an argument",
-          "default": false,
+          "help": "Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "json-output",
-          "type": "bool",
-          "help": "Serialize the AskResult response object as a JSON line on stdout",
-          "default": false,
+          "help": "Serialize the AskResult response object as a JSON line on stdout (the response text alone when neither --json-output nor --no-json-output is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "color",
-          "type": "bool",
-          "help": "Enable ANSI colored output for terminal display and formatting",
-          "default": true,
+          "help": "Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)",
+          "value_schema": {
+            "type": "boolean"
+          },
+          "presence": "optional",
           "negatable": true
         },
         {
           "name": "from-pr",
-          "type": "str",
-          "help": "Load context from a GitHub pull request identifier to resume",
-          "default": ""
+          "help": "Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ],
       "args": [
         {
           "name": "prompt",
-          "help": "The text prompt to send to the Claude Code session",
-          "required": false,
-          "default": ""
+          "help": "The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ]
     },
@@ -446,9 +598,11 @@
       "flags": [
         {
           "name": "profile",
-          "type": "str",
-          "help": "Name of the claudewheel profile to validate and check",
-          "default": ""
+          "help": "Name of the claudewheel profile to validate and check; when omitted no profile is resolved",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ]
     },
@@ -459,9 +613,11 @@
       "flags": [
         {
           "name": "profile",
-          "type": "str",
-          "help": "Name of the claudewheel profile to display settings for",
-          "default": ""
+          "help": "Name of the claudewheel profile to display settings for; when omitted no profile is resolved",
+          "value_schema": {
+            "type": "string"
+          },
+          "presence": "optional"
         }
       ]
     }
@@ -478,52 +634,76 @@
           "flags": [
             {
               "name": "var",
-              "type": "str",
               "help": "Template variable in key=value format, repeatable for multiple variables",
-              "default": [],
-              "repeatable": true
+              "value_schema": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "presence": "default",
+              "default": []
             },
             {
               "name": "model",
-              "type": "str",
-              "help": "Override the model declared in the agent definition file",
+              "help": "Override the model declared in the agent definition file; when omitted the definition's own model is used",
+              "value_schema": {
+                "type": "string"
+              },
               "short": "m",
-              "default": ""
+              "presence": "optional"
             },
             {
               "name": "profile",
-              "type": "str",
-              "help": "Name of the claudewheel profile to use for authentication"
+              "help": "Name of the claudewheel profile to use for authentication",
+              "value_schema": {
+                "type": "string"
+              },
+              "presence": "required"
             },
             {
               "name": "cwd",
-              "type": "str",
-              "help": "Working directory path for the Claude Code process to operate in",
-              "default": ""
+              "help": "Working directory path for the Claude Code process to operate in; when omitted the subprocess inherits this process's directory",
+              "value_schema": {
+                "type": "string"
+              },
+              "presence": "optional"
             },
             {
               "name": "footer",
-              "type": "bool",
-              "help": "Display cost and timing summary on stderr after completion",
-              "default": true,
+              "help": "Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed)",
+              "value_schema": {
+                "type": "boolean"
+              },
+              "presence": "optional",
               "negatable": true
             },
             {
               "name": "color",
-              "type": "bool",
-              "help": "Enable ANSI colored output for terminal display and formatting",
-              "default": true,
+              "help": "Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed)",
+              "value_schema": {
+                "type": "boolean"
+              },
+              "presence": "optional",
               "negatable": true
             }
           ],
           "args": [
             {
-              "name": "prompt",
-              "help": "User message prompt to send to the agent for processing"
+              "name": "definition",
+              "help": "Agent name or filesystem path to a .agent.json definition file",
+              "value_schema": {
+                "type": "string"
+              },
+              "presence": "required"
             },
             {
-              "name": "definition",
-              "help": "Agent name or filesystem path to a .agent.json definition file"
+              "name": "prompt",
+              "help": "User message prompt to send to the agent for processing",
+              "value_schema": {
+                "type": "string"
+              },
+              "presence": "required"
             }
           ]
         },
@@ -534,9 +714,11 @@
           "flags": [
             {
               "name": "cwd",
-              "type": "str",
-              "help": "Working directory path for the Claude Code process to operate in",
-              "default": ""
+              "help": "Working directory path to scan for agent definitions; when omitted the current directory is scanned",
+              "value_schema": {
+                "type": "string"
+              },
+              "presence": "optional"
             }
           ]
         },
@@ -547,7 +729,11 @@
           "args": [
             {
               "name": "name",
-              "help": "Agent name or filesystem path to the .agent.json definition"
+              "help": "Agent name or filesystem path to the .agent.json definition",
+              "value_schema": {
+                "type": "string"
+              },
+              "presence": "required"
             }
           ]
         },
@@ -558,7 +744,11 @@
           "args": [
             {
               "name": "name",
-              "help": "Agent name or filesystem path to the .agent.json definition"
+              "help": "Agent name or filesystem path to the .agent.json definition",
+              "value_schema": {
+                "type": "string"
+              },
+              "presence": "required"
             }
           ]
         }
