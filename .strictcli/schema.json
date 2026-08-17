@@ -82,7 +82,7 @@
   },
   "project_id": "claudestream",
   "name": "claudestream",
-  "version": "0.14.2",
+  "version": "0.15.0",
   "help": "Stream Claude Code's JSON protocol",
   "commands": {
     "send": {
