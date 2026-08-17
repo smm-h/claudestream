@@ -13,7 +13,21 @@ dependencies = [
     # rejects `presence=` outright, so it cannot register them at all.
     "strictcli>=0.41.0",
     "msgspec",
+    # selfdoc is not imported anywhere in this package. It is the docs
+    # generator, invoked as a binary by .rlsbl/hooks/post-release.sh, and it
+    # constrains resolution here for no runtime reason (its current release
+    # requires Python >=3.12 while this package supports >=3.11, which is why
+    # the lock carries a marker split). It stays declared and unfloored until
+    # its place in this manifest is decided.
     "selfdoc",
+    # Unfloored deliberately. claudestream imports exactly one thing from
+    # claudewheel -- claudewheel.profile.resolve_profile -- and that module
+    # does not touch strictcli, so it works under the 0.41.0 floor above at
+    # every published claudewheel. claudewheel's *CLI* does not: every release
+    # up to and including 0.26.0 imports a strictcli name that 0.41.0 removed,
+    # and the repair ships in claudewheel's own next release. A floor at a
+    # version that does not exist yet would only make this package
+    # unresolvable, so the floor waits for that release.
     "claudewheel",
     "strictspec>=0.1.0",
 ]

@@ -44,14 +44,14 @@ dev = [
 
 [[package]]
 name = "claudewheel"
-version = "0.23.3"
+version = "0.26.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "strictcli" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a2/64/34af9835bd23bc893440f8c12d9c8ab6721a2496d6d06287302190eb82e2/claudewheel-0.23.3.tar.gz", hash = "sha256:3dacd66278070ec123e291118e2a06b2ac94c71c0b294285bf5ab6718d5f3b13", size = 2956744, upload-time = "2026-07-18T21:43:10.901Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/b1/f79e5251f2868742112bd26915319284e6ec3bd676dd35146c2b6204befe/claudewheel-0.26.0.tar.gz", hash = "sha256:ac59914cefcec56dbe6a9867cf80bc48fca49330ecf9a157f25dba48ab328790", size = 3254728, upload-time = "2026-08-14T04:25:34.394Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/e7/e8/0b000d4c6749a069726b2402cdce9d49abf13c84f654cf9429addac99373/claudewheel-0.23.3-py3-none-any.whl", hash = "sha256:0772f94f6afc7b005025ca3844edce244e157b75c4faa5c4012dcb4359a35411", size = 163641, upload-time = "2026-07-18T21:43:09.297Z" },
+    { url = "https://files.pythonhosted.org/packages/c6/ed/f7935eb38d7bf624ac0d82d99f9fb992b3c00079ed7d39f3550cef5ca6f4/claudewheel-0.26.0-py3-none-any.whl", hash = "sha256:8fd49380120ddaeec08245debae6d9bd4d1143a390dc042a155c0147cf538dae", size = 257092, upload-time = "2026-08-14T04:25:32.556Z" },
 ]
 
 [[package]]
