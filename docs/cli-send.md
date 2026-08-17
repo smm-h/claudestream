@@ -15,23 +15,23 @@ Send a prompt to Claude and display the complete response with events
 
 ## Flags
 
-| Name | Short | Type | Default | Env | Description |
+| Name | Short | Type | Presence | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--model` | `-m` | str |  |  | Claude model identifier for this session (e.g. sonnet, opus) |
-| `--cwd` |  | str |  |  | Working directory for the Claude Code subprocess to operate in |
-| `--raw` |  | bool |  |  | Show raw protocol events from the subprocess instead of flattened output |
-| `--json-output` |  | bool |  |  | Serialize each protocol event as a JSON line on stdout |
-| `--skip-permissions` |  | bool |  |  | Bypass all tool permission prompts via --dangerously-skip-permissions |
-| `--profile` |  | str |  |  | Name of the claudewheel profile to use for authentication |
-| `--footer` |  | bool | True |  | Display cost and timing summary on stderr after completion |
-| `--system-prompt` | `-s` | str |  |  | Custom system prompt text to prepend to the Claude session |
-| `--stdin` |  | bool |  |  | Read the prompt text from standard input instead of an argument |
-| `--color` |  | bool | True |  | Enable ANSI colored output for terminal display and formatting |
-| `--resume` |  | str |  |  | Resume a previously started Claude session by its unique session ID |
-| `--from-pr` |  | str |  |  | Load context from a GitHub pull request identifier to resume |
+| `--model` | `-m` | str | required |  | Claude model identifier for this session (e.g. sonnet, opus) |
+| `--cwd` |  | str | optional |  | Working directory for the Claude Code subprocess to operate in; when omitted the subprocess inherits this process's directory |
+| `--raw`, `--no-raw` |  | bool | optional |  | Show raw protocol events from the subprocess instead of flattened output (flattened when neither --raw nor --no-raw is passed) |
+| `--json-output`, `--no-json-output` |  | bool | optional |  | Serialize each protocol event as a JSON line on stdout (human rendering when neither --json-output nor --no-json-output is passed) |
+| `--skip-permissions`, `--no-skip-permissions` |  | bool | optional |  | Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed) |
+| `--profile` |  | str | required |  | Name of the claudewheel profile to use for authentication |
+| `--footer`, `--no-footer` |  | bool | optional |  | Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed) |
+| `--system-prompt` | `-s` | str | optional |  | Custom system prompt text to prepend to the Claude session; when omitted the session carries no custom system prompt |
+| `--stdin`, `--no-stdin` |  | bool | optional |  | Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed) |
+| `--color`, `--no-color` |  | bool | optional |  | Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed) |
+| `--resume` |  | str | optional |  | Resume a previously started Claude session by its unique session ID; when omitted a new session is started |
+| `--from-pr` |  | str | optional |  | Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded |
 
 ## Arguments
 
-| Name | Required | Description |
-| --- | --- | --- |
-| `prompt` | no | The text prompt to send to the Claude Code session |
+| Name | Type | Presence | Description |
+| --- | --- | --- | --- |
+| `prompt` | str | optional | The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input |

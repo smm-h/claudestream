@@ -19,21 +19,21 @@ Load an agent definition and run it with the given prompt. Accepts a path to a .
 
 ### Flags
 
-| Name | Short | Type | Default | Env | Description |
+| Name | Short | Type | Presence | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--var` |  | str |  |  | Template variable in key=value format, repeatable for multiple variables |
-| `--model` | `-m` | str |  |  | Override the model declared in the agent definition file |
-| `--profile` |  | str |  |  | Name of the claudewheel profile to use for authentication |
-| `--cwd` |  | str |  |  | Working directory path for the Claude Code process to operate in |
-| `--footer` |  | bool | True |  | Display cost and timing summary on stderr after completion |
-| `--color` |  | bool | True |  | Enable ANSI colored output for terminal display and formatting |
+| `--var` |  | list[str] | default: `[]` |  | Template variable in key=value format, repeatable for multiple variables |
+| `--model` | `-m` | str | optional |  | Override the model declared in the agent definition file; when omitted the definition's own model is used |
+| `--profile` |  | str | required |  | Name of the claudewheel profile to use for authentication |
+| `--cwd` |  | str | optional |  | Working directory path for the Claude Code process to operate in; when omitted the subprocess inherits this process's directory |
+| `--footer`, `--no-footer` |  | bool | optional |  | Display cost and timing summary on stderr after completion (displayed when neither --footer nor --no-footer is passed) |
+| `--color`, `--no-color` |  | bool | optional |  | Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed) |
 
 ### Arguments
 
-| Name | Required | Description |
-| --- | --- | --- |
-| `prompt` | yes | User message prompt to send to the agent for processing |
-| `definition` | yes | Agent name or filesystem path to a .agent.json definition file |
+| Name | Type | Presence | Description |
+| --- | --- | --- | --- |
+| `definition` | str | required | Agent name or filesystem path to a .agent.json definition file |
+| `prompt` | str | required | User message prompt to send to the agent for processing |
 
 ## agent list
 
@@ -43,9 +43,9 @@ List available agents from .claudestream/agents/. Scans the agents directory in 
 
 ### Flags
 
-| Name | Short | Type | Default | Env | Description |
+| Name | Short | Type | Presence | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--cwd` |  | str |  |  | Working directory path for the Claude Code process to operate in |
+| `--cwd` |  | str | optional |  | Working directory path to scan for agent definitions; when omitted the current directory is scanned |
 
 ## agent info
 
@@ -55,9 +55,9 @@ Display agent definition details for a given agent name or path. Loads the .agen
 
 ### Arguments
 
-| Name | Required | Description |
-| --- | --- | --- |
-| `name` | yes | Agent name or filesystem path to the .agent.json definition |
+| Name | Type | Presence | Description |
+| --- | --- | --- | --- |
+| `name` | str | required | Agent name or filesystem path to the .agent.json definition |
 
 ## agent validate
 
@@ -67,6 +67,6 @@ Validate an agent definition by loading and checking its .agent.json file for st
 
 ### Arguments
 
-| Name | Required | Description |
-| --- | --- | --- |
-| `name` | yes | Agent name or filesystem path to the .agent.json definition |
+| Name | Type | Presence | Description |
+| --- | --- | --- | --- |
+| `name` | str | required | Agent name or filesystem path to the .agent.json definition |

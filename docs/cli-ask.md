@@ -15,20 +15,20 @@ Send a prompt to Claude and print only the final response text
 
 ## Flags
 
-| Name | Short | Type | Default | Env | Description |
+| Name | Short | Type | Presence | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--model` | `-m` | str |  |  | Claude model identifier to use for this session (e.g. sonnet) |
-| `--profile` |  | str |  |  | Name of the claudewheel profile for authentication |
-| `--cwd` |  | str |  |  | Working directory path for the Claude Code process to operate in |
-| `--skip-permissions` |  | bool |  |  | Bypass all tool permission prompts via --dangerously-skip-permissions |
-| `--system-prompt` | `-s` | str |  |  | Custom system prompt text to prepend to the session context |
-| `--stdin` |  | bool |  |  | Read the prompt text from standard input instead of an argument |
-| `--json-output` |  | bool |  |  | Serialize the AskResult response object as a JSON line on stdout |
-| `--color` |  | bool | True |  | Enable ANSI colored output for terminal display and formatting |
-| `--from-pr` |  | str |  |  | Load context from a GitHub pull request identifier to resume |
+| `--model` | `-m` | str | required |  | Claude model identifier to use for this session (e.g. sonnet) |
+| `--profile` |  | str | required |  | Name of the claudewheel profile for authentication |
+| `--cwd` |  | str | optional |  | Working directory path for the Claude Code process to operate in; when omitted the subprocess inherits this process's directory |
+| `--skip-permissions`, `--no-skip-permissions` |  | bool | optional |  | Bypass all tool permission prompts via --dangerously-skip-permissions (permissions enforced when neither --skip-permissions nor --no-skip-permissions is passed) |
+| `--system-prompt` | `-s` | str | optional |  | Custom system prompt text to prepend to the session context; when omitted the session carries no custom system prompt |
+| `--stdin`, `--no-stdin` |  | bool | optional |  | Read the prompt text from standard input instead of an argument (the prompt argument is used when neither --stdin nor --no-stdin is passed) |
+| `--json-output`, `--no-json-output` |  | bool | optional |  | Serialize the AskResult response object as a JSON line on stdout (the response text alone when neither --json-output nor --no-json-output is passed) |
+| `--color`, `--no-color` |  | bool | optional |  | Enable ANSI colored output for terminal display and formatting (enabled, subject to TTY and NO_COLOR detection, when neither --color nor --no-color is passed) |
+| `--from-pr` |  | str | optional |  | Load context from a GitHub pull request identifier to resume; when omitted no pull request context is loaded |
 
 ## Arguments
 
-| Name | Required | Description |
-| --- | --- | --- |
-| `prompt` | no | The text prompt to send to the Claude Code session |
+| Name | Type | Presence | Description |
+| --- | --- | --- | --- |
+| `prompt` | str | optional | The text prompt to send to the Claude Code session; omit it and pass --stdin to read the prompt from standard input |

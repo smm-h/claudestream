@@ -15,6 +15,6 @@ Check claudestream environment health: binary, version, and profile
 
 ## Flags
 
-| Name | Short | Type | Default | Env | Description |
+| Name | Short | Type | Presence | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--profile` |  | str |  |  | Name of the claudewheel profile to validate and check |
+| `--profile` |  | str | optional |  | Name of the claudewheel profile to validate and check; when omitted no profile is resolved |

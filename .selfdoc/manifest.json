@@ -196,67 +196,67 @@
         },
         {
           "level": 2,
-          "text": "claudestream._agent",
+          "text": "`claudestream._agent`",
           "anchor": "claudestream_agent"
         },
         {
           "level": 3,
-          "text": "AgentValidationError",
+          "text": "`AgentValidationError`",
           "anchor": "agentvalidationerror"
         },
         {
           "level": 3,
-          "text": "AgentDefinition",
+          "text": "`AgentDefinition`",
           "anchor": "agentdefinition"
         },
         {
           "level": 3,
-          "text": "_check_deprecated_budget",
+          "text": "`_check_deprecated_budget`",
           "anchor": "_check_deprecated_budget"
         },
         {
           "level": 3,
-          "text": "_decode_agent_document",
+          "text": "`_decode_agent_document`",
           "anchor": "_decode_agent_document"
         },
         {
           "level": 3,
-          "text": "resolve_prompt",
+          "text": "`resolve_prompt`",
           "anchor": "resolve_prompt"
         },
         {
           "level": 3,
-          "text": "load_agent",
+          "text": "`load_agent`",
           "anchor": "load_agent"
         },
         {
           "level": 3,
-          "text": "discover_agents",
+          "text": "`discover_agents`",
           "anchor": "discover_agents"
         },
         {
           "level": 3,
-          "text": "_build_tools",
+          "text": "`_build_tools`",
           "anchor": "_build_tools"
         },
         {
           "level": 3,
-          "text": "_resolve_model",
+          "text": "`_resolve_model`",
           "anchor": "_resolve_model"
         },
         {
           "level": 3,
-          "text": "_build_session_resolution",
+          "text": "`_build_session_resolution`",
           "anchor": "_build_session_resolution"
         },
         {
           "level": 3,
-          "text": "invoke_agent",
+          "text": "`invoke_agent`",
           "anchor": "invoke_agent"
         },
         {
           "level": 3,
-          "text": "invoke_agent_sync",
+          "text": "`invoke_agent_sync`",
           "anchor": "invoke_agent_sync"
         }
       ]
@@ -273,287 +273,287 @@
         },
         {
           "level": 2,
-          "text": "claudestream._async_session",
+          "text": "`claudestream._async_session`",
           "anchor": "claudestream_async_session"
         },
         {
           "level": 3,
-          "text": "ClaudeStreamError",
+          "text": "`ClaudeStreamError`",
           "anchor": "claudestreamerror"
         },
         {
           "level": 3,
-          "text": "AsyncSession",
+          "text": "`AsyncSession`",
           "anchor": "asyncsession"
         },
         {
           "level": 4,
-          "text": "_enrich_flattened",
+          "text": "`_enrich_flattened`",
           "anchor": "_enrich_flattened"
         },
         {
           "level": 4,
-          "text": "_build_process_config",
+          "text": "`_build_process_config`",
           "anchor": "_build_process_config"
         },
         {
           "level": 4,
-          "text": "session_id",
+          "text": "`session_id`",
           "anchor": "session_id"
         },
         {
           "level": 4,
-          "text": "model_name",
+          "text": "`model_name`",
           "anchor": "model_name"
         },
         {
           "level": 4,
-          "text": "tools",
+          "text": "`tools`",
           "anchor": "tools"
         },
         {
           "level": 4,
-          "text": "claude_version",
+          "text": "`claude_version`",
           "anchor": "claude_version"
         },
         {
           "level": 4,
-          "text": "last_result",
+          "text": "`last_result`",
           "anchor": "last_result"
         },
         {
           "level": 4,
-          "text": "turn_count",
+          "text": "`turn_count`",
           "anchor": "turn_count"
         },
         {
           "level": 4,
-          "text": "total_tokens",
+          "text": "`total_tokens`",
           "anchor": "total_tokens"
         },
         {
           "level": 4,
-          "text": "total_cost_usd",
+          "text": "`total_cost_usd`",
           "anchor": "total_cost_usd"
         },
         {
           "level": 4,
-          "text": "stderr_lines",
+          "text": "`stderr_lines`",
           "anchor": "stderr_lines"
         },
         {
           "level": 4,
-          "text": "sandbox",
+          "text": "`sandbox`",
           "anchor": "sandbox"
         },
         {
           "level": 4,
-          "text": "user_tools",
+          "text": "`user_tools`",
           "anchor": "user_tools"
         },
         {
           "level": 4,
-          "text": "is_alive",
+          "text": "`is_alive`",
           "anchor": "is_alive"
         },
         {
           "level": 4,
-          "text": "active_turn",
+          "text": "`active_turn`",
           "anchor": "active_turn"
         },
         {
           "level": 4,
-          "text": "cancelled",
+          "text": "`cancelled`",
           "anchor": "cancelled"
         },
         {
           "level": 4,
-          "text": "files_modified",
+          "text": "`files_modified`",
           "anchor": "files_modified"
         },
         {
           "level": 4,
-          "text": "process_pid",
+          "text": "`process_pid`",
           "anchor": "process_pid"
         },
         {
           "level": 4,
-          "text": "cwd",
+          "text": "`cwd`",
           "anchor": "cwd"
         },
         {
           "level": 4,
-          "text": "mcp_servers",
+          "text": "`mcp_servers`",
           "anchor": "mcp_servers"
         },
         {
           "level": 4,
-          "text": "permission_mode",
+          "text": "`permission_mode`",
           "anchor": "permission_mode"
         },
         {
           "level": 4,
-          "text": "restart_count",
+          "text": "`restart_count`",
           "anchor": "restart_count"
         },
         {
           "level": 4,
-          "text": "config",
+          "text": "`config`",
           "anchor": "config"
         },
         {
           "level": 4,
-          "text": "_start",
+          "text": "`_start`",
           "anchor": "_start"
         },
         {
           "level": 4,
-          "text": "_read_control_response",
+          "text": "`_read_control_response`",
           "anchor": "_read_control_response"
         },
         {
           "level": 4,
-          "text": "_run_mcp_handshake",
+          "text": "`_run_mcp_handshake`",
           "anchor": "_run_mcp_handshake"
         },
         {
           "level": 4,
-          "text": "close",
+          "text": "`close`",
           "anchor": "close"
         },
         {
           "level": 4,
-          "text": "cancel",
+          "text": "`cancel`",
           "anchor": "cancel"
         },
         {
           "level": 4,
-          "text": "send",
+          "text": "`send`",
           "anchor": "send"
         },
         {
           "level": 4,
-          "text": "ask",
+          "text": "`ask`",
           "anchor": "ask"
         },
         {
           "level": 4,
-          "text": "_read_turn",
+          "text": "`_read_turn`",
           "anchor": "_read_turn"
         },
         {
           "level": 4,
-          "text": "_liveness_probe",
+          "text": "`_liveness_probe`",
           "anchor": "_liveness_probe"
         },
         {
           "level": 4,
-          "text": "_restart_subprocess",
+          "text": "`_restart_subprocess`",
           "anchor": "_restart_subprocess"
         },
         {
           "level": 4,
-          "text": "_handle_permission",
+          "text": "`_handle_permission`",
           "anchor": "_handle_permission"
         },
         {
           "level": 4,
-          "text": "_handle_mcp_request",
+          "text": "`_handle_mcp_request`",
           "anchor": "_handle_mcp_request"
         },
         {
           "level": 4,
-          "text": "_resolve_control",
+          "text": "`_resolve_control`",
           "anchor": "_resolve_control"
         },
         {
           "level": 4,
-          "text": "_fail_pending_controls",
+          "text": "`_fail_pending_controls`",
           "anchor": "_fail_pending_controls"
         },
         {
           "level": 4,
-          "text": "_control_request",
+          "text": "`_control_request`",
           "anchor": "_control_request"
         },
         {
           "level": 4,
-          "text": "_read_control_result",
+          "text": "`_read_control_result`",
           "anchor": "_read_control_result"
         },
         {
           "level": 4,
-          "text": "_check_thresholds",
+          "text": "`_check_thresholds`",
           "anchor": "_check_thresholds"
         },
         {
           "level": 4,
-          "text": "_write_cost_log",
+          "text": "`_write_cost_log`",
           "anchor": "_write_cost_log"
         },
         {
           "level": 4,
-          "text": "on",
+          "text": "`on`",
           "anchor": "on"
         },
         {
           "level": 4,
-          "text": "on_turn_complete",
+          "text": "`on_turn_complete`",
           "anchor": "on_turn_complete"
         },
         {
           "level": 4,
-          "text": "on_error",
+          "text": "`on_error`",
           "anchor": "on_error"
         },
         {
           "level": 4,
-          "text": "on_close",
+          "text": "`on_close`",
           "anchor": "on_close"
         },
         {
           "level": 4,
-          "text": "_fire_hooks",
+          "text": "`_fire_hooks`",
           "anchor": "_fire_hooks"
         },
         {
           "level": 4,
-          "text": "respond_allow",
+          "text": "`respond_allow`",
           "anchor": "respond_allow"
         },
         {
           "level": 4,
-          "text": "respond_deny",
+          "text": "`respond_deny`",
           "anchor": "respond_deny"
         },
         {
           "level": 4,
-          "text": "respond_dialog",
+          "text": "`respond_dialog`",
           "anchor": "respond_dialog"
         },
         {
           "level": 4,
-          "text": "respond_dialog_cancelled",
+          "text": "`respond_dialog_cancelled`",
           "anchor": "respond_dialog_cancelled"
         },
         {
           "level": 4,
-          "text": "interrupt",
+          "text": "`interrupt`",
           "anchor": "interrupt"
         },
         {
           "level": 4,
-          "text": "set_permission_mode",
+          "text": "`set_permission_mode`",
           "anchor": "set_permission_mode"
         },
         {
           "level": 4,
-          "text": "set_model",
+          "text": "`set_model`",
           "anchor": "set_model"
         },
         {
           "level": 4,
-          "text": "get_context_usage",
+          "text": "`get_context_usage`",
           "anchor": "get_context_usage"
         }
       ]
@@ -570,107 +570,112 @@
         },
         {
           "level": 2,
-          "text": "claudestream._cli",
+          "text": "`claudestream._cli`",
           "anchor": "claudestream_cli"
         },
         {
           "level": 3,
-          "text": "_get_version",
+          "text": "`_get_version`",
           "anchor": "_get_version"
         },
         {
           "level": 3,
-          "text": "_resolve_prompt",
+          "text": "`_opt`",
+          "anchor": "_opt"
+        },
+        {
+          "level": 3,
+          "text": "`_resolve_prompt`",
           "anchor": "_resolve_prompt"
         },
         {
           "level": 3,
-          "text": "_build_config",
+          "text": "`_build_config`",
           "anchor": "_build_config"
         },
         {
           "level": 3,
-          "text": "_run_with_session",
+          "text": "`_run_with_session`",
           "anchor": "_run_with_session"
         },
         {
           "level": 3,
-          "text": "_stream_events",
+          "text": "`_stream_events`",
           "anchor": "_stream_events"
         },
         {
           "level": 3,
-          "text": "cmd_send",
+          "text": "`cmd_send`",
           "anchor": "cmd_send"
         },
         {
           "level": 3,
-          "text": "cmd_stream",
+          "text": "`cmd_stream`",
           "anchor": "cmd_stream"
         },
         {
           "level": 3,
-          "text": "cmd_events",
+          "text": "`cmd_events`",
           "anchor": "cmd_events"
         },
         {
           "level": 3,
-          "text": "cmd_repl",
+          "text": "`cmd_repl`",
           "anchor": "cmd_repl"
         },
         {
           "level": 3,
-          "text": "cmd_agent_run",
+          "text": "`cmd_agent_run`",
           "anchor": "cmd_agent_run"
         },
         {
           "level": 3,
-          "text": "cmd_agent_list",
+          "text": "`cmd_agent_list`",
           "anchor": "cmd_agent_list"
         },
         {
           "level": 3,
-          "text": "cmd_agent_info",
+          "text": "`cmd_agent_info`",
           "anchor": "cmd_agent_info"
         },
         {
           "level": 3,
-          "text": "cmd_agent_validate",
+          "text": "`cmd_agent_validate`",
           "anchor": "cmd_agent_validate"
         },
         {
           "level": 3,
-          "text": "cmd_ask",
+          "text": "`cmd_ask`",
           "anchor": "cmd_ask"
         },
         {
           "level": 3,
-          "text": "cmd_doctor",
+          "text": "`cmd_doctor`",
           "anchor": "cmd_doctor"
         },
         {
           "level": 3,
-          "text": "cmd_config",
+          "text": "`cmd_config`",
           "anchor": "cmd_config"
         },
         {
           "level": 3,
-          "text": "EventPrinter",
+          "text": "`EventPrinter`",
           "anchor": "eventprinter"
         },
         {
           "level": 4,
-          "text": "print_event",
+          "text": "`print_event`",
           "anchor": "print_event"
         },
         {
           "level": 3,
-          "text": "_print_json",
+          "text": "`_print_json`",
           "anchor": "_print_json"
         },
         {
           "level": 3,
-          "text": "main",
+          "text": "`main`",
           "anchor": "main"
         }
       ]
@@ -687,42 +692,42 @@
         },
         {
           "level": 2,
-          "text": "claudestream._color",
+          "text": "`claudestream._color`",
           "anchor": "claudestream_color"
         },
         {
           "level": 3,
-          "text": "should_color",
+          "text": "`should_color`",
           "anchor": "should_color"
         },
         {
           "level": 3,
-          "text": "Colorizer",
+          "text": "`Colorizer`",
           "anchor": "colorizer"
         },
         {
           "level": 4,
-          "text": "red",
+          "text": "`red`",
           "anchor": "red"
         },
         {
           "level": 4,
-          "text": "yellow",
+          "text": "`yellow`",
           "anchor": "yellow"
         },
         {
           "level": 4,
-          "text": "cyan",
+          "text": "`cyan`",
           "anchor": "cyan"
         },
         {
           "level": 4,
-          "text": "dim",
+          "text": "`dim`",
           "anchor": "dim"
         },
         {
           "level": 4,
-          "text": "bold",
+          "text": "`bold`",
           "anchor": "bold"
         }
       ]
@@ -739,57 +744,57 @@
         },
         {
           "level": 2,
-          "text": "claudestream._options",
+          "text": "`claudestream._options`",
           "anchor": "claudestream_options"
         },
         {
           "level": 3,
-          "text": "SessionResolution",
+          "text": "`SessionResolution`",
           "anchor": "sessionresolution"
         },
         {
           "level": 3,
-          "text": "DebugOptions",
+          "text": "`DebugOptions`",
           "anchor": "debugoptions"
         },
         {
           "level": 3,
-          "text": "McpOptions",
+          "text": "`McpOptions`",
           "anchor": "mcpoptions"
         },
         {
           "level": 3,
-          "text": "PluginOptions",
+          "text": "`PluginOptions`",
           "anchor": "pluginoptions"
         },
         {
           "level": 3,
-          "text": "StreamOptions",
+          "text": "`StreamOptions`",
           "anchor": "streamoptions"
         },
         {
           "level": 3,
-          "text": "ProcessLimits",
+          "text": "`ProcessLimits`",
           "anchor": "processlimits"
         },
         {
           "level": 3,
-          "text": "Budget",
+          "text": "`Budget`",
           "anchor": "budget"
         },
         {
           "level": 3,
-          "text": "validate_budget",
+          "text": "`validate_budget`",
           "anchor": "validate_budget"
         },
         {
           "level": 3,
-          "text": "ToolSchema",
+          "text": "`ToolSchema`",
           "anchor": "toolschema"
         },
         {
           "level": 3,
-          "text": "SessionConfig",
+          "text": "`SessionConfig`",
           "anchor": "sessionconfig"
         }
       ]
@@ -806,82 +811,82 @@
         },
         {
           "level": 2,
-          "text": "claudestream._process",
+          "text": "`claudestream._process`",
           "anchor": "claudestream_process"
         },
         {
           "level": 3,
-          "text": "_kill_active_children",
+          "text": "`_kill_active_children`",
           "anchor": "_kill_active_children"
         },
         {
           "level": 3,
-          "text": "find_binary",
+          "text": "`find_binary`",
           "anchor": "find_binary"
         },
         {
           "level": 3,
-          "text": "_version_lt",
+          "text": "`_version_lt`",
           "anchor": "_version_lt"
         },
         {
           "level": 3,
-          "text": "check_version",
+          "text": "`check_version`",
           "anchor": "check_version"
         },
         {
           "level": 3,
-          "text": "ProcessConfig",
+          "text": "`ProcessConfig`",
           "anchor": "processconfig"
         },
         {
           "level": 4,
-          "text": "build_argv",
+          "text": "`build_argv`",
           "anchor": "build_argv"
         },
         {
           "level": 3,
-          "text": "ProcessManager",
+          "text": "`ProcessManager`",
           "anchor": "processmanager"
         },
         {
           "level": 4,
-          "text": "stdin",
+          "text": "`stdin`",
           "anchor": "stdin"
         },
         {
           "level": 4,
-          "text": "stdout",
+          "text": "`stdout`",
           "anchor": "stdout"
         },
         {
           "level": 4,
-          "text": "is_alive",
+          "text": "`is_alive`",
           "anchor": "is_alive"
         },
         {
           "level": 4,
-          "text": "stderr_lines",
+          "text": "`stderr_lines`",
           "anchor": "stderr_lines"
         },
         {
           "level": 4,
-          "text": "_drain_stderr",
+          "text": "`_drain_stderr`",
           "anchor": "_drain_stderr"
         },
         {
           "level": 4,
-          "text": "start",
+          "text": "`start`",
           "anchor": "start"
         },
         {
           "level": 4,
-          "text": "close",
+          "text": "`close`",
           "anchor": "close"
         },
         {
           "level": 4,
-          "text": "kill",
+          "text": "`kill`",
           "anchor": "kill"
         }
       ]
@@ -898,47 +903,47 @@
         },
         {
           "level": 2,
-          "text": "claudestream._protocol",
+          "text": "`claudestream._protocol`",
           "anchor": "claudestream_protocol"
         },
         {
           "level": 3,
-          "text": "parse_content_block",
+          "text": "`parse_content_block`",
           "anchor": "parse_content_block"
         },
         {
           "level": 3,
-          "text": "parse_usage",
+          "text": "`parse_usage`",
           "anchor": "parse_usage"
         },
         {
           "level": 3,
-          "text": "parse_event",
+          "text": "`parse_event`",
           "anchor": "parse_event"
         },
         {
           "level": 3,
-          "text": "_resolve_path",
+          "text": "`_resolve_path`",
           "anchor": "_resolve_path"
         },
         {
           "level": 3,
-          "text": "_derive_file_events",
+          "text": "`_derive_file_events`",
           "anchor": "_derive_file_events"
         },
         {
           "level": 3,
-          "text": "flatten_event",
+          "text": "`flatten_event`",
           "anchor": "flatten_event"
         },
         {
           "level": 3,
-          "text": "read_events",
+          "text": "`read_events`",
           "anchor": "read_events"
         },
         {
           "level": 3,
-          "text": "write_message",
+          "text": "`write_message`",
           "anchor": "write_message"
         }
       ]
@@ -955,207 +960,207 @@
         },
         {
           "level": 2,
-          "text": "claudestream._sync_session",
+          "text": "`claudestream._sync_session`",
           "anchor": "claudestream_sync_session"
         },
         {
           "level": 3,
-          "text": "SyncSession",
+          "text": "`SyncSession`",
           "anchor": "syncsession"
         },
         {
           "level": 4,
-          "text": "_run_loop",
+          "text": "`_run_loop`",
           "anchor": "_run_loop"
         },
         {
           "level": 4,
-          "text": "_ensure_loop",
+          "text": "`_ensure_loop`",
           "anchor": "_ensure_loop"
         },
         {
           "level": 4,
-          "text": "_run_coro",
+          "text": "`_run_coro`",
           "anchor": "_run_coro"
         },
         {
           "level": 4,
-          "text": "close",
+          "text": "`close`",
           "anchor": "close"
         },
         {
           "level": 4,
-          "text": "session_id",
+          "text": "`session_id`",
           "anchor": "session_id"
         },
         {
           "level": 4,
-          "text": "model_name",
+          "text": "`model_name`",
           "anchor": "model_name"
         },
         {
           "level": 4,
-          "text": "tools",
+          "text": "`tools`",
           "anchor": "tools"
         },
         {
           "level": 4,
-          "text": "claude_version",
+          "text": "`claude_version`",
           "anchor": "claude_version"
         },
         {
           "level": 4,
-          "text": "last_result",
+          "text": "`last_result`",
           "anchor": "last_result"
         },
         {
           "level": 4,
-          "text": "files_modified",
+          "text": "`files_modified`",
           "anchor": "files_modified"
         },
         {
           "level": 4,
-          "text": "stderr_lines",
+          "text": "`stderr_lines`",
           "anchor": "stderr_lines"
         },
         {
           "level": 4,
-          "text": "turn_count",
+          "text": "`turn_count`",
           "anchor": "turn_count"
         },
         {
           "level": 4,
-          "text": "total_tokens",
+          "text": "`total_tokens`",
           "anchor": "total_tokens"
         },
         {
           "level": 4,
-          "text": "total_cost_usd",
+          "text": "`total_cost_usd`",
           "anchor": "total_cost_usd"
         },
         {
           "level": 4,
-          "text": "sandbox",
+          "text": "`sandbox`",
           "anchor": "sandbox"
         },
         {
           "level": 4,
-          "text": "user_tools",
+          "text": "`user_tools`",
           "anchor": "user_tools"
         },
         {
           "level": 4,
-          "text": "is_alive",
+          "text": "`is_alive`",
           "anchor": "is_alive"
         },
         {
           "level": 4,
-          "text": "active_turn",
+          "text": "`active_turn`",
           "anchor": "active_turn"
         },
         {
           "level": 4,
-          "text": "cancelled",
+          "text": "`cancelled`",
           "anchor": "cancelled"
         },
         {
           "level": 4,
-          "text": "process_pid",
+          "text": "`process_pid`",
           "anchor": "process_pid"
         },
         {
           "level": 4,
-          "text": "cwd",
+          "text": "`cwd`",
           "anchor": "cwd"
         },
         {
           "level": 4,
-          "text": "mcp_servers",
+          "text": "`mcp_servers`",
           "anchor": "mcp_servers"
         },
         {
           "level": 4,
-          "text": "permission_mode",
+          "text": "`permission_mode`",
           "anchor": "permission_mode"
         },
         {
           "level": 4,
-          "text": "config",
+          "text": "`config`",
           "anchor": "config"
         },
         {
           "level": 4,
-          "text": "cancel",
+          "text": "`cancel`",
           "anchor": "cancel"
         },
         {
           "level": 4,
-          "text": "ask",
+          "text": "`ask`",
           "anchor": "ask"
         },
         {
           "level": 4,
-          "text": "send",
+          "text": "`send`",
           "anchor": "send"
         },
         {
           "level": 4,
-          "text": "on",
+          "text": "`on`",
           "anchor": "on"
         },
         {
           "level": 4,
-          "text": "on_turn_complete",
+          "text": "`on_turn_complete`",
           "anchor": "on_turn_complete"
         },
         {
           "level": 4,
-          "text": "on_error",
+          "text": "`on_error`",
           "anchor": "on_error"
         },
         {
           "level": 4,
-          "text": "on_close",
+          "text": "`on_close`",
           "anchor": "on_close"
         },
         {
           "level": 4,
-          "text": "respond_allow",
+          "text": "`respond_allow`",
           "anchor": "respond_allow"
         },
         {
           "level": 4,
-          "text": "respond_deny",
+          "text": "`respond_deny`",
           "anchor": "respond_deny"
         },
         {
           "level": 4,
-          "text": "respond_dialog",
+          "text": "`respond_dialog`",
           "anchor": "respond_dialog"
         },
         {
           "level": 4,
-          "text": "respond_dialog_cancelled",
+          "text": "`respond_dialog_cancelled`",
           "anchor": "respond_dialog_cancelled"
         },
         {
           "level": 4,
-          "text": "interrupt",
+          "text": "`interrupt`",
           "anchor": "interrupt"
         },
         {
           "level": 4,
-          "text": "set_permission_mode",
+          "text": "`set_permission_mode`",
           "anchor": "set_permission_mode"
         },
         {
           "level": 4,
-          "text": "set_model",
+          "text": "`set_model`",
           "anchor": "set_model"
         },
         {
           "level": 4,
-          "text": "get_context_usage",
+          "text": "`get_context_usage`",
           "anchor": "get_context_usage"
         }
       ]
@@ -1172,42 +1177,42 @@
         },
         {
           "level": 2,
-          "text": "claudestream._tools",
+          "text": "`claudestream._tools`",
           "anchor": "claudestream_tools"
         },
         {
           "level": 3,
-          "text": "Tool",
+          "text": "`Tool`",
           "anchor": "tool"
         },
         {
           "level": 3,
-          "text": "_type_to_schema",
+          "text": "`_type_to_schema`",
           "anchor": "_type_to_schema"
         },
         {
           "level": 3,
-          "text": "_parse_param_descriptions",
+          "text": "`_parse_param_descriptions`",
           "anchor": "_parse_param_descriptions"
         },
         {
           "level": 3,
-          "text": "_generate_schema",
+          "text": "`_generate_schema`",
           "anchor": "_generate_schema"
         },
         {
           "level": 3,
-          "text": "_get_type_hints_safe",
+          "text": "`_get_type_hints_safe`",
           "anchor": "_get_type_hints_safe"
         },
         {
           "level": 3,
-          "text": "tool",
+          "text": "`tool`",
           "anchor": "tool-1"
         },
         {
           "level": 3,
-          "text": "collect_tools",
+          "text": "`collect_tools`",
           "anchor": "collect_tools"
         }
       ]
@@ -1224,177 +1229,177 @@
         },
         {
           "level": 2,
-          "text": "claudestream.events",
+          "text": "`claudestream.events`",
           "anchor": "claudestreamevents"
         },
         {
           "level": 3,
-          "text": "Event",
+          "text": "`Event`",
           "anchor": "event"
         },
         {
           "level": 3,
-          "text": "SystemInit",
+          "text": "`SystemInit`",
           "anchor": "systeminit"
         },
         {
           "level": 3,
-          "text": "ApiRetry",
+          "text": "`ApiRetry`",
           "anchor": "apiretry"
         },
         {
           "level": 3,
-          "text": "CompactBoundary",
+          "text": "`CompactBoundary`",
           "anchor": "compactboundary"
         },
         {
           "level": 3,
-          "text": "TextBlock",
+          "text": "`TextBlock`",
           "anchor": "textblock"
         },
         {
           "level": 3,
-          "text": "ToolUseBlock",
+          "text": "`ToolUseBlock`",
           "anchor": "tooluseblock"
         },
         {
           "level": 3,
-          "text": "ThinkingBlock",
+          "text": "`ThinkingBlock`",
           "anchor": "thinkingblock"
         },
         {
           "level": 3,
-          "text": "ToolResultBlock",
+          "text": "`ToolResultBlock`",
           "anchor": "toolresultblock"
         },
         {
           "level": 3,
-          "text": "Usage",
+          "text": "`Usage`",
           "anchor": "usage"
         },
         {
           "level": 3,
-          "text": "ContextCategory",
+          "text": "`ContextCategory`",
           "anchor": "contextcategory"
         },
         {
           "level": 3,
-          "text": "ContextUsage",
+          "text": "`ContextUsage`",
           "anchor": "contextusage"
         },
         {
           "level": 3,
-          "text": "AssistantMessage",
+          "text": "`AssistantMessage`",
           "anchor": "assistantmessage"
         },
         {
           "level": 3,
-          "text": "ToolResultMessage",
+          "text": "`ToolResultMessage`",
           "anchor": "toolresultmessage"
         },
         {
           "level": 3,
-          "text": "AssistantText",
+          "text": "`AssistantText`",
           "anchor": "assistanttext"
         },
         {
           "level": 3,
-          "text": "ToolUse",
+          "text": "`ToolUse`",
           "anchor": "tooluse"
         },
         {
           "level": 3,
-          "text": "Thinking",
+          "text": "`Thinking`",
           "anchor": "thinking"
         },
         {
           "level": 3,
-          "text": "ToolResult",
+          "text": "`ToolResult`",
           "anchor": "toolresult"
         },
         {
           "level": 3,
-          "text": "FileWrite",
+          "text": "`FileWrite`",
           "anchor": "filewrite"
         },
         {
           "level": 3,
-          "text": "FileEdit",
+          "text": "`FileEdit`",
           "anchor": "fileedit"
         },
         {
           "level": 3,
-          "text": "StreamDelta",
+          "text": "`StreamDelta`",
           "anchor": "streamdelta"
         },
         {
           "level": 4,
-          "text": "delta_type",
+          "text": "`delta_type`",
           "anchor": "delta_type"
         },
         {
           "level": 4,
-          "text": "text",
+          "text": "`text`",
           "anchor": "text"
         },
         {
           "level": 4,
-          "text": "partial_json",
+          "text": "`partial_json`",
           "anchor": "partial_json"
         },
         {
           "level": 4,
-          "text": "event_type",
+          "text": "`event_type`",
           "anchor": "event_type"
         },
         {
           "level": 3,
-          "text": "Result",
+          "text": "`Result`",
           "anchor": "result"
         },
         {
           "level": 3,
-          "text": "BudgetThreshold",
+          "text": "`BudgetThreshold`",
           "anchor": "budgetthreshold"
         },
         {
           "level": 3,
-          "text": "RateLimit",
+          "text": "`RateLimit`",
           "anchor": "ratelimit"
         },
         {
           "level": 3,
-          "text": "PermissionRequest",
+          "text": "`PermissionRequest`",
           "anchor": "permissionrequest"
         },
         {
           "level": 3,
-          "text": "UserDialogRequest",
+          "text": "`UserDialogRequest`",
           "anchor": "userdialogrequest"
         },
         {
           "level": 3,
-          "text": "McpRequest",
+          "text": "`McpRequest`",
           "anchor": "mcprequest"
         },
         {
           "level": 3,
-          "text": "HookEvent",
+          "text": "`HookEvent`",
           "anchor": "hookevent"
         },
         {
           "level": 3,
-          "text": "UnknownEvent",
+          "text": "`UnknownEvent`",
           "anchor": "unknownevent"
         },
         {
           "level": 3,
-          "text": "ControlResponse",
+          "text": "`ControlResponse`",
           "anchor": "controlresponse"
         },
         {
           "level": 3,
-          "text": "AskResult",
+          "text": "`AskResult`",
           "anchor": "askresult"
         },
         {
@@ -1416,97 +1421,97 @@
         },
         {
           "level": 2,
-          "text": "claudestream.messages",
+          "text": "`claudestream.messages`",
           "anchor": "claudestreammessages"
         },
         {
           "level": 3,
-          "text": "UserMessage",
+          "text": "`UserMessage`",
           "anchor": "usermessage"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict"
         },
         {
           "level": 3,
-          "text": "AllowPermission",
+          "text": "`AllowPermission`",
           "anchor": "allowpermission"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict-1"
         },
         {
           "level": 3,
-          "text": "DialogCompleted",
+          "text": "`DialogCompleted`",
           "anchor": "dialogcompleted"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict-2"
         },
         {
           "level": 3,
-          "text": "DialogCancelled",
+          "text": "`DialogCancelled`",
           "anchor": "dialogcancelled"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict-3"
         },
         {
           "level": 3,
-          "text": "DenyPermission",
+          "text": "`DenyPermission`",
           "anchor": "denypermission"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict-4"
         },
         {
           "level": 3,
-          "text": "McpResponse",
+          "text": "`McpResponse`",
           "anchor": "mcpresponse"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict-5"
         },
         {
           "level": 3,
-          "text": "McpSetServers",
+          "text": "`McpSetServers`",
           "anchor": "mcpsetservers"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict-6"
         },
         {
           "level": 3,
-          "text": "InitializeRequest",
+          "text": "`InitializeRequest`",
           "anchor": "initializerequest"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict-7"
         },
         {
           "level": 3,
-          "text": "ControlRequest",
+          "text": "`ControlRequest`",
           "anchor": "controlrequest"
         },
         {
           "level": 4,
-          "text": "to_dict",
+          "text": "`to_dict`",
           "anchor": "to_dict-8"
         }
       ]
@@ -1523,47 +1528,47 @@
         },
         {
           "level": 2,
-          "text": "claudestream.policy",
+          "text": "`claudestream.policy`",
           "anchor": "claudestreampolicy"
         },
         {
           "level": 3,
-          "text": "Allow",
+          "text": "`Allow`",
           "anchor": "allow"
         },
         {
           "level": 3,
-          "text": "Deny",
+          "text": "`Deny`",
           "anchor": "deny"
         },
         {
           "level": 3,
-          "text": "Sandbox",
+          "text": "`Sandbox`",
           "anchor": "sandbox"
         },
         {
           "level": 3,
-          "text": "create_sandbox",
+          "text": "`create_sandbox`",
           "anchor": "create_sandbox"
         },
         {
           "level": 3,
-          "text": "sandbox_to_flags",
+          "text": "`sandbox_to_flags`",
           "anchor": "sandbox_to_flags"
         },
         {
           "level": 3,
-          "text": "_resolve_path",
+          "text": "`_resolve_path`",
           "anchor": "_resolve_path"
         },
         {
           "level": 3,
-          "text": "_is_within",
+          "text": "`_is_within`",
           "anchor": "_is_within"
         },
         {
           "level": 3,
-          "text": "sandbox_decide",
+          "text": "`sandbox_decide`",
           "anchor": "sandbox_decide"
         }
       ]
@@ -1580,377 +1585,377 @@
         },
         {
           "level": 2,
-          "text": "claudestream",
+          "text": "`claudestream`",
           "anchor": "claudestream"
         },
         {
           "level": 3,
-          "text": "print_prompt",
+          "text": "`print_prompt`",
           "anchor": "print_prompt"
         },
         {
           "level": 3,
-          "text": "AsyncSession",
+          "text": "`AsyncSession`",
           "anchor": "asyncsession"
         },
         {
           "level": 3,
-          "text": "ClaudeStreamError",
+          "text": "`ClaudeStreamError`",
           "anchor": "claudestreamerror"
         },
         {
           "level": 3,
-          "text": "SyncSession",
+          "text": "`SyncSession`",
           "anchor": "syncsession"
         },
         {
           "level": 3,
-          "text": "AskResult",
+          "text": "`AskResult`",
           "anchor": "askresult"
         },
         {
           "level": 3,
-          "text": "AssistantMessage",
+          "text": "`AssistantMessage`",
           "anchor": "assistantmessage"
         },
         {
           "level": 3,
-          "text": "AssistantText",
+          "text": "`AssistantText`",
           "anchor": "assistanttext"
         },
         {
           "level": 3,
-          "text": "ApiRetry",
+          "text": "`ApiRetry`",
           "anchor": "apiretry"
         },
         {
           "level": 3,
-          "text": "BudgetThreshold",
+          "text": "`BudgetThreshold`",
           "anchor": "budgetthreshold"
         },
         {
           "level": 3,
-          "text": "CompactBoundary",
+          "text": "`CompactBoundary`",
           "anchor": "compactboundary"
         },
         {
           "level": 3,
-          "text": "ContentBlock",
+          "text": "`ContentBlock`",
           "anchor": "contentblock"
         },
         {
           "level": 3,
-          "text": "ContextCategory",
+          "text": "`ContextCategory`",
           "anchor": "contextcategory"
         },
         {
           "level": 3,
-          "text": "ContextUsage",
+          "text": "`ContextUsage`",
           "anchor": "contextusage"
         },
         {
           "level": 3,
-          "text": "ControlResponse",
+          "text": "`ControlResponse`",
           "anchor": "controlresponse"
         },
         {
           "level": 3,
-          "text": "Event",
+          "text": "`Event`",
           "anchor": "event"
         },
         {
           "level": 3,
-          "text": "FileEdit",
+          "text": "`FileEdit`",
           "anchor": "fileedit"
         },
         {
           "level": 3,
-          "text": "FileWrite",
+          "text": "`FileWrite`",
           "anchor": "filewrite"
         },
         {
           "level": 3,
-          "text": "HookEvent",
+          "text": "`HookEvent`",
           "anchor": "hookevent"
         },
         {
           "level": 3,
-          "text": "McpRequest",
+          "text": "`McpRequest`",
           "anchor": "mcprequest"
         },
         {
           "level": 3,
-          "text": "PermissionRequest",
+          "text": "`PermissionRequest`",
           "anchor": "permissionrequest"
         },
         {
           "level": 3,
-          "text": "RateLimit",
+          "text": "`RateLimit`",
           "anchor": "ratelimit"
         },
         {
           "level": 3,
-          "text": "Result",
+          "text": "`Result`",
           "anchor": "result"
         },
         {
           "level": 3,
-          "text": "StreamDelta",
+          "text": "`StreamDelta`",
           "anchor": "streamdelta"
         },
         {
           "level": 3,
-          "text": "SystemInit",
+          "text": "`SystemInit`",
           "anchor": "systeminit"
         },
         {
           "level": 3,
-          "text": "TextBlock",
+          "text": "`TextBlock`",
           "anchor": "textblock"
         },
         {
           "level": 3,
-          "text": "Thinking",
+          "text": "`Thinking`",
           "anchor": "thinking"
         },
         {
           "level": 3,
-          "text": "ThinkingBlock",
+          "text": "`ThinkingBlock`",
           "anchor": "thinkingblock"
         },
         {
           "level": 3,
-          "text": "ToolResult",
+          "text": "`ToolResult`",
           "anchor": "toolresult"
         },
         {
           "level": 3,
-          "text": "ToolResultBlock",
+          "text": "`ToolResultBlock`",
           "anchor": "toolresultblock"
         },
         {
           "level": 3,
-          "text": "ToolResultMessage",
+          "text": "`ToolResultMessage`",
           "anchor": "toolresultmessage"
         },
         {
           "level": 3,
-          "text": "ToolUse",
+          "text": "`ToolUse`",
           "anchor": "tooluse"
         },
         {
           "level": 3,
-          "text": "ToolUseBlock",
+          "text": "`ToolUseBlock`",
           "anchor": "tooluseblock"
         },
         {
           "level": 3,
-          "text": "UnknownEvent",
+          "text": "`UnknownEvent`",
           "anchor": "unknownevent"
         },
         {
           "level": 3,
-          "text": "Usage",
+          "text": "`Usage`",
           "anchor": "usage"
         },
         {
           "level": 3,
-          "text": "UserDialogRequest",
+          "text": "`UserDialogRequest`",
           "anchor": "userdialogrequest"
         },
         {
           "level": 3,
-          "text": "AllowPermission",
+          "text": "`AllowPermission`",
           "anchor": "allowpermission"
         },
         {
           "level": 3,
-          "text": "DenyPermission",
+          "text": "`DenyPermission`",
           "anchor": "denypermission"
         },
         {
           "level": 3,
-          "text": "DialogCancelled",
+          "text": "`DialogCancelled`",
           "anchor": "dialogcancelled"
         },
         {
           "level": 3,
-          "text": "DialogCompleted",
+          "text": "`DialogCompleted`",
           "anchor": "dialogcompleted"
         },
         {
           "level": 3,
-          "text": "InitializeRequest",
+          "text": "`InitializeRequest`",
           "anchor": "initializerequest"
         },
         {
           "level": 3,
-          "text": "McpResponse",
+          "text": "`McpResponse`",
           "anchor": "mcpresponse"
         },
         {
           "level": 3,
-          "text": "McpSetServers",
+          "text": "`McpSetServers`",
           "anchor": "mcpsetservers"
         },
         {
           "level": 3,
-          "text": "UserMessage",
+          "text": "`UserMessage`",
           "anchor": "usermessage"
         },
         {
           "level": 3,
-          "text": "Writable",
+          "text": "`Writable`",
           "anchor": "writable"
         },
         {
           "level": 3,
-          "text": "flatten_event",
+          "text": "`flatten_event`",
           "anchor": "flatten_event"
         },
         {
           "level": 3,
-          "text": "parse_event",
+          "text": "`parse_event`",
           "anchor": "parse_event"
         },
         {
           "level": 3,
-          "text": "read_events",
+          "text": "`read_events`",
           "anchor": "read_events"
         },
         {
           "level": 3,
-          "text": "write_message",
+          "text": "`write_message`",
           "anchor": "write_message"
         },
         {
           "level": 3,
-          "text": "Allow",
+          "text": "`Allow`",
           "anchor": "allow"
         },
         {
           "level": 3,
-          "text": "BUILTIN_TOOLS",
+          "text": "`BUILTIN_TOOLS`",
           "anchor": "builtin_tools"
         },
         {
           "level": 3,
-          "text": "Deny",
+          "text": "`Deny`",
           "anchor": "deny"
         },
         {
           "level": 3,
-          "text": "Sandbox",
+          "text": "`Sandbox`",
           "anchor": "sandbox"
         },
         {
           "level": 3,
-          "text": "create_sandbox",
+          "text": "`create_sandbox`",
           "anchor": "create_sandbox"
         },
         {
           "level": 3,
-          "text": "Tool",
+          "text": "`Tool`",
           "anchor": "tool"
         },
         {
           "level": 3,
-          "text": "collect_tools",
+          "text": "`collect_tools`",
           "anchor": "collect_tools"
         },
         {
           "level": 3,
-          "text": "tool",
+          "text": "`tool`",
           "anchor": "tool-1"
         },
         {
           "level": 3,
-          "text": "Budget",
+          "text": "`Budget`",
           "anchor": "budget"
         },
         {
           "level": 3,
-          "text": "DebugOptions",
+          "text": "`DebugOptions`",
           "anchor": "debugoptions"
         },
         {
           "level": 3,
-          "text": "McpOptions",
+          "text": "`McpOptions`",
           "anchor": "mcpoptions"
         },
         {
           "level": 3,
-          "text": "PluginOptions",
+          "text": "`PluginOptions`",
           "anchor": "pluginoptions"
         },
         {
           "level": 3,
-          "text": "ProcessLimits",
+          "text": "`ProcessLimits`",
           "anchor": "processlimits"
         },
         {
           "level": 3,
-          "text": "SessionConfig",
+          "text": "`SessionConfig`",
           "anchor": "sessionconfig"
         },
         {
           "level": 3,
-          "text": "SessionResolution",
+          "text": "`SessionResolution`",
           "anchor": "sessionresolution"
         },
         {
           "level": 3,
-          "text": "StreamOptions",
+          "text": "`StreamOptions`",
           "anchor": "streamoptions"
         },
         {
           "level": 3,
-          "text": "ToolSchema",
+          "text": "`ToolSchema`",
           "anchor": "toolschema"
         },
         {
           "level": 3,
-          "text": "ProcessConfig",
+          "text": "`ProcessConfig`",
           "anchor": "processconfig"
         },
         {
           "level": 3,
-          "text": "ProcessManager",
+          "text": "`ProcessManager`",
           "anchor": "processmanager"
         },
         {
           "level": 3,
-          "text": "AgentDefinition",
+          "text": "`AgentDefinition`",
           "anchor": "agentdefinition"
         },
         {
           "level": 3,
-          "text": "AgentValidationError",
+          "text": "`AgentValidationError`",
           "anchor": "agentvalidationerror"
         },
         {
           "level": 3,
-          "text": "discover_agents",
+          "text": "`discover_agents`",
           "anchor": "discover_agents"
         },
         {
           "level": 3,
-          "text": "invoke_agent",
+          "text": "`invoke_agent`",
           "anchor": "invoke_agent"
         },
         {
           "level": 3,
-          "text": "invoke_agent_sync",
+          "text": "`invoke_agent_sync`",
           "anchor": "invoke_agent_sync"
         },
         {
           "level": 3,
-          "text": "load_agent",
+          "text": "`load_agent`",
           "anchor": "load_agent"
         },
         {
           "level": 3,
-          "text": "resolve_prompt",
+          "text": "`resolve_prompt`",
           "anchor": "resolve_prompt"
         },
         {
@@ -2267,82 +2272,82 @@
         },
         {
           "level": 2,
-          "text": "claudestream._process",
+          "text": "`claudestream._process`",
           "anchor": "claudestream_process"
         },
         {
           "level": 3,
-          "text": "_kill_active_children",
+          "text": "`_kill_active_children`",
           "anchor": "_kill_active_children"
         },
         {
           "level": 3,
-          "text": "find_binary",
+          "text": "`find_binary`",
           "anchor": "find_binary"
         },
         {
           "level": 3,
-          "text": "_version_lt",
+          "text": "`_version_lt`",
           "anchor": "_version_lt"
         },
         {
           "level": 3,
-          "text": "check_version",
+          "text": "`check_version`",
           "anchor": "check_version"
         },
         {
           "level": 3,
-          "text": "ProcessConfig",
+          "text": "`ProcessConfig`",
           "anchor": "processconfig"
         },
         {
           "level": 4,
-          "text": "build_argv",
+          "text": "`build_argv`",
           "anchor": "build_argv"
         },
         {
           "level": 3,
-          "text": "ProcessManager",
+          "text": "`ProcessManager`",
           "anchor": "processmanager"
         },
         {
           "level": 4,
-          "text": "stdin",
+          "text": "`stdin`",
           "anchor": "stdin"
         },
         {
           "level": 4,
-          "text": "stdout",
+          "text": "`stdout`",
           "anchor": "stdout"
         },
         {
           "level": 4,
-          "text": "is_alive",
+          "text": "`is_alive`",
           "anchor": "is_alive"
         },
         {
           "level": 4,
-          "text": "stderr_lines",
+          "text": "`stderr_lines`",
           "anchor": "stderr_lines"
         },
         {
           "level": 4,
-          "text": "_drain_stderr",
+          "text": "`_drain_stderr`",
           "anchor": "_drain_stderr"
         },
         {
           "level": 4,
-          "text": "start",
+          "text": "`start`",
           "anchor": "start"
         },
         {
           "level": 4,
-          "text": "close",
+          "text": "`close`",
           "anchor": "close"
         },
         {
           "level": 4,
-          "text": "kill",
+          "text": "`kill`",
           "anchor": "kill"
         },
         {
@@ -2352,47 +2357,47 @@
         },
         {
           "level": 2,
-          "text": "claudestream._protocol",
+          "text": "`claudestream._protocol`",
           "anchor": "claudestream_protocol"
         },
         {
           "level": 3,
-          "text": "parse_content_block",
+          "text": "`parse_content_block`",
           "anchor": "parse_content_block"
         },
         {
           "level": 3,
-          "text": "parse_usage",
+          "text": "`parse_usage`",
           "anchor": "parse_usage"
         },
         {
           "level": 3,
-          "text": "parse_event",
+          "text": "`parse_event`",
           "anchor": "parse_event"
         },
         {
           "level": 3,
-          "text": "_resolve_path",
+          "text": "`_resolve_path`",
           "anchor": "_resolve_path"
         },
         {
           "level": 3,
-          "text": "_derive_file_events",
+          "text": "`_derive_file_events`",
           "anchor": "_derive_file_events"
         },
         {
           "level": 3,
-          "text": "flatten_event",
+          "text": "`flatten_event`",
           "anchor": "flatten_event"
         },
         {
           "level": 3,
-          "text": "read_events",
+          "text": "`read_events`",
           "anchor": "read_events"
         },
         {
           "level": 3,
-          "text": "write_message",
+          "text": "`write_message`",
           "anchor": "write_message"
         },
         {
@@ -2402,492 +2407,492 @@
         },
         {
           "level": 2,
-          "text": "claudestream._async_session",
+          "text": "`claudestream._async_session`",
           "anchor": "claudestream_async_session"
         },
         {
           "level": 3,
-          "text": "ClaudeStreamError",
+          "text": "`ClaudeStreamError`",
           "anchor": "claudestreamerror"
         },
         {
           "level": 3,
-          "text": "AsyncSession",
+          "text": "`AsyncSession`",
           "anchor": "asyncsession"
         },
         {
           "level": 4,
-          "text": "_enrich_flattened",
+          "text": "`_enrich_flattened`",
           "anchor": "_enrich_flattened"
         },
         {
           "level": 4,
-          "text": "_build_process_config",
+          "text": "`_build_process_config`",
           "anchor": "_build_process_config"
         },
         {
           "level": 4,
-          "text": "session_id",
+          "text": "`session_id`",
           "anchor": "session_id"
         },
         {
           "level": 4,
-          "text": "model_name",
+          "text": "`model_name`",
           "anchor": "model_name"
         },
         {
           "level": 4,
-          "text": "tools",
+          "text": "`tools`",
           "anchor": "tools"
         },
         {
           "level": 4,
-          "text": "claude_version",
+          "text": "`claude_version`",
           "anchor": "claude_version"
         },
         {
           "level": 4,
-          "text": "last_result",
+          "text": "`last_result`",
           "anchor": "last_result"
         },
         {
           "level": 4,
-          "text": "turn_count",
+          "text": "`turn_count`",
           "anchor": "turn_count"
         },
         {
           "level": 4,
-          "text": "total_tokens",
+          "text": "`total_tokens`",
           "anchor": "total_tokens"
         },
         {
           "level": 4,
-          "text": "total_cost_usd",
+          "text": "`total_cost_usd`",
           "anchor": "total_cost_usd"
         },
         {
           "level": 4,
-          "text": "stderr_lines",
+          "text": "`stderr_lines`",
           "anchor": "stderr_lines-1"
         },
         {
           "level": 4,
-          "text": "sandbox",
+          "text": "`sandbox`",
           "anchor": "sandbox"
         },
         {
           "level": 4,
-          "text": "user_tools",
+          "text": "`user_tools`",
           "anchor": "user_tools"
         },
         {
           "level": 4,
-          "text": "is_alive",
+          "text": "`is_alive`",
           "anchor": "is_alive-1"
         },
         {
           "level": 4,
-          "text": "active_turn",
+          "text": "`active_turn`",
           "anchor": "active_turn"
         },
         {
           "level": 4,
-          "text": "cancelled",
+          "text": "`cancelled`",
           "anchor": "cancelled"
         },
         {
           "level": 4,
-          "text": "files_modified",
+          "text": "`files_modified`",
           "anchor": "files_modified"
         },
         {
           "level": 4,
-          "text": "process_pid",
+          "text": "`process_pid`",
           "anchor": "process_pid"
         },
         {
           "level": 4,
-          "text": "cwd",
+          "text": "`cwd`",
           "anchor": "cwd"
         },
         {
           "level": 4,
-          "text": "mcp_servers",
+          "text": "`mcp_servers`",
           "anchor": "mcp_servers"
         },
         {
           "level": 4,
-          "text": "permission_mode",
+          "text": "`permission_mode`",
           "anchor": "permission_mode"
         },
         {
           "level": 4,
-          "text": "restart_count",
+          "text": "`restart_count`",
           "anchor": "restart_count"
         },
         {
           "level": 4,
-          "text": "config",
+          "text": "`config`",
           "anchor": "config"
         },
         {
           "level": 4,
-          "text": "_start",
+          "text": "`_start`",
           "anchor": "_start"
         },
         {
           "level": 4,
-          "text": "_read_control_response",
+          "text": "`_read_control_response`",
           "anchor": "_read_control_response"
         },
         {
           "level": 4,
-          "text": "_run_mcp_handshake",
+          "text": "`_run_mcp_handshake`",
           "anchor": "_run_mcp_handshake"
         },
         {
           "level": 4,
-          "text": "close",
+          "text": "`close`",
           "anchor": "close-1"
         },
         {
           "level": 4,
-          "text": "cancel",
+          "text": "`cancel`",
           "anchor": "cancel"
         },
         {
           "level": 4,
-          "text": "send",
+          "text": "`send`",
           "anchor": "send"
         },
         {
           "level": 4,
-          "text": "ask",
+          "text": "`ask`",
           "anchor": "ask"
         },
         {
           "level": 4,
-          "text": "_read_turn",
+          "text": "`_read_turn`",
           "anchor": "_read_turn"
         },
         {
           "level": 4,
-          "text": "_liveness_probe",
+          "text": "`_liveness_probe`",
           "anchor": "_liveness_probe"
         },
         {
           "level": 4,
-          "text": "_restart_subprocess",
+          "text": "`_restart_subprocess`",
           "anchor": "_restart_subprocess"
         },
         {
           "level": 4,
-          "text": "_handle_permission",
+          "text": "`_handle_permission`",
           "anchor": "_handle_permission"
         },
         {
           "level": 4,
-          "text": "_handle_mcp_request",
+          "text": "`_handle_mcp_request`",
           "anchor": "_handle_mcp_request"
         },
         {
           "level": 4,
-          "text": "_resolve_control",
+          "text": "`_resolve_control`",
           "anchor": "_resolve_control"
         },
         {
           "level": 4,
-          "text": "_fail_pending_controls",
+          "text": "`_fail_pending_controls`",
           "anchor": "_fail_pending_controls"
         },
         {
           "level": 4,
-          "text": "_control_request",
+          "text": "`_control_request`",
           "anchor": "_control_request"
         },
         {
           "level": 4,
-          "text": "_read_control_result",
+          "text": "`_read_control_result`",
           "anchor": "_read_control_result"
         },
         {
           "level": 4,
-          "text": "_check_thresholds",
+          "text": "`_check_thresholds`",
           "anchor": "_check_thresholds"
         },
         {
           "level": 4,
-          "text": "_write_cost_log",
+          "text": "`_write_cost_log`",
           "anchor": "_write_cost_log"
         },
         {
           "level": 4,
-          "text": "on",
+          "text": "`on`",
           "anchor": "on"
         },
         {
           "level": 4,
-          "text": "on_turn_complete",
+          "text": "`on_turn_complete`",
           "anchor": "on_turn_complete"
         },
         {
           "level": 4,
-          "text": "on_error",
+          "text": "`on_error`",
           "anchor": "on_error"
         },
         {
           "level": 4,
-          "text": "on_close",
+          "text": "`on_close`",
           "anchor": "on_close"
         },
         {
           "level": 4,
-          "text": "_fire_hooks",
+          "text": "`_fire_hooks`",
           "anchor": "_fire_hooks"
         },
         {
           "level": 4,
-          "text": "respond_allow",
+          "text": "`respond_allow`",
           "anchor": "respond_allow"
         },
         {
           "level": 4,
-          "text": "respond_deny",
+          "text": "`respond_deny`",
           "anchor": "respond_deny"
         },
         {
           "level": 4,
-          "text": "respond_dialog",
+          "text": "`respond_dialog`",
           "anchor": "respond_dialog"
         },
         {
           "level": 4,
-          "text": "respond_dialog_cancelled",
+          "text": "`respond_dialog_cancelled`",
           "anchor": "respond_dialog_cancelled"
         },
         {
           "level": 4,
-          "text": "interrupt",
+          "text": "`interrupt`",
           "anchor": "interrupt"
         },
         {
           "level": 4,
-          "text": "set_permission_mode",
+          "text": "`set_permission_mode`",
           "anchor": "set_permission_mode"
         },
         {
           "level": 4,
-          "text": "set_model",
+          "text": "`set_model`",
           "anchor": "set_model"
         },
         {
           "level": 4,
-          "text": "get_context_usage",
+          "text": "`get_context_usage`",
           "anchor": "get_context_usage"
         },
         {
           "level": 2,
-          "text": "claudestream._sync_session",
+          "text": "`claudestream._sync_session`",
           "anchor": "claudestream_sync_session"
         },
         {
           "level": 3,
-          "text": "SyncSession",
+          "text": "`SyncSession`",
           "anchor": "syncsession"
         },
         {
           "level": 4,
-          "text": "_run_loop",
+          "text": "`_run_loop`",
           "anchor": "_run_loop"
         },
         {
           "level": 4,
-          "text": "_ensure_loop",
+          "text": "`_ensure_loop`",
           "anchor": "_ensure_loop"
         },
         {
           "level": 4,
-          "text": "_run_coro",
+          "text": "`_run_coro`",
           "anchor": "_run_coro"
         },
         {
           "level": 4,
-          "text": "close",
+          "text": "`close`",
           "anchor": "close-2"
         },
         {
           "level": 4,
-          "text": "session_id",
+          "text": "`session_id`",
           "anchor": "session_id-1"
         },
         {
           "level": 4,
-          "text": "model_name",
+          "text": "`model_name`",
           "anchor": "model_name-1"
         },
         {
           "level": 4,
-          "text": "tools",
+          "text": "`tools`",
           "anchor": "tools-1"
         },
         {
           "level": 4,
-          "text": "claude_version",
+          "text": "`claude_version`",
           "anchor": "claude_version-1"
         },
         {
           "level": 4,
-          "text": "last_result",
+          "text": "`last_result`",
           "anchor": "last_result-1"
         },
         {
           "level": 4,
-          "text": "files_modified",
+          "text": "`files_modified`",
           "anchor": "files_modified-1"
         },
         {
           "level": 4,
-          "text": "stderr_lines",
+          "text": "`stderr_lines`",
           "anchor": "stderr_lines-2"
         },
         {
           "level": 4,
-          "text": "turn_count",
+          "text": "`turn_count`",
           "anchor": "turn_count-1"
         },
         {
           "level": 4,
-          "text": "total_tokens",
+          "text": "`total_tokens`",
           "anchor": "total_tokens-1"
         },
         {
           "level": 4,
-          "text": "total_cost_usd",
+          "text": "`total_cost_usd`",
           "anchor": "total_cost_usd-1"
         },
         {
           "level": 4,
-          "text": "sandbox",
+          "text": "`sandbox`",
           "anchor": "sandbox-1"
         },
         {
           "level": 4,
-          "text": "user_tools",
+          "text": "`user_tools`",
           "anchor": "user_tools-1"
         },
         {
           "level": 4,
-          "text": "is_alive",
+          "text": "`is_alive`",
           "anchor": "is_alive-2"
         },
         {
           "level": 4,
-          "text": "active_turn",
+          "text": "`active_turn`",
           "anchor": "active_turn-1"
         },
         {
           "level": 4,
-          "text": "cancelled",
+          "text": "`cancelled`",
           "anchor": "cancelled-1"
         },
         {
           "level": 4,
-          "text": "process_pid",
+          "text": "`process_pid`",
           "anchor": "process_pid-1"
         },
         {
           "level": 4,
-          "text": "cwd",
+          "text": "`cwd`",
           "anchor": "cwd-1"
         },
         {
           "level": 4,
-          "text": "mcp_servers",
+          "text": "`mcp_servers`",
           "anchor": "mcp_servers-1"
         },
         {
           "level": 4,
-          "text": "permission_mode",
+          "text": "`permission_mode`",
           "anchor": "permission_mode-1"
         },
         {
           "level": 4,
-          "text": "config",
+          "text": "`config`",
           "anchor": "config-1"
         },
         {
           "level": 4,
-          "text": "cancel",
+          "text": "`cancel`",
           "anchor": "cancel-1"
         },
         {
           "level": 4,
-          "text": "ask",
+          "text": "`ask`",
           "anchor": "ask-1"
         },
         {
           "level": 4,
-          "text": "send",
+          "text": "`send`",
           "anchor": "send-1"
         },
         {
           "level": 4,
-          "text": "on",
+          "text": "`on`",
           "anchor": "on-1"
         },
         {
           "level": 4,
-          "text": "on_turn_complete",
+          "text": "`on_turn_complete`",
           "anchor": "on_turn_complete-1"
         },
         {
           "level": 4,
-          "text": "on_error",
+          "text": "`on_error`",
           "anchor": "on_error-1"
         },
         {
           "level": 4,
-          "text": "on_close",
+          "text": "`on_close`",
           "anchor": "on_close-1"
         },
         {
           "level": 4,
-          "text": "respond_allow",
+          "text": "`respond_allow`",
           "anchor": "respond_allow-1"
         },
         {
           "level": 4,
-          "text": "respond_deny",
+          "text": "`respond_deny`",
           "anchor": "respond_deny-1"
         },
         {
           "level": 4,
-          "text": "respond_dialog",
+          "text": "`respond_dialog`",
           "anchor": "respond_dialog-1"
         },
         {
           "level": 4,
-          "text": "respond_dialog_cancelled",
+          "text": "`respond_dialog_cancelled`",
           "anchor": "respond_dialog_cancelled-1"
         },
         {
           "level": 4,
-          "text": "interrupt",
+          "text": "`interrupt`",
           "anchor": "interrupt-1"
         },
         {
           "level": 4,
-          "text": "set_permission_mode",
+          "text": "`set_permission_mode`",
           "anchor": "set_permission_mode-1"
         },
         {
           "level": 4,
-          "text": "set_model",
+          "text": "`set_model`",
           "anchor": "set_model-1"
         },
         {
           "level": 4,
-          "text": "get_context_usage",
+          "text": "`get_context_usage`",
           "anchor": "get_context_usage-1"
         },
         {
@@ -2897,107 +2902,112 @@
         },
         {
           "level": 2,
-          "text": "claudestream._cli",
+          "text": "`claudestream._cli`",
           "anchor": "claudestream_cli"
         },
         {
           "level": 3,
-          "text": "_get_version",
+          "text": "`_get_version`",
           "anchor": "_get_version"
         },
         {
           "level": 3,
-          "text": "_resolve_prompt",
+          "text": "`_opt`",
+          "anchor": "_opt"
+        },
+        {
+          "level": 3,
+          "text": "`_resolve_prompt`",
           "anchor": "_resolve_prompt"
         },
         {
           "level": 3,
-          "text": "_build_config",
+          "text": "`_build_config`",
           "anchor": "_build_config"
         },
         {
           "level": 3,
-          "text": "_run_with_session",
+          "text": "`_run_with_session`",
           "anchor": "_run_with_session"
         },
         {
           "level": 3,
-          "text": "_stream_events",
+          "text": "`_stream_events`",
           "anchor": "_stream_events"
         },
         {
           "level": 3,
-          "text": "cmd_send",
+          "text": "`cmd_send`",
           "anchor": "cmd_send"
         },
         {
           "level": 3,
-          "text": "cmd_stream",
+          "text": "`cmd_stream`",
           "anchor": "cmd_stream"
         },
         {
           "level": 3,
-          "text": "cmd_events",
+          "text": "`cmd_events`",
           "anchor": "cmd_events"
         },
         {
           "level": 3,
-          "text": "cmd_repl",
+          "text": "`cmd_repl`",
           "anchor": "cmd_repl"
         },
         {
           "level": 3,
-          "text": "cmd_agent_run",
+          "text": "`cmd_agent_run`",
           "anchor": "cmd_agent_run"
         },
         {
           "level": 3,
-          "text": "cmd_agent_list",
+          "text": "`cmd_agent_list`",
           "anchor": "cmd_agent_list"
         },
         {
           "level": 3,
-          "text": "cmd_agent_info",
+          "text": "`cmd_agent_info`",
           "anchor": "cmd_agent_info"
         },
         {
           "level": 3,
-          "text": "cmd_agent_validate",
+          "text": "`cmd_agent_validate`",
           "anchor": "cmd_agent_validate"
         },
         {
           "level": 3,
-          "text": "cmd_ask",
+          "text": "`cmd_ask`",
           "anchor": "cmd_ask"
         },
         {
           "level": 3,
-          "text": "cmd_doctor",
+          "text": "`cmd_doctor`",
           "anchor": "cmd_doctor"
         },
         {
           "level": 3,
-          "text": "cmd_config",
+          "text": "`cmd_config`",
           "anchor": "cmd_config"
         },
         {
           "level": 3,
-          "text": "EventPrinter",
+          "text": "`EventPrinter`",
           "anchor": "eventprinter"
         },
         {
           "level": 4,
-          "text": "print_event",
+          "text": "`print_event`",
           "anchor": "print_event"
         },
         {
           "level": 3,
-          "text": "_print_json",
+          "text": "`_print_json`",
           "anchor": "_print_json"
         },
         {
           "level": 3,
-          "text": "main",
+          "text": "`main`",
           "anchor": "main"
         },
         {
@@ -3047,47 +3057,47 @@
         },
         {
           "level": 2,
-          "text": "claudestream.policy",
+          "text": "`claudestream.policy`",
           "anchor": "claudestreampolicy"
         },
         {
           "level": 3,
-          "text": "Allow",
+          "text": "`Allow`",
           "anchor": "allow"
         },
         {
           "level": 3,
-          "text": "Deny",
+          "text": "`Deny`",
           "anchor": "deny"
         },
         {
           "level": 3,
-          "text": "Sandbox",
+          "text": "`Sandbox`",
           "anchor": "sandbox-2"
         },
         {
           "level": 3,
-          "text": "create_sandbox",
+          "text": "`create_sandbox`",
           "anchor": "create_sandbox"
         },
         {
           "level": 3,
-          "text": "sandbox_to_flags",
+          "text": "`sandbox_to_flags`",
           "anchor": "sandbox_to_flags"
         },
         {
           "level": 3,
-          "text": "_resolve_path",
+          "text": "`_resolve_path`",
           "anchor": "_resolve_path-1"
         },
         {
           "level": 3,
-          "text": "_is_within",
+          "text": "`_is_within`",
           "anchor": "_is_within"
         },
         {
           "level": 3,
-          "text": "sandbox_decide",
+          "text": "`sandbox_decide`",
           "anchor": "sandbox_decide"
         },
         {
@@ -3206,5 +3216,6 @@
     }
   ],
   "posts": [],
-  "last_gen": "2026-08-12T03:43:57.153299+00:00"
+  "last_gen": "2026-08-17T13:32:59.829293+00:00",
+  "theme": "minimal"
 }

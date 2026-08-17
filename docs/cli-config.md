@@ -15,6 +15,6 @@ Show resolved configuration including binary path and version
 
 ## Flags
 
-| Name | Short | Type | Default | Env | Description |
+| Name | Short | Type | Presence | Env | Description |
 | --- | --- | --- | --- | --- | --- |
-| `--profile` |  | str |  |  | Name of the claudewheel profile to display settings for |
+| `--profile` |  | str | optional |  | Name of the claudewheel profile to display settings for; when omitted no profile is resolved |
