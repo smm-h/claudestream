@@ -24,3 +24,7 @@ artifact published.
 # blog = false
 include = ["pypi", "npm"]
 exclude = []
+candidate_sha = "8180d84233e04adfb41909c888f4537330c4e6c4"
+
+[tree_hashes]
+"." = "01f612dc4a569fc527792163f65b51d0bd58b5f8"

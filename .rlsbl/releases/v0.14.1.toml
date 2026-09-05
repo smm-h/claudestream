@@ -40,3 +40,7 @@ scripts/ were named test_*.py, so pytest collected them.
 # blog = false
 include = ["pypi", "npm"]
 exclude = []
+candidate_sha = "71c7cd9b74a599f01e5c7778edeb784704a8b11c"
+
+[tree_hashes]
+"." = "9afdc1828be495f7e8ae4ef17101ed44a03ec7de"

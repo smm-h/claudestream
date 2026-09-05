@@ -31,3 +31,7 @@ committed cassettes at zero cost.
 # blog = false
 include = ["pypi", "npm"]
 exclude = []
+candidate_sha = "1274329749482f3fb1a427f40f410cf7464e61e4"
+
+[tree_hashes]
+"." = "4b8edebee029701079045ab653ac0163ac4b79b4"

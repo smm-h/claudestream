@@ -46,3 +46,7 @@ privately here.
 # blog = false
 include = ["pypi", "npm"]
 exclude = []
+candidate_sha = "a3b868466c6ca3a73336bf256133ff52e76856e9"
+
+[tree_hashes]
+"." = "bf5ba24532fb4d5ece7996980c94177de210838b"
