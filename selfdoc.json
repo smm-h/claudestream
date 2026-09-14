@@ -9,7 +9,7 @@
     }
   ],
   "docs": "docs",
-  "base_url": "https://claudestream.smmh.dev",
+  "base_url": "https://smmh.dev/claudestream",
   "versions": [
     {
       "version": "0.3.0"
