@@ -2,7 +2,7 @@
 
 # claudestream
 
-A Python library and CLI for streaming Claude Code's JSON protocol
+Python library and CLI that runs Claude Code as a subprocess and decodes its stream-json output into typed events, with async and sync sessions, sandbox policies, and Python-defined tools
 
 ## Architecture
 

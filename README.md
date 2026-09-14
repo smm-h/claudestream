@@ -2,7 +2,7 @@
 
 # claudestream
 
-A Python library and CLI for streaming Claude Code's JSON protocol
+claudestream is a Python library and CLI that runs Claude Code as a subprocess and decodes its stream-json output into typed events, with async and sync sessions, sandbox policies, and Python-defined tools. It is for Python programs that drive Claude Code directly, instead of shelling out to it and parsing text. Every protocol line arrives as a typed event object, so a session reads as an ordinary loop over Python values, and the same session runs either async or sync.
 
 ## Install
 
@@ -214,7 +214,7 @@ with SyncSession(config) as session:
 | `msgspec` | * |
 | `selfdoc` | * |
 | `claudewheel` | * |
-| `strictspec` | >=0.1.0 |
+| `strictspec` | >=0.2.1 |
 
 ## Modules
 
