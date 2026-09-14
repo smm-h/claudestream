@@ -1,7 +1,8 @@
 +++
 title = "claudestream doctor"
-description = "Reference for the claudestream doctor command — usage, flags, arguments, and examples for the doctor subcommand of the claudestream CLI."
+description = "Check claudestream environment health: binary, version, and profile"
 generated = true
+seeded = true
 nav_group = "CLI Reference"
 nav_order = 4
 +++

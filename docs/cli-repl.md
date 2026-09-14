@@ -1,7 +1,8 @@
 +++
 title = "claudestream repl"
-description = "Reference for the claudestream repl command — usage, flags, arguments, and examples for the repl subcommand of the claudestream CLI."
+description = "Start an interactive multi-turn read-eval-print loop session with Claude"
 generated = true
+seeded = true
 nav_group = "CLI Reference"
 nav_order = 6
 +++

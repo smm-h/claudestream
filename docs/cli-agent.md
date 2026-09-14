@@ -1,7 +1,8 @@
 +++
 title = "claudestream agent"
-description = "Reference for the claudestream agent command group: run, list, info, and validate agents defined in .agent.json files with tools, sandbox, and budget."
+description = "Manage and run agents defined in .agent.json files."
 generated = true
+seeded = true
 nav_group = "CLI Reference"
 nav_order = 1
 +++

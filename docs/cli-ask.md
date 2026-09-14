@@ -1,7 +1,8 @@
 +++
 title = "claudestream ask"
-description = "Reference for the claudestream ask command — usage, flags, arguments, and examples for the ask subcommand of the claudestream CLI."
+description = "Send a prompt to Claude and print only the final response text"
 generated = true
+seeded = true
 nav_group = "CLI Reference"
 nav_order = 2
 +++

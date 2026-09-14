@@ -1,7 +1,8 @@
 +++
 title = "claudestream events"
-description = "Reference for the claudestream events command — usage, flags, arguments, and examples for the events subcommand of the claudestream CLI."
+description = "Debug mode: display all raw JSON protocol events from the subprocess"
 generated = true
+seeded = true
 nav_group = "CLI Reference"
 nav_order = 5
 +++

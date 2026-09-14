@@ -1,7 +1,8 @@
 +++
 title = "API Reference"
-description = "API reference index for the claudestream Python library, with links to documentation for all 12 modules covering sessions, events, protocol, and tools."
+description = "API reference index for claudestream covering 11 modules"
 generated = true
+seeded = true
 nav_group = "API Reference"
 nav_order = 90
 +++

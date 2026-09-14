@@ -1,7 +1,8 @@
 +++
 title = "claudestream send"
-description = "Reference for the claudestream send command — usage, flags, arguments, and examples for the send subcommand of the claudestream CLI."
+description = "Send a prompt to Claude and display the complete response with events"
 generated = true
+seeded = true
 nav_group = "CLI Reference"
 nav_order = 7
 +++

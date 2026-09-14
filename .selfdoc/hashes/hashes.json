@@ -77,28 +77,33 @@
   },
   "en/cli-agent.md": {
     "content": "53e4897aa1e4fc1971b5f674ee300b7e483fd413148dbb3d475e3b9fe32c9e6b",
-    "description": "10add5b211311ff2bddd0bd12ea720058cae85352164076a9b9e918e7d8f9201",
-    "schema_hash": "f67e50c3ec78e3df044826c0d5bd1b8e869e6aa84b515abe83e14b8cfc6b3dff"
+    "description": "27094f9d4616558c660a345f78cd042d18b0a3f877f24797b95c427fcb72bb98",
+    "schema_hash": "f67e50c3ec78e3df044826c0d5bd1b8e869e6aa84b515abe83e14b8cfc6b3dff",
+    "seed_hash": "27094f9d4616558c660a345f78cd042d18b0a3f877f24797b95c427fcb72bb98"
   },
   "en/cli-ask.md": {
     "content": "5a496545c4144e79e39fbba7c0b822e39963811fbd42bc4d248f0c284767479d",
-    "description": "2048e265e186181855d3304b2a60f9478353f541f06efd0b352d6a5a6b867491",
-    "schema_hash": "7060d9c58189dd0d394c69dd0dad3e3c3ac68deceacdfdc45ce51d13dca13c26"
+    "description": "4374b454bfc07261b4b8d3247a88040d6f3f051d9a57be4b4f51b10f215fd05e",
+    "schema_hash": "7060d9c58189dd0d394c69dd0dad3e3c3ac68deceacdfdc45ce51d13dca13c26",
+    "seed_hash": "4374b454bfc07261b4b8d3247a88040d6f3f051d9a57be4b4f51b10f215fd05e"
   },
   "en/cli-config.md": {
     "content": "52af6046f668739a8549a11b95859c8a0d8e0e0f45290bde260698c8d2e85175",
-    "description": "44a1283cd8df2cc6c3d71f0c0227f92550eae8fd7cfd37417d8e8ed567d70947",
-    "schema_hash": "50c6ef39bc0aa2d7e84a3611b73140200ba7d98f075a66d7cd66006ab948771d"
+    "description": "8764739cd0f0ae085b619feea5f41a0cc66717f6b97680f555e892d7ba9c4d27",
+    "schema_hash": "50c6ef39bc0aa2d7e84a3611b73140200ba7d98f075a66d7cd66006ab948771d",
+    "seed_hash": "8764739cd0f0ae085b619feea5f41a0cc66717f6b97680f555e892d7ba9c4d27"
   },
   "en/cli-doctor.md": {
     "content": "13e9b2be5f92fbb01117e7951bcc068bf9a6e5c33df7ca5eb7908219a2a87083",
-    "description": "a6923a594451d0ab70dd5d1bb9b342546c9d2696c49aa01ed213585e79b68cd7",
-    "schema_hash": "a6fd0f063ee06ac90e5c5179675ce266cdc0d2067b390d61722670a62c0e770b"
+    "description": "a0ac710c30390f4108a1462c2e943a955754826d05db170508898e38f9424f14",
+    "schema_hash": "a6fd0f063ee06ac90e5c5179675ce266cdc0d2067b390d61722670a62c0e770b",
+    "seed_hash": "a0ac710c30390f4108a1462c2e943a955754826d05db170508898e38f9424f14"
   },
   "en/cli-events.md": {
     "content": "24a0a9f644d7aba2b10105ab78340f2ff7161d666d2202e4e91e68e18050ef05",
-    "description": "8e6085392b28c54a07787fbbf23748a2a910624cc38b30858395a647bf828c9c",
-    "schema_hash": "61606c6fef505fba29322b7546a905120ef277a2c8f5d92a371d13489257a334"
+    "description": "1804e4e3606197ea1503458952b74e5db31fbcaa7a59290480a449c897d7372a",
+    "schema_hash": "61606c6fef505fba29322b7546a905120ef277a2c8f5d92a371d13489257a334",
+    "seed_hash": "1804e4e3606197ea1503458952b74e5db31fbcaa7a59290480a449c897d7372a"
   },
   "en/cli-index.md": {
     "content": "362df6e6555d3b459dae3ce9c0f68c3f175fbca3f6289c6c4b1bcf9fef4addf6",
@@ -107,22 +112,26 @@
   },
   "en/cli-repl.md": {
     "content": "5e52bd041ff87c46693fcb5eb46b24d7f83abf0b38aa0e464be04d92e9da8103",
-    "description": "0fca3886f79df4239bb1b5b1342a8fd7e128e493e76425c7e02473bf7f836b94",
-    "schema_hash": "3f1510e904eda42057c95614b01c4fb8f45f05b173dcf106f4d108273a69d4d3"
+    "description": "eeced3d84792a66f6fef6bf1ca8eee7b9ecf87ccba86865630b00612e848f564",
+    "schema_hash": "3f1510e904eda42057c95614b01c4fb8f45f05b173dcf106f4d108273a69d4d3",
+    "seed_hash": "eeced3d84792a66f6fef6bf1ca8eee7b9ecf87ccba86865630b00612e848f564"
   },
   "en/cli-send.md": {
     "content": "458869fdfb370e8a6328a55a607621c8fc307b669d7125b35cc5c2f5a9e63e95",
-    "description": "b441dab6291130ec8f8936ef5d097a390301d538c5568f95739cbeaff68ec7ab",
-    "schema_hash": "a227dba26004866ff9534090e31f03fa5f2e6483009ed7d56ac509a9da3ee3ba"
+    "description": "92ced5b84be552504d7694f18382865e2b3361fe593a2c4f64aa36228bb84386",
+    "schema_hash": "a227dba26004866ff9534090e31f03fa5f2e6483009ed7d56ac509a9da3ee3ba",
+    "seed_hash": "92ced5b84be552504d7694f18382865e2b3361fe593a2c4f64aa36228bb84386"
   },
   "en/cli-stream.md": {
     "content": "6c84bc7745599b19a62fa45fe40586a1e27d87d39985b83722796d8ff0eceb7c",
-    "description": "801ddd67495b0a8f502f50eecce4d602dddd84e5b6e7df08065d3d5b4427a2ff",
-    "schema_hash": "17094a4fe3cd6b727e3f855891086f3aea8b06a49e16db5517aa35cae1278e12"
+    "description": "d563740bbfdfeb4f28a780df202983a6cc90a69d77752bbd28e7ec684b57660a",
+    "schema_hash": "17094a4fe3cd6b727e3f855891086f3aea8b06a49e16db5517aa35cae1278e12",
+    "seed_hash": "d563740bbfdfeb4f28a780df202983a6cc90a69d77752bbd28e7ec684b57660a"
   },
   "en/gen-index.md": {
     "content": "f29a67f79ede5f1d16ffd878362962145e8c5dd1d49d9e9a465cd168c8174498",
-    "description": "4dcfdb5fc6c0a4ceb5372b11aa8aeb26e1473f6177ee1b3b50b4e53c4c3b9654"
+    "description": "bc10b60455c659d9d84be2928d0e09d82d173b4ff9337ad5572314cb9aab755e",
+    "seed_hash": "bc10b60455c659d9d84be2928d0e09d82d173b4ff9337ad5572314cb9aab755e"
   },
   "en/guide.md": {
     "content": "ab711618e8fc6583629457faca6b7dc5f2cb42891b81764d23fec15adb712ef0",

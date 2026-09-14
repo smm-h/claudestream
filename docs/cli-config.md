@@ -1,7 +1,8 @@
 +++
 title = "claudestream config"
-description = "Reference for the claudestream config command — usage, flags, arguments, and examples for the config subcommand of the claudestream CLI."
+description = "Show resolved configuration including binary path and version"
 generated = true
+seeded = true
 nav_group = "CLI Reference"
 nav_order = 3
 +++

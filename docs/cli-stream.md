@@ -1,7 +1,8 @@
 +++
 title = "claudestream stream"
-description = "Reference for the claudestream stream command — usage, flags, arguments, and examples for the stream subcommand of the claudestream CLI."
+description = "Stream a prompt with real-time incremental token-by-token output to stdout"
 generated = true
+seeded = true
 nav_group = "CLI Reference"
 nav_order = 8
 +++
