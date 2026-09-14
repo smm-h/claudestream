@@ -1,23 +1,28 @@
 {
   "name": "claudestream",
   "version": "0.15.0",
-  "description": "Stream Claude Code's JSON protocol - CLI wrapper for the Python claudestream package",
+  "description": "Python library and CLI that runs Claude Code as a subprocess and decodes its stream-json output into typed events, with async and sync sessions, sandbox policies, and Python-defined tools (npm wrapper for the Python package)",
   "bin": {
     "claudestream": "./bin/claudestream.mjs"
   },
   "type": "module",
   "license": "MIT",
+  "homepage": "https://smmh.dev/claudestream/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/smm-h/claudestream"
+    "url": "git+https://github.com/smm-h/claudestream.git"
+  },
+  "bugs": {
+    "url": "https://github.com/smm-h/claudestream/issues"
   },
   "keywords": [
     "claude",
     "claude-code",
+    "stream-json",
+    "ndjson",
     "streaming",
-    "json",
-    "protocol",
     "cli",
+    "agent",
     "rlsbl"
   ],
   "engines": {
