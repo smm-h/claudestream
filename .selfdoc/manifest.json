@@ -5,7 +5,7 @@
   "version": "0.15.0",
   "description": "Python library and CLI that runs Claude Code as a subprocess and decodes its stream-json output into typed events, with async and sync sessions, sandbox policies, and Python-defined tools",
   "language": "python",
-  "base_url": "https://claudestream.smmh.dev",
+  "base_url": "https://smmh.dev/claudestream",
   "pages": [
     {
       "path": "agents-guide.md",
@@ -3216,6 +3216,6 @@
     }
   ],
   "posts": [],
-  "last_gen": "2026-09-14T14:51:41.721960+00:00",
+  "last_gen": "2026-09-14T14:57:55.882793+00:00",
   "theme": "minimal"
 }
