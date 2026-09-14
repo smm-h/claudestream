@@ -1,9 +1,9 @@
----
-title: Agent Definition Guide
-description: "How to define, configure, and run reusable agents in claudestream using .agent.json files, prompt templates, budget limits, sandboxes, and the CLI."
-nav_group: "Guides"
-nav_order: 10
----
++++
+title = "Agent Definition Guide"
+description = "How to define, configure, and run reusable agents in claudestream using .agent.json files, prompt templates, budget limits, sandboxes, and the CLI."
+nav_group = "Guides"
+nav_order = 10
++++
 
 # Agent Definition Guide
 

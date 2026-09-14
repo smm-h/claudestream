@@ -1,6 +1,6 @@
----
-description: A Python library and CLI for streaming Claude Code's JSON protocol with typed events, async/sync APIs, and permission policies.
----
++++
+description = "A Python library and CLI for streaming Claude Code's JSON protocol with typed events, async/sync APIs, and permission policies."
++++
 
 # claudestream
 

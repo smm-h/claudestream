@@ -1,6 +1,6 @@
----
-title: CLAUDE.md
----
++++
+title = "CLAUDE.md"
++++
 # claudestream
 
 :-: var key="project.description"

@@ -1,9 +1,9 @@
----
-title: claudestream.events
-description: "Typed event dataclasses for every Claude Code stream output event, including assistant messages, tool use, permissions, and results."
-nav_group: "API Reference"
-nav_order: 11
----
++++
+title = "claudestream.events"
+description = "Typed event dataclasses for every Claude Code stream output event, including assistant messages, tool use, permissions, and results."
+nav_group = "API Reference"
+nav_order = 11
++++
 
 # claudestream.events
 

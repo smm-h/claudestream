@@ -1,7 +1,7 @@
----
-title: Architecture Guide
-description: "How claudestream's 4-layer architecture (process, protocol, session, CLI) turns a Claude Code subprocess into typed async events with permissions."
----
++++
+title = "Architecture Guide"
+description = "How claudestream's 4-layer architecture (process, protocol, session, CLI) turns a Claude Code subprocess into typed async events with permissions."
++++
 
 # Architecture Guide
 
