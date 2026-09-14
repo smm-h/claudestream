@@ -1,6 +1,6 @@
 {
   "name": "claudestream",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "description": "Python library and CLI that runs Claude Code as a subprocess and decodes its stream-json output into typed events, with async and sync sessions, sandbox policies, and Python-defined tools (npm wrapper for the Python package)",
   "bin": {
     "claudestream": "./bin/claudestream.mjs"
