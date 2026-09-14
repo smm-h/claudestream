@@ -2,6 +2,15 @@
 
 # Changelog
 
+## 0.15.1
+
+The project describes itself consistently on PyPI, npm and in its README, and its documentation base is the unified site.
+
+### Fixes
+
+- **The project describes itself consistently on PyPI, npm and in its README.** The package summary, the npm wrapper summary and the README opening each said something different, and the PyPI page carried no project links, keywords or classifiers.
+- **Documentation links point at the unified site.** The declared docs base was the retired per-project host; it is `https://smmh.dev/claudestream/` now, so generated sitemaps, feeds and llms.txt name the address that serves the pages.
+
 ## 0.15.0
 
 Every CLI flag and argument declares its presence explicitly, on strictcli 0.41.0.
@@ -266,6 +275,8 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.9.0
 
+SyncSession now exposes all 19 AsyncSession properties including turn_count, total_tokens, sandbox, and config.
+
 ### Features
 
 - SyncSession now exposes all 19 AsyncSession properties including turn_count, total_tokens, sandbox, and config.
@@ -278,6 +289,8 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.8.0
 
+**Documentation.** README.md and CLAUDE.md are now auto-generated from selfdoc templates with comprehensive examples, architecture narrative, and API reference tables.
+
 ### Features
 
 - **Documentation.** README.md and CLAUDE.md are now auto-generated from selfdoc templates with comprehensive examples, architecture narrative, and API reference tables.
@@ -289,11 +302,15 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.7.7
 
+**`--from-pr` CLI flag.** All commands (send, stream, events, repl, ask) now accept `--from-pr` to resume from a PR-linked session.
+
 ### Features
 
 - **`--from-pr` CLI flag.** All commands (send, stream, events, repl, ask) now accept `--from-pr` to resume from a PR-linked session.
 
 ## 0.7.6
+
+**Fixed MCP tool visibility.** Tools registered via `@tool` are now visible to the Claude Code model. The `--permission-prompt-tool stdio` flag was missing when MCP tools were registered without sandbox restrictions.
 
 ### Fixes
 
@@ -301,11 +318,15 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.7.5
 
+**npm package.** `npx claudestream` now works. The npm package is a thin CLI wrapper that shells out to the Python `claudestream` command.
+
 ### Features
 
 - **npm package.** `npx claudestream` now works. The npm package is a thin CLI wrapper that shells out to the Python `claudestream` command.
 
 ## 0.7.4
+
+**Fixed prompt template false positives.** `resolve_prompt()` no longer flags `{word}` patterns that were introduced by variable substitution itself.
 
 ### Fixes
 
@@ -313,17 +334,23 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.7.3
 
+**Agent discovery from custom paths and packages.** `discover_agents()` now accepts `paths=` for custom directories and `packages=` for Python package resources via `importlib.resources`. Deduplicates by name with warnings on conflicts. `load_agent()` gains a `cwd` parameter for consistent bare name resolution.
+
 ### Features
 
 - **Agent discovery from custom paths and packages.** `discover_agents()` now accepts `paths=` for custom directories and `packages=` for Python package resources via `importlib.resources`. Deduplicates by name with warnings on conflicts. `load_agent()` gains a `cwd` parameter for consistent bare name resolution.
 
 ## 0.7.2
 
+**Tool context injection.** `@tool("server", inject=["ctx"])` explicitly declares parameters injected from `SessionConfig.tool_context`. Injected params are hidden from the model's schema. Hard error when context is required but missing.
+
 ### Features
 
 - **Tool context injection.** `@tool("server", inject=["ctx"])` explicitly declares parameters injected from `SessionConfig.tool_context`. Injected params are hidden from the model's schema. Hard error when context is required but missing.
 
 ## 0.7.1
+
+**File write tracking.** New `FileWrite` and `FileEdit` derived events emitted when Claude writes or edits files. `session.files_modified` accumulates all modified paths with absolute path resolution.
 
 ### Features
 
@@ -336,6 +363,8 @@ Liveness probe, MCP multi-server handshake fix
 - **Editable install version freshness.** CLI version now read from `pyproject.toml` at runtime, eliminating stale version after editable install bumps.
 
 ## 0.7.0
+
+**SessionConfig.** Sessions, `print_prompt`, and `invoke_agent` now accept a single `SessionConfig` struct instead of individual parameters.
 
 ### Breaking
 
@@ -360,17 +389,23 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.6.2
 
+**Stricter agent validation.** CLI `agent run` now fails early with a clear message when no model is specified. `invoke_agent` raises `ValueError` listing any tools missing handlers.
+
 ### Fixes
 
 - **Stricter agent validation.** CLI `agent run` now fails early with a clear message when no model is specified. `invoke_agent` raises `ValueError` listing any tools missing handlers.
 
 ## 0.6.1
 
+**Session resumption.** New `resume_session_id` parameter and `--resume` CLI flag to continue a previous Claude Code session.
+
 ### Features
 
 - **Session resumption.** New `resume_session_id` parameter and `--resume` CLI flag to continue a previous Claude Code session.
 
 ## 0.6.0
+
+**Sandbox system.** Replaced the Policy system with a unified `Sandbox` API combining tool allow-lists, `--bare` mode, and filesystem write-path scoping.
 
 ### Breaking
 
@@ -385,11 +420,15 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.5.1
 
+**Fix.** `--system-prompt` no longer adds `--bare`, which was blocking OAuth authentication. Uses `--append-system-prompt` instead.
+
 ### Fixes
 
 - **Fix.** `--system-prompt` no longer adds `--bare`, which was blocking OAuth authentication. Uses `--append-system-prompt` instead.
 
 ## 0.5.0
+
+**Breaking.** `model` and `profile` are now required parameters in the library API (`AsyncSession`, `SyncSession`, `print_prompt`).
 
 ### Breaking
 
@@ -411,6 +450,8 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.4.0
 
+**Breaking.** `--profile` and `--model` are now required flags on all commands. No implicit defaults.
+
 ### Breaking
 
 - **Breaking.** `--profile` and `--model` are now required flags on all commands. No implicit defaults.
@@ -429,6 +470,8 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.3.0
 
+**New feature.** Per-event INFO logging for all event types (Thinking, ToolUse, ToolResult, Result, ApiRetry, RateLimit) and a startup health probe that warns after 30s with no events.
+
 ### Features
 
 - **New feature.** Per-event INFO logging for all event types (Thinking, ToolUse, ToolResult, Result, ApiRetry, RateLimit) and a startup health probe that warns after 30s with no events.
@@ -440,11 +483,15 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.2.1
 
+**Fix.** `send` command no longer prints response text twice.
+
 ### Fixes
 
 - **Fix.** `send` command no longer prints response text twice.
 
 ## 0.2.0
+
+**New feature.** `--profile` flag for claudewheel profile selection — sets `CLAUDE_CONFIG_DIR` and OAuth token for the Claude subprocess.
 
 ### Features
 
@@ -452,12 +499,16 @@ Liveness probe, MCP multi-server handshake fix
 
 ## 0.1.1
 
+**Fix.** Session no longer hangs during initialization -- SystemInit is now captured lazily on first send().
+
 ### Fixes
 
 - **Fix.** Session no longer hangs during initialization -- SystemInit is now captured lazily on first send().
 - **Fix.** Extended thinking responses no longer crash -- increased subprocess readline buffer to 16MB.
 
 ## 0.1.0
+
+Async and sync session APIs (`AsyncSession`, `SyncSession`) for multi-turn conversations with Claude Code
 
 ### Features
 
