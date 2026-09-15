@@ -1,7 +1,7 @@
 [project]
 name = "claudestream"
 version = "0.15.2"
-description = "Python library and CLI that runs Claude Code as a subprocess and decodes its stream-json output into typed events, with async and sync sessions, sandbox policies, and Python-defined tools"
+description = "Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"

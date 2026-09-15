@@ -49,7 +49,7 @@ def _get_version() -> str:
 app = strictcli.App(
     name="claudestream",
     version=_get_version(),
-    help="Stream Claude Code's JSON protocol",
+    help="Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python",
 )
 
 

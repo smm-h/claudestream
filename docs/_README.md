@@ -3,7 +3,7 @@ title = "README.md"
 +++
 # claudestream
 
-claudestream is a :-: var key="project.description". It is for Python programs that drive Claude Code directly, instead of shelling out to it and parsing text. Every protocol line arrives as a typed event object, so a session reads as an ordinary loop over Python values, and the same session runs either async or sync.
+:-: var key="project.description"
 
 ## Install
 

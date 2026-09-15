@@ -1,10 +1,10 @@
 +++
-description = "A Python library and CLI for streaming Claude Code's JSON protocol with typed events, async/sync APIs, and permission policies."
+description = "Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python"
 +++
 
 # claudestream
 
-A Python library and CLI for streaming Claude Code's JSON protocol.
+Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python
 
 claudestream wraps the `claude` CLI's `--output-format stream-json` / `--input-format stream-json` mode, providing typed Python events, async and sync APIs, permission policies, and a standalone CLI.
 

@@ -1,6 +1,6 @@
 +++
 title = "claudestream"
-description = "A Python library and CLI for streaming Claude Code's JSON protocol, providing typed events, async/sync sessions, and tool registration."
+description = "Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python"
 nav_group = "API Reference"
 nav_order = 1
 +++
