@@ -12,27 +12,6 @@
   "base_url": "https://smmh.dev/claudestream",
   "versions": [
     {
-      "version": "0.3.0"
-    },
-    {
-      "version": "0.5.1"
-    },
-    {
-      "version": "0.6.0"
-    },
-    {
-      "version": "0.6.1"
-    },
-    {
-      "version": "0.6.2"
-    },
-    {
-      "version": "0.7.0"
-    },
-    {
-      "version": "0.7.6"
-    },
-    {
       "version": "0.15.2"
     }
   ],
