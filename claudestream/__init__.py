@@ -1,6 +1,6 @@
 """Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python."""
 
-__version__ = "0.15.2"
+__version__ = "0.15.3"
 
 from claudestream._async_session import AsyncSession, ClaudeStreamError
 from claudestream._sync_session import SyncSession

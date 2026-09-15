@@ -2,6 +2,15 @@
 
 # Changelog
 
+## 0.15.3
+
+Archived documentation versions are no longer published, and the documentation moved onto selfdoc's .stricttools/ layout.
+
+### Fixes
+
+- **The tool describes itself with one sentence everywhere, including `--help`.** The `--help` header, README, docs site, PyPI and npm metadata now carry the same line.
+- **Archived documentation versions are no longer published.** The docs site serves the current version only; the per-version archives built from old tags are gone.
+
 ## 0.15.2
 
 Documentation frontmatter converted to TOML for the current selfdoc; no user-facing change.
