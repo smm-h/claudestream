@@ -64,11 +64,22 @@ def _find_event_classes(source: str) -> list[tuple[str, str]]:
     return results
 
 
+def _repository_root():
+    """The directory holding selfdoc.json, found by walking up from this
+    file, so the directive works wherever the docs directory lives."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    while True:
+        if os.path.exists(os.path.join(here, "selfdoc.json")):
+            return here
+        parent = os.path.dirname(here)
+        if parent == here:
+            raise FileNotFoundError("no selfdoc.json above " + __file__)
+        here = parent
+
+
 def resolve(attrs, config, body):
     """Return a markdown table of event types parsed from events.py."""
-    repo_root = os.path.dirname(
-        os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    )
+    repo_root = _repository_root()
     events_path = os.path.join(repo_root, "claudestream", "events.py")
 
     with open(events_path) as f:
