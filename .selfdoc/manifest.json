@@ -2,8 +2,8 @@
   "schema_version": 1,
   "name": "claudestream",
   "slug": "claudestream",
-  "version": "0.15.1",
-  "description": "Python library and CLI that runs Claude Code as a subprocess and decodes its stream-json output into typed events, with async and sync sessions, sandbox policies, and Python-defined tools",
+  "version": "0.15.2",
+  "description": "Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python",
   "language": "python",
   "base_url": "https://smmh.dev/claudestream",
   "pages": [
@@ -3216,6 +3216,6 @@
     }
   ],
   "posts": [],
-  "last_gen": "2026-09-14T17:13:47.433314+00:00",
+  "last_gen": "2026-09-15T20:47:26.761414+00:00",
   "theme": "minimal"
 }

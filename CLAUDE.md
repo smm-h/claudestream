@@ -2,7 +2,7 @@
 
 # claudestream
 
-Python library and CLI that runs Claude Code as a subprocess and decodes its stream-json output into typed events, with async and sync sessions, sandbox policies, and Python-defined tools
+Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python
 
 ## Architecture
 
@@ -17,7 +17,7 @@ The `@tool` decorator (`_tools.py`) and agent definitions (`_agent.py`) are cros
 
 ## Modules
 
-- **claudestream** (`claudestream/__init__.py`): A Python library and CLI for streaming Claude Code's JSON protocol, providing typed events, async/sync sessions, and tool registration.
+- **claudestream** (`claudestream/__init__.py`): Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python.
 - **claudestream._agent** (`claudestream/_agent.py`): Agent definition loader and budget enforcement for Claude Code sessions, with sync and async context managers for invoking agents.
 - **claudestream._agent_schema** (`claudestream/_agent_schema.py`)
 - **claudestream._async_session** (`claudestream/_async_session.py`): Async session manager for the Claude Code stream-json protocol, handling process lifecycle, event parsing, and permission callbacks.

@@ -10,7 +10,7 @@ nav_order = 91
 
 # claudestream CLI Reference
 
-Stream Claude Code's JSON protocol
+Drive Claude Code from Python: run it as a subprocess and read its output as typed events, with async and sync sessions, sandbox policies, and tools you define in Python
 
 Version: :-: var key="project.version"
 
