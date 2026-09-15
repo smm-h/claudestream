@@ -44,7 +44,7 @@
     }
   ],
   "directives": {
-    "table-events": "docs/_directives/event_catalog.py"
+    "table-events": ".stricttools/docs/_directives/event_catalog.py"
   },
   "gen": {
     "exclude": [
@@ -53,8 +53,8 @@
     ]
   },
   "root_files": [
-    "docs/_CLAUDE.md",
-    "docs/_README.md"
+    ".stricttools/docs/_CLAUDE.md",
+    ".stricttools/docs/_README.md"
   ],
   "topology": {
     "slug": "claudestream",
