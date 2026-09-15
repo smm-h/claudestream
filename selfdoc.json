@@ -8,7 +8,7 @@
       "language": "python"
     }
   ],
-  "docs": "docs",
+  "docs": ".stricttools/docs",
   "base_url": "https://smmh.dev/claudestream",
   "versions": [
     {
